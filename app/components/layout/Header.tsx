@@ -11,7 +11,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { UserData } from "@/types";
-import UnitSwitcher from "./UnitSwitcher";
 
 interface Notification {
   id: string;
@@ -268,10 +267,6 @@ export default function Header({
 
       {/* ── KANAN ── */}
       <div className="flex items-center gap-3">
-        {/* Dropdown pindah unit usaha — hanya muncul untuk direksi
-            dengan akses ke lebih dari 1 unit */}
-        <UnitSwitcher userId={currentUser.id} currentUnitCode="sablon" />
-
         {/* Bell notifikasi */}
         <div className="relative">
           <button
