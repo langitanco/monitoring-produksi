@@ -1,11 +1,42 @@
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip as RechartsTooltip, ResponsiveContainer,
-} from 'recharts';
-import { Package } from 'lucide-react';
-import { MonthlyDataPoint } from '@/hooks/useDashboard';
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  TooltipProps,
+} from "recharts";
+import { MonthlyDataPoint } from "@/hooks/useDashboard";
 
+// ─── Custom Tooltip (Responsif terhadap Tema Terang & Gelap) ─────────────────
+// 1. Deklarasikan interface kustom untuk Tooltip
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number }>;
+  label?: string;
+}
+
+// 2. Gunakan CustomTooltipProps pada komponen
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shadow-xl transition-colors">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">
+          {label}
+        </p>
+        <p className="font-mono tabular-nums text-xs font-semibold text-slate-900 dark:text-slate-100">
+          {`${payload[0].value?.toLocaleString("id-ID")} pcs`}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+// ─── Component Main ──────────────────────────────────────────────────────────
 interface ChartBarProps {
   monthlyData: MonthlyDataPoint[];
 }
@@ -18,54 +49,60 @@ const ChartBar = memo(function ChartBar({ monthlyData }: ChartBarProps) {
   }, []);
 
   return (
-    <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 transition-colors duration-200">
-      <div className="flex items-center justify-between mb-4 md:mb-6">
-        <div>
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base md:text-lg flex items-center gap-2">
-            <Package className="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-400" />
-            Tren Volume (PCS)
-          </h3>
-          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
-            Jumlah item masuk 6 bulan terakhir
-          </p>
-        </div>
+    <div className="bg-white dark:bg-slate-950 p-5 md:p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="mb-5">
+        <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-base tracking-tight">
+          Tren Volume
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Jumlah item masuk · 6 bulan terakhir
+        </p>
       </div>
 
-      <div className="h-[200px] md:h-[300px] w-full">
+      <div className="h-[220px] md:h-[300px] w-full">
         {mounted && (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyData} margin={{ top: 10, right: 0, left: -10, bottom: 0 }}>
+            <BarChart
+              data={monthlyData}
+              margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+              barCategoryGap="28%"
+            >
               <CartesianGrid
-                strokeDasharray="3 3"
                 vertical={false}
-                stroke="#94a3b8"
-                strokeOpacity={0.2}
+                className="stroke-slate-200 dark:stroke-slate-800/80"
               />
               <XAxis
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 10 }}
-                dy={10}
+                tick={{
+                  fill: "#94a3b8",
+                  fontSize: 10,
+                  fontFamily: "ui-monospace, monospace",
+                }}
+                dy={8}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 10 }}
-              />
-              <RechartsTooltip
-                cursor={{ fill: 'currentColor', opacity: 0.1 }}
-                contentStyle={{
-                  borderRadius: '12px',
-                  border: 'none',
-                  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                  fontSize: '10px',
-                  backgroundColor: 'rgb(30, 41, 59)',
-                  color: '#fff',
+                width={40}
+                tick={{
+                  fill: "#94a3b8",
+                  fontSize: 10,
+                  fontFamily: "ui-monospace, monospace",
                 }}
-                formatter={(value: number) => [`${value} Pcs`, 'Total']}
               />
-              <Bar dataKey="pcs" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={30} name="Total PCS" />
+              {/* Menggunakan CustomTooltip dengan cursor highlight yang senada */}
+              <RechartsTooltip
+                cursor={{ fill: "#2589ff", opacity: 0.08 }}
+                content={<CustomTooltip />}
+              />
+              <Bar
+                dataKey="pcs"
+                fill="#2589ff"
+                radius={[2, 2, 0, 0]}
+                maxBarSize={32}
+              />
             </BarChart>
           </ResponsiveContainer>
         )}

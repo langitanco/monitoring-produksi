@@ -2,7 +2,7 @@
 
 export const APP_INFO = {
   name: "LCO SuperApp",
-  version: "V.15.0",
+  version: "V.15.1",
   purpose: "Aplikasi produksi Sablon, Langitan.co.",
   creator: "abdllahmajid",
   creationDate: "13 Desember 2025",
@@ -16,6 +16,14 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "15.1",
+    date: "2026-09-13",
+    changes: [
+      "Tampilan baru pada menu Dashboard",
+      "Perbaikan bug aplikasi",
+    ],
+  },
   {
     version: "15.0",
     date: "2026-07-07",

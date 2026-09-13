@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
-import { memo } from 'react';
-import { RefreshCw, X, Loader2 } from 'lucide-react';
-import { useState } from 'react';
-import { UpdateInfo } from '@/hooks/useUpdateCheck';
+import { memo, useState } from "react";
+import { RefreshCw, X, Loader2 } from "lucide-react";
+import { UpdateInfo } from "@/hooks/useUpdateCheck";
 
 interface UpdateBannerProps {
   updateInfo: UpdateInfo;
@@ -20,7 +19,6 @@ const UpdateBanner = memo(function UpdateBanner({
 
   const handleUpdate = () => {
     setIsUpdating(true);
-    // Beri sedikit delay agar spinner terlihat sebelum reload
     setTimeout(() => {
       onUpdate();
     }, 400);
@@ -30,44 +28,30 @@ const UpdateBanner = memo(function UpdateBanner({
     <div
       role="alert"
       aria-live="polite"
-      className="
-        flex items-center justify-between gap-3
-        bg-blue-50 dark:bg-blue-950/40
-        border border-blue-200 dark:border-blue-800/60
-        border-l-4 border-l-blue-500
-        rounded-2xl px-4 py-3
-        shadow-sm
-        transition-all duration-300
-        animate-in slide-in-from-top-2 fade-in
-      "
+      className="flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3"
     >
-      {/* Icon + Teks */}
       <div className="flex items-center gap-3 min-w-0">
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
-          <RefreshCw className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <div className="flex-shrink-0 w-7 h-7 rounded-md bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 flex items-center justify-center">
+          <RefreshCw className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-blue-800 dark:text-blue-200 leading-tight">
-            Pembaruan tersedia —{' '}
-            <span className="font-extrabold">{updateInfo.newVersion}</span>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight">
+            Pembaruan tersedia{" "}
+            <span className="font-mono tabular-nums text-indigo-600 dark:text-indigo-400">
+              {updateInfo.newVersion}
+            </span>
           </p>
-          <p className="text-xs text-blue-600/80 dark:text-blue-400/80 mt-0.5 line-clamp-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
             {updateInfo.releaseNotes}
           </p>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-1.5 flex-shrink-0">
         <button
           onClick={onDismiss}
           disabled={isUpdating}
-          className="
-            p-1.5 rounded-lg text-blue-400 dark:text-blue-600
-            hover:bg-blue-100 dark:hover:bg-blue-900/50
-            hover:text-blue-600 dark:hover:text-blue-300
-            transition-colors disabled:opacity-50
-          "
+          className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150 disabled:opacity-50"
           aria-label="Tutup notifikasi"
         >
           <X className="w-4 h-4" />
@@ -76,26 +60,15 @@ const UpdateBanner = memo(function UpdateBanner({
         <button
           onClick={handleUpdate}
           disabled={isUpdating}
-          className="
-            flex items-center gap-1.5
-            bg-blue-600 hover:bg-blue-700 active:bg-blue-800
-            text-white text-xs font-bold
-            px-3 py-2 rounded-xl
-            transition-all duration-200 active:scale-95
-            disabled:opacity-70 disabled:cursor-not-allowed
-            shadow-sm shadow-blue-600/20
-          "
+          className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition-colors duration-150 disabled:opacity-60"
         >
           {isUpdating ? (
             <>
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>Memperbarui...</span>
+              <span>Memperbarui…</span>
             </>
           ) : (
-            <>
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Update sekarang</span>
-            </>
+            <span>Update</span>
           )}
         </button>
       </div>
