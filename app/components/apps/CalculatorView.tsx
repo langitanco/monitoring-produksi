@@ -178,7 +178,7 @@ export default function CalculatorView() {
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] bg-transparent">
-        <div className="w-12 h-12 border-4 border-blue-200 dark:border-slate-800 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+        <div className="w-12 h-12 border-4 border-zinc-200 dark:border-zinc-800 border-t-[#2589ff] rounded-full animate-spin mb-4"></div>
       </div>
     );
 
@@ -194,27 +194,31 @@ export default function CalculatorView() {
   const resultDetails = (
     <>
       <div className="flex justify-between text-sm">
-        <span className="text-slate-400">Total Omset</span>
-        <span className="font-bold text-white">
+        <span className="text-zinc-500 dark:text-zinc-400">Total Omset</span>
+        <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
           {formatResult(finalPrice * inputs.qty)}
         </span>
       </div>
       <div className="flex justify-between text-sm">
-        <span className="text-slate-400">Estimasi Margin</span>
-        <span className="font-bold text-green-400">
+        <span className="text-zinc-500 dark:text-zinc-400">
+          Estimasi Margin
+        </span>
+        <span className="font-mono tabular-nums font-semibold text-emerald-600 dark:text-emerald-400">
           +{appliedMargin}%
           {appliedMargin < (config.margin_percentage ?? 0) && (
-            <span className="text-[10px] text-blue-400 font-normal ml-1">
+            <span className="text-[10px] font-mono font-normal text-zinc-400 dark:text-zinc-500 ml-1">
               (harga grosir)
             </span>
           )}
         </span>
       </div>
-      <hr className="border-slate-700/50" />
+      <hr className="border-zinc-200 dark:border-zinc-800" />
 
       <div className="flex justify-between text-sm">
-        <span className="text-slate-400">Listrik/LPG & Penunjang</span>
-        <span className="font-bold text-yellow-400">
+        <span className="text-zinc-500 dark:text-zinc-400">
+          Listrik/LPG & Penunjang
+        </span>
+        <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
           {formatResult(
             (config.cost_listrik_lpg ?? 0) + (config.cost_bahan_penunjang ?? 0),
           )}{" "}
@@ -223,8 +227,8 @@ export default function CalculatorView() {
       </div>
       {currentTotalBonus > 0 && (
         <div className="flex justify-between text-sm">
-          <span className="text-slate-400">Total Bonus</span>
-          <span className="font-bold text-orange-400">
+          <span className="text-zinc-500 dark:text-zinc-400">Total Bonus</span>
+          <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
             +{formatResult(currentTotalBonus)} /pcs
           </span>
         </div>
@@ -233,20 +237,22 @@ export default function CalculatorView() {
       {mode === "MANUAL" ? (
         <>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-400">
+            <span className="text-zinc-500 dark:text-zinc-400">
               Total Warna ({totalManualColors})
             </span>
-            <span className="font-bold text-white">
+            <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
               {formatResult(laborDetails.gesut)}{" "}
-              <span className="text-[10px] text-slate-500 font-normal">
+              <span className="text-[10px] font-normal text-zinc-400 dark:text-zinc-500">
                 /pcs
               </span>
             </span>
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Beban Screen/kaos</span>
-            <span className="font-bold text-yellow-400">
+            <span className="text-zinc-500 dark:text-zinc-400">
+              Beban Screen/kaos
+            </span>
+            <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
               {formatResult(
                 ((config.manual_screen_cost ?? 0) * totalManualColors) /
                   (inputs.qty || 1),
@@ -254,8 +260,10 @@ export default function CalculatorView() {
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Cost Tinta & SDM</span>
-            <span className="font-bold text-yellow-400">
+            <span className="text-zinc-500 dark:text-zinc-400">
+              Cost Tinta & SDM
+            </span>
+            <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
               {formatResult(
                 (config.cost_plastisol_ink ?? 0) +
                   laborDetails.gesut +
@@ -268,8 +276,10 @@ export default function CalculatorView() {
       ) : (
         <>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-400">HPP Tinta & Film</span>
-            <span className="font-bold text-yellow-400">
+            <span className="text-zinc-500 dark:text-zinc-400">
+              HPP Tinta & Film
+            </span>
+            <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
               {formatResult(
                 inputs.width * inputs.length * (config.dtf_tinta_cost ?? 0) +
                   (config.cost_print_film ?? 0),
@@ -277,8 +287,10 @@ export default function CalculatorView() {
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Cost Cetak & Press</span>
-            <span className="font-bold text-yellow-400">
+            <span className="text-zinc-500 dark:text-zinc-400">
+              Cost Cetak & Press
+            </span>
+            <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
               {formatResult(
                 inputs.width * inputs.length * (config.dtf_price_per_cm ?? 0) +
                   (config.dtf_press_cost ?? 0),
@@ -292,40 +304,41 @@ export default function CalculatorView() {
   );
 
   return (
-    <div className="h-full bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 transition-colors duration-300">
+    <div className="h-full bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 transition-colors duration-150">
       {/* PANEL KIRI: INPUT */}
       {/* pb-24 menyisakan ruang untuk sticky bottom bar harga di mobile, dihilangkan di desktop karena panel hasil sudah tampil di samping */}
       <div className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8 custom-scrollbar">
         <div className="max-w-xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
+            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
               Kalkulator Produksi
             </h2>
-            <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full animate-pulse font-bold">
-              ● Live
+            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-600 text-white flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+              Live
             </span>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 flex mb-6">
+          <div className="bg-white dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 flex mb-6">
             <button
               onClick={() => setMode("DTF")}
-              className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${mode === "DTF" ? "bg-blue-600 text-white shadow-md" : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"}`}
+              className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-colors duration-150 ${mode === "DTF" ? "bg-[#124540] text-white" : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900"}`}
             >
               Sablon DTF
             </button>
             <button
               onClick={() => setMode("MANUAL")}
-              className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${mode === "MANUAL" ? "bg-blue-600 text-white shadow-md" : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"}`}
+              className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-colors duration-150 ${mode === "MANUAL" ? "bg-[#124540] text-white" : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900"}`}
             >
               Sablon Manual
             </button>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 space-y-5 md:space-y-6">
+          <div className="bg-white dark:bg-zinc-950 p-4 md:p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-5 md:space-y-6">
             {/* Qty & Harga Kaos digabung 2 kolom di semua ukuran layar */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 mb-2">
                   Jumlah (Pcs)
                 </label>
                 <input
@@ -333,12 +346,12 @@ export default function CalculatorView() {
                   inputMode="numeric"
                   value={formatNumberDisplay(inputs.qty)}
                   onChange={(e) => handleInputChange(e, "qty")}
-                  className="w-full text-lg md:text-xl font-bold text-gray-900 dark:text-white bg-transparent border-gray-300 dark:border-slate-600 border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none placeholder-gray-300 dark:placeholder-slate-600"
+                  className="w-full text-lg md:text-xl font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-3 focus:ring-2 focus:ring-[#124540] outline-none placeholder-zinc-300 dark:placeholder-zinc-600 transition-colors duration-150"
                   placeholder="0"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 mb-2">
                   Harga Kaos
                 </label>
                 <input
@@ -346,7 +359,7 @@ export default function CalculatorView() {
                   inputMode="numeric"
                   value={formatRupiahDisplay(inputs.kaosPrice)}
                   onChange={(e) => handleInputChange(e, "kaosPrice")}
-                  className="w-full text-lg md:text-xl font-bold text-gray-900 dark:text-white bg-transparent border-gray-300 dark:border-slate-600 border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none placeholder-gray-300 dark:placeholder-slate-600"
+                  className="w-full text-lg md:text-xl font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-3 focus:ring-2 focus:ring-[#124540] outline-none placeholder-zinc-300 dark:placeholder-zinc-600 transition-colors duration-150"
                   placeholder="Rp 0"
                 />
               </div>
@@ -355,7 +368,7 @@ export default function CalculatorView() {
             {mode === "DTF" ? (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">
+                  <label className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 mb-2">
                     Lebar (cm)
                   </label>
                   <input
@@ -363,12 +376,12 @@ export default function CalculatorView() {
                     inputMode="numeric"
                     value={formatNumberDisplay(inputs.width)}
                     onChange={(e) => handleInputChange(e, "width")}
-                    className="w-full text-lg md:text-xl font-bold text-gray-900 dark:text-white bg-transparent border-gray-300 dark:border-slate-600 border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none placeholder-gray-300 dark:placeholder-slate-600"
+                    className="w-full text-lg md:text-xl font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-3 focus:ring-2 focus:ring-[#124540] outline-none placeholder-zinc-300 dark:placeholder-zinc-600 transition-colors duration-150"
                     placeholder="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">
+                  <label className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 mb-2">
                     Panjang (cm)
                   </label>
                   <input
@@ -376,24 +389,24 @@ export default function CalculatorView() {
                     inputMode="numeric"
                     value={formatNumberDisplay(inputs.length)}
                     onChange={(e) => handleInputChange(e, "length")}
-                    className="w-full text-lg md:text-xl font-bold text-gray-900 dark:text-white bg-transparent border-gray-300 dark:border-slate-600 border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none placeholder-gray-300 dark:placeholder-slate-600"
+                    className="w-full text-lg md:text-xl font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-3 focus:ring-2 focus:ring-[#124540] outline-none placeholder-zinc-300 dark:placeholder-zinc-600 transition-colors duration-150"
                     placeholder="0"
                   />
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
                   <div className="flex items-center gap-2 mb-3">
-                    <Info className="w-4 h-4 text-blue-500" />
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
+                    <Info className="w-4 h-4 text-[#124540]" />
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-700 dark:text-zinc-300">
                       Detail Warna & Area
                     </span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1 text-left truncate">
+                      <label className="block text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400 mb-1 text-left truncate">
                         <span className="md:hidden">KECIL</span>
                         <span className="hidden md:inline">
                           KECIL (Logo/Label)
@@ -404,12 +417,12 @@ export default function CalculatorView() {
                         inputMode="numeric"
                         value={formatNumberDisplay(inputs.colorsSmall)}
                         onChange={(e) => handleInputChange(e, "colorsSmall")}
-                        className="w-full font-bold text-slate-900 dark:text-white bg-transparent border-slate-300 dark:border-slate-600 border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-center"
+                        className="w-full font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#124540] outline-none text-center transition-colors duration-150"
                         placeholder="0"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1 text-left truncate">
+                      <label className="block text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400 mb-1 text-left truncate">
                         <span className="md:hidden">SEDANG</span>
                         <span className="hidden md:inline">SEDANG (A4)</span>
                       </label>
@@ -418,12 +431,12 @@ export default function CalculatorView() {
                         inputMode="numeric"
                         value={formatNumberDisplay(inputs.colorsMedium)}
                         onChange={(e) => handleInputChange(e, "colorsMedium")}
-                        className="w-full font-bold text-slate-900 dark:text-white bg-transparent border-slate-300 dark:border-slate-600 border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-center"
+                        className="w-full font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#124540] outline-none text-center transition-colors duration-150"
                         placeholder="0"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1 text-left truncate">
+                      <label className="block text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400 mb-1 text-left truncate">
                         <span className="md:hidden">BESAR</span>
                         <span className="hidden md:inline">
                           BESAR (A3/Blok)
@@ -434,7 +447,7 @@ export default function CalculatorView() {
                         inputMode="numeric"
                         value={formatNumberDisplay(inputs.colorsLarge)}
                         onChange={(e) => handleInputChange(e, "colorsLarge")}
-                        className="w-full font-bold text-slate-900 dark:text-white bg-transparent border-slate-300 dark:border-slate-600 border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-center"
+                        className="w-full font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#124540] outline-none text-center transition-colors duration-150"
                         placeholder="0"
                       />
                     </div>
@@ -443,7 +456,7 @@ export default function CalculatorView() {
               </div>
             )}
 
-            <hr className="border-dashed border-gray-200 dark:border-slate-700" />
+            <hr className="border-zinc-200 dark:border-zinc-800" />
 
             {/* Addon: accordion collapsed by default supaya tidak menambah panjang scroll */}
             <div>
@@ -453,19 +466,19 @@ export default function CalculatorView() {
                 className="w-full flex items-center justify-between"
                 style={{ WebkitTapHighlightColor: "transparent" }}
               >
-                <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase cursor-pointer">
+                <label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 cursor-pointer">
                   Tambahan / Bonus
                 </label>
                 <span className="flex items-center gap-2">
                   {selectedAddonIds.length > 0 && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                    <span className="font-mono tabular-nums text-[11px] px-2.5 py-1 rounded-full border border-zinc-300/70 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300">
                       {selectedAddonIds.length} dipilih
                     </span>
                   )}
                   {addonsOpen ? (
-                    <ChevronUp className="w-4 h-4 text-slate-400" />
+                    <ChevronUp className="w-4 h-4 text-zinc-400" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
+                    <ChevronDown className="w-4 h-4 text-zinc-400" />
                   )}
                 </span>
               </button>
@@ -473,29 +486,27 @@ export default function CalculatorView() {
               {addonsOpen && (
                 <div className="grid grid-cols-1 gap-2 mt-3">
                   {addons.length === 0 ? (
-                    <p className="text-sm text-gray-400 dark:text-slate-600 italic">
+                    <p className="text-sm text-zinc-400 dark:text-zinc-600 italic">
                       Tidak ada opsi bonus aktif.
                     </p>
                   ) : (
                     addons.map((addon) => (
                       <label
                         key={addon.id}
-                        className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${selectedAddonIds.includes(addon.id) ? "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700 shadow-sm" : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700"}`}
+                        className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors duration-150 ${selectedAddonIds.includes(addon.id) ? "bg-white dark:bg-zinc-950 border-[#124540]/50" : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900"}`}
                       >
                         <div className="flex items-center gap-3">
                           <input
                             type="checkbox"
                             checked={selectedAddonIds.includes(addon.id)}
                             onChange={() => toggleAddon(addon.id)}
-                            className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-slate-600 bg-transparent"
+                            className="w-5 h-5 rounded accent-[#124540] border-zinc-300 dark:border-zinc-700 bg-transparent"
                           />
-                          <span
-                            className={`font-medium text-sm ${selectedAddonIds.includes(addon.id) ? "text-blue-900 dark:text-blue-300" : "text-gray-700 dark:text-slate-300"}`}
-                          >
+                          <span className="font-medium text-sm text-zinc-700 dark:text-zinc-300">
                             {addon.name}
                           </span>
                         </div>
-                        <span className="text-xs font-mono text-gray-500 dark:text-slate-400 font-bold">
+                        <span className="text-xs font-mono tabular-nums font-semibold text-zinc-500 dark:text-zinc-400">
                           +Rp {Number(addon.cost).toLocaleString("id-ID")}
                         </span>
                       </label>
@@ -508,32 +519,32 @@ export default function CalculatorView() {
         </div>
       </div>
 
-      {/* PANEL KANAN: HASIL (desktop only, tampil di samping) */}
+      {/* PANEL KANAN: HASIL (desktop only, tampil di samping) — pakai treatment hero panel */}
       <div
-        className={`hidden md:flex md:w-1/3 p-6 md:p-10 flex-col justify-center border-t-4 md:border-t-0 md:border-l border-slate-700 dark:border-slate-800 transition-all duration-300 ${showResult ? "bg-slate-900 dark:bg-black/40 border-blue-500" : "bg-slate-800 dark:bg-slate-950/50 border-slate-600"}`}
+        className={`hidden md:flex md:w-1/3 p-6 md:p-10 flex-col justify-center border-t md:border-t-0 md:border-l border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-100/80 dark:bg-zinc-900/90 shadow-sm transition-colors duration-150`}
       >
         <div className="max-w-sm mx-auto w-full">
-          <p className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-widest">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400 mb-1">
             Rekomendasi Harga Jual
           </p>
           <div
-            className={`text-4xl md:text-5xl font-extrabold mb-2 tracking-tight truncate transition-all duration-300 ${showResult ? "text-white" : "text-slate-600"}`}
+            className={`text-4xl md:text-5xl font-mono tabular-nums font-semibold mb-2 tracking-tight truncate transition-colors duration-150 ${showResult ? "text-zinc-900 dark:text-white" : "text-zinc-400 dark:text-zinc-600"}`}
           >
             {showResult ? formatResult(finalPrice) : "Rp -"}
             <span
-              className={`text-lg font-normal ml-1 ${showResult ? "text-slate-400" : "text-slate-700"}`}
+              className={`text-lg font-normal ml-1 ${showResult ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-400 dark:text-zinc-700"}`}
             >
               /pcs
             </span>
           </div>
 
           {showResult ? (
-            <div className="mt-6 space-y-3 border-t border-slate-700 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="mt-6 space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-6">
               {resultDetails}
             </div>
           ) : (
-            <div className="mt-6 pt-6 border-t border-slate-700/50">
-              <p className="text-sm text-slate-500 italic">
+            <div className="mt-6 pt-6 border-t border-zinc-200/70 dark:border-zinc-800/70">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">
                 Silakan lengkapi input (Qty, Ukuran, atau Warna) untuk melihat
                 estimasi harga.
               </p>
@@ -543,7 +554,7 @@ export default function CalculatorView() {
       </div>
 
       {/* STICKY BOTTOM BAR: mobile only, selalu terlihat tanpa scroll */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900 dark:bg-black border-t border-slate-700 dark:border-slate-800 px-4 py-3 safe-area-bottom">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-zinc-100 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 px-4 py-3 safe-area-bottom">
         <button
           type="button"
           onClick={() => showResult && setDetailSheetOpen(true)}
@@ -552,17 +563,17 @@ export default function CalculatorView() {
           disabled={!showResult}
         >
           <div className="text-left">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
               Harga Jual /pcs
             </p>
             <p
-              className={`text-xl font-extrabold ${showResult ? "text-white" : "text-slate-600"}`}
+              className={`text-xl font-mono tabular-nums font-semibold ${showResult ? "text-zinc-900 dark:text-white" : "text-zinc-400 dark:text-zinc-600"}`}
             >
               {showResult ? formatResult(finalPrice) : "Rp -"}
             </p>
           </div>
           {showResult && (
-            <span className="flex items-center gap-1 text-xs font-bold text-blue-400">
+            <span className="flex items-center gap-1 text-xs font-semibold text-[#2589ff]">
               Rincian <ChevronUp className="w-4 h-4" />
             </span>
           )}
@@ -573,32 +584,34 @@ export default function CalculatorView() {
       {detailSheetOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
           <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-zinc-950/40"
             onClick={() => setDetailSheetOpen(false)}
           />
-          <div className="relative bg-slate-900 dark:bg-black rounded-t-2xl border-t border-slate-700 px-5 pt-4 pb-8 max-h-[75vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
+          <div className="relative bg-white dark:bg-zinc-950 rounded-t-xl border-t border-zinc-200 dark:border-zinc-800 px-5 pt-4 pb-8 max-h-[75vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-bold text-white">Rincian Harga</p>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-white">
+                Rincian Harga
+              </p>
               <button
                 onClick={() => setDetailSheetOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800"
+                className="p-1.5 rounded-md text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors duration-150"
                 style={{ WebkitTapHighlightColor: "transparent" }}
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="mb-4">
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400 mb-1">
                 Rekomendasi Harga Jual
               </p>
-              <p className="text-3xl font-extrabold text-white">
+              <p className="text-3xl font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
                 {formatResult(finalPrice)}
-                <span className="text-base font-normal text-slate-400 ml-1">
+                <span className="text-base font-normal text-zinc-500 dark:text-zinc-400 ml-1">
                   /pcs
                 </span>
               </p>
             </div>
-            <div className="space-y-3 border-t border-slate-700 pt-4">
+            <div className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-4">
               {resultDetails}
             </div>
           </div>

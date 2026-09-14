@@ -28,6 +28,16 @@ interface OrderDetailProps {
   onDelete: (id: string) => void;
   onConfirm: (title: string, msg: string, action: () => void) => void;
   onUpdatePayment: (orderId: string, data: PaymentData) => Promise<void>; // ── TAMBAHAN ──
+  writeLog: (params: {
+    order: Order;
+    category: "STATUS" | "FILE" | "KENDALA" | "QC" | "REVISI" | "SISTEM";
+    event: string;
+    ket?: string;
+    newVal?: string;
+    isSystem?: boolean;
+    meta?: any;
+  }) => Promise<void>; // 🟢 TAMBAHAN — diteruskan ke useOrderDetail supaya
+  // log KENDALA/QC/REVISI benar-benar tercatat (lihat useOrderDetail.ts)
 }
 
 export default function OrderDetail({
@@ -40,6 +50,7 @@ export default function OrderDetail({
   onDelete,
   onConfirm,
   onUpdatePayment, // ── TAMBAHAN ──
+  writeLog, // 🟢 TAMBAHAN
 }: OrderDetailProps) {
   const labelRef = useRef<HTMLDivElement>(null);
   const [isPrintingLabel, setIsPrintingLabel] = useState(false);
@@ -117,7 +128,13 @@ export default function OrderDetail({
     handleDeleteKendala,
     handleFileDelete,
     handleDeleteBuktiPembayaran, // ── TAMBAHAN ──
-  } = useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm });
+  } = useOrderDetail({
+    order,
+    currentUser,
+    onUpdateOrder,
+    onConfirm,
+    writeLog,
+  });
 
   // ─── Print Label ──────────────────────────────────────────────────────────
   const handlePrintLabel = async () => {

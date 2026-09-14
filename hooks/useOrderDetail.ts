@@ -3,14 +3,28 @@
 import { useState, useCallback } from 'react';
 import { Order, UserData, KendalaNote } from '@/types';
 
+// Sama persis dengan signature writeLog di useOrders.ts — didefinisikan
+// ulang di sini karena writeLog tidak diekspor sebagai type tersendiri.
+type WriteLogFn = (params: {
+  order: Order;
+  category: 'STATUS' | 'FILE' | 'KENDALA' | 'QC' | 'REVISI' | 'SISTEM';
+  event: string;
+  ket?: string;
+  newVal?: string;
+  isSystem?: boolean;
+  meta?: any;
+}) => Promise<void>;
+
 interface UseOrderDetailProps {
   order: Order;
   currentUser: UserData;
   onUpdateOrder: (updatedOrder: Order) => void;
   onConfirm: (title: string, msg: string, action: () => void) => void;
+  writeLog: WriteLogFn; // 🟢 TAMBAHAN — sebelumnya tidak ada, makanya log
+                        // KENDALA/QC/REVISI tidak pernah tercatat.
 }
 
-export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm }: UseOrderDetailProps) {
+export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm, writeLog }: UseOrderDetailProps) {
   const [qcNote, setQcNote] = useState(order.finishing_qc.notes || '');
   const [kendalaNote, setKendalaNote] = useState('');
   const [showKendalaForm, setShowKendalaForm] = useState(false);
@@ -26,6 +40,7 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm }:
     const updated = JSON.parse(JSON.stringify(order));
     const steps = (isManual ? updated.steps_manual : updated.steps_dtf) as any[];
     const idx = steps.findIndex((s: any) => s.id === stepId);
+    const stepName = idx >= 0 ? steps[idx].name : stepId;
     if (idx >= 0) {
       steps[idx].isCompleted = true;
       steps[idx].uploadedBy = currentUser.name;
@@ -35,21 +50,34 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm }:
     const allDone = steps.every((s: any) => s.isCompleted);
     if (allDone && updated.status === 'On Process') updated.status = 'Finishing';
     onUpdateOrder(updated);
-  }, [order, isManual, currentUser.name, onUpdateOrder]);
+    writeLog({
+      order: updated,
+      category: 'STATUS',
+      event: 'Step Produksi Selesai',
+      ket: `Step "${stepName}" ditandai selesai`,
+    });
+  }, [order, isManual, currentUser.name, onUpdateOrder, writeLog]);
 
   const handleSaveProofingRevisi = useCallback(() => {
     if (!proofingRevisiNote.trim() || !proofingStepId) return;
     const updated = JSON.parse(JSON.stringify(order));
     const steps = (isManual ? updated.steps_manual : updated.steps_dtf) as any[];
     const idx = steps.findIndex((s: any) => s.id === proofingStepId);
+    const stepName = idx >= 0 ? steps[idx].name : proofingStepId;
     if (idx >= 0) {
       steps[idx].proofing_note = proofingRevisiNote;
       steps[idx].isCompleted = false;
     }
     onUpdateOrder(updated);
+    writeLog({
+      order: updated,
+      category: 'REVISI',
+      event: 'Revisi Proofing Diminta',
+      ket: `Step "${stepName}": ${proofingRevisiNote}`,
+    });
     setProofingRevisiNote('');
     setProofingStepId(null);
-  }, [order, isManual, proofingRevisiNote, proofingStepId, onUpdateOrder]);
+  }, [order, isManual, proofingRevisiNote, proofingStepId, onUpdateOrder, writeLog]);
 
   // ─── QC Handlers ─────────────────────────────────────────────────────────
 
@@ -63,15 +91,38 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm }:
     };
     if (!pass) updated.status = 'Revisi';
     onUpdateOrder(updated);
-  }, [order, qcNote, currentUser.name, onUpdateOrder]);
+    if (pass) {
+      writeLog({
+        order: updated,
+        category: 'QC',
+        event: 'Lolos QC',
+        ket: 'Pesanan lolos pemeriksaan kualitas',
+        newVal: updated.status,
+      });
+    } else {
+      writeLog({
+        order: updated,
+        category: 'REVISI',
+        event: 'QC Gagal — Revisi',
+        ket: qcNote,
+        newVal: 'Revisi',
+      });
+    }
+  }, [order, qcNote, currentUser.name, onUpdateOrder, writeLog]);
 
   const handleDeleteQC = useCallback(() => {
     onConfirm('Reset Status QC?', 'Status QC akan dikembalikan ke belum dicek.', () => {
       const updated = JSON.parse(JSON.stringify(order));
       updated.finishing_qc = { isPassed: false, notes: '', checkedBy: '', timestamp: '' };
       onUpdateOrder(updated);
+      writeLog({
+        order: updated,
+        category: 'QC',
+        event: 'Reset Status QC',
+        ket: 'Status QC dikembalikan ke belum dicek',
+      });
     });
-  }, [order, onConfirm, onUpdateOrder]);
+  }, [order, onConfirm, onUpdateOrder, writeLog]);
 
   const handleRevisiSelesai = useCallback(() => {
     onConfirm('Selesaikan Revisi?', 'Status akan kembali ke On Process.', () => {
@@ -79,8 +130,15 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm }:
       updated.status = 'On Process';
       updated.finishing_qc.isPassed = false;
       onUpdateOrder(updated);
+      writeLog({
+        order: updated,
+        category: 'REVISI',
+        event: 'Revisi Selesai',
+        ket: 'Revisi dikonfirmasi selesai, kembali ke On Process',
+        newVal: 'On Process',
+      });
     });
-  }, [order, onConfirm, onUpdateOrder]);
+  }, [order, onConfirm, onUpdateOrder, writeLog]);
 
   // ─── Kendala Handlers ─────────────────────────────────────────────────────
 
@@ -97,13 +155,21 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm }:
     });
     updated.status = 'Ada Kendala';
     onUpdateOrder(updated);
+    writeLog({
+      order: updated,
+      category: 'KENDALA',
+      event: 'Lapor Kendala',
+      ket: kendalaNote,
+      newVal: 'Ada Kendala',
+    });
     setKendalaNote('');
     setShowKendalaForm(false);
-  }, [order, kendalaNote, currentUser.name, onUpdateOrder]);
+  }, [order, kendalaNote, currentUser.name, onUpdateOrder, writeLog]);
 
   const handleResolveKendala = useCallback((kendalaId: string) => {
     const updated = JSON.parse(JSON.stringify(order));
     const idx = updated.kendala.findIndex((k: KendalaNote) => k.id === kendalaId);
+    const kendalaText = idx >= 0 ? updated.kendala[idx].notes : '';
     if (idx >= 0) {
       updated.kendala[idx].isResolved = true;
       updated.kendala[idx].resolvedBy = currentUser.name;
@@ -116,11 +182,19 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm }:
       updated.status = allStepsDone ? 'Finishing' : 'On Process';
     }
     onUpdateOrder(updated);
-  }, [order, isManual, currentUser.name, onUpdateOrder]);
+    writeLog({
+      order: updated,
+      category: 'KENDALA',
+      event: 'Kendala Diselesaikan',
+      ket: kendalaText,
+      newVal: updated.status,
+    });
+  }, [order, isManual, currentUser.name, onUpdateOrder, writeLog]);
 
   const handleDeleteKendala = useCallback((kendalaId: string) => {
     onConfirm('Hapus Laporan?', 'Laporan kendala ini akan dihapus permanen.', () => {
       const updated = JSON.parse(JSON.stringify(order));
+      const target = updated.kendala.find((k: KendalaNote) => k.id === kendalaId);
       updated.kendala = updated.kendala.filter((k: KendalaNote) => k.id !== kendalaId);
       const allResolved = updated.kendala.length === 0 || updated.kendala.every((k: any) => k.isResolved);
       if (allResolved && updated.status === 'Ada Kendala') {
@@ -129,18 +203,26 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm }:
         updated.status = allStepsDone ? 'Finishing' : 'On Process';
       }
       onUpdateOrder(updated);
+      writeLog({
+        order: updated,
+        category: 'KENDALA',
+        event: 'Laporan Kendala Dihapus',
+        ket: target?.notes || '-',
+        newVal: updated.status,
+      });
     });
-  }, [order, isManual, onConfirm, onUpdateOrder]);
+  }, [order, isManual, onConfirm, onUpdateOrder, writeLog]);
 
   // ─── File Delete Handler ──────────────────────────────────────────────────
 
   const handleFileDelete = useCallback((field: string, isStep = false, stepId?: string) => {
     onConfirm('Hapus File/Bukti?', 'File tidak bisa dikembalikan.', () => {
       const updated = JSON.parse(JSON.stringify(order));
+      let label = field;
       if (isStep && stepId) {
         const steps = isManual ? updated.steps_manual : updated.steps_dtf;
         const idx = steps.findIndex((s: any) => s.id === stepId);
-        if (idx >= 0) { steps[idx].isCompleted = false; steps[idx].fileUrl = null; }
+        if (idx >= 0) { label = steps[idx].name; steps[idx].isCompleted = false; steps[idx].fileUrl = null; }
       } else if (field === 'approval') {
         updated.link_approval = null;
       } else if (field === 'packing') {
@@ -152,8 +234,14 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm }:
         updated.shipping.bukti_terima = null;
       }
       onUpdateOrder(updated);
+      writeLog({
+        order: updated,
+        category: 'FILE',
+        event: 'File Dihapus',
+        ket: `File "${label}" dihapus`,
+      });
     });
-  }, [order, isManual, onConfirm, onUpdateOrder]);
+  }, [order, isManual, onConfirm, onUpdateOrder, writeLog]);
 
   // ── TAMBAHAN ── Hapus SATU bukti pembayaran dari array (bukan seluruh
   // field seperti handleFileDelete di atas, makanya dipisah jadi handler
@@ -165,8 +253,14 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm }:
         (b: any) => b.id !== attachmentId
       );
       onUpdateOrder(updated);
+      writeLog({
+        order: updated,
+        category: 'FILE',
+        event: 'Bukti Pembayaran Dihapus',
+        ket: 'Salah satu lampiran bukti pembayaran dihapus',
+      });
     });
-  }, [order, onConfirm, onUpdateOrder]);
+  }, [order, onConfirm, onUpdateOrder, writeLog]);
 
   return {
     // State

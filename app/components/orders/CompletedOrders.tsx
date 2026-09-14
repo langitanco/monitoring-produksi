@@ -51,6 +51,21 @@ const MONTH_NAMES = [
   "Desember",
 ];
 
+// ─── Tooltip kustom chart — sesuai resep tema (jangan pakai contentStyle bawaan) ─
+function ChartTooltip({ active, payload, label }: any) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2.5">
+      <p className="text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-0.5">
+        {label}
+      </p>
+      <p className="font-mono tabular-nums text-xs font-semibold text-zinc-900 dark:text-white">
+        {payload[0].value} selesai
+      </p>
+    </div>
+  );
+}
+
 export default function CompletedOrders({
   orders,
   onSelectOrder,
@@ -174,15 +189,14 @@ export default function CompletedOrders({
   };
 
   return (
-    <div className="space-y-6 pb-10 transition-colors duration-300">
+    <div className="space-y-6 pb-10 transition-colors duration-150">
       {/* HEADER & SEARCH */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="hidden md:block">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <Archive className="w-6 h-6 text-green-600 dark:text-green-500" />{" "}
+          <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Arsip Produksi Selesai
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm">
             Rekapitulasi pesanan yang telah rampung
           </p>
         </div>
@@ -192,12 +206,12 @@ export default function CompletedOrders({
           {/* DROPDOWN FILTER BULAN */}
           <div className="relative h-full w-full">
             <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-              <Calendar className="h-4 w-4 text-slate-400" />
+              <Calendar className="h-4 w-4 text-zinc-400" />
             </div>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="h-full w-full pl-9 pr-8 border border-slate-200 dark:border-slate-700 rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-slate-800 dark:text-slate-200 appearance-none cursor-pointer"
+              className="h-full w-full pl-9 pr-8 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#124540] bg-white dark:bg-zinc-950 dark:text-zinc-200 appearance-none cursor-pointer transition-colors duration-150"
             >
               <option value="all">Semua</option>
               {MONTH_NAMES.map((month, index) => (
@@ -207,19 +221,19 @@ export default function CompletedOrders({
               ))}
             </select>
             <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-              <ChevronDown className="h-3 w-3 text-slate-400" />
+              <ChevronDown className="h-3 w-3 text-zinc-400" />
             </div>
           </div>
 
           {/* SEARCH INPUT */}
           <div className="relative h-full w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input
               type="text"
               placeholder="Cari..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-full w-full pl-9 pr-4 border border-slate-200 dark:border-slate-700 rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500"
+              className="h-full w-full pl-9 pr-4 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#124540] bg-white dark:bg-zinc-950 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 transition-colors duration-150"
             />
           </div>
         </div>
@@ -228,45 +242,38 @@ export default function CompletedOrders({
       {/* STATS & GRAFIK SECTION */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         {/* STATS CARDS */}
-        <div className="bg-white dark:bg-slate-900 p-3 md:p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between relative overflow-hidden">
-          <div className="relative z-10">
-            <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+        <div className="bg-white dark:bg-zinc-950 p-3 md:p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row items-start md:items-center justify-between">
+          <div>
+            <p className="text-[10px] md:text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
               Total Order
             </p>
-            <h3 className="text-xl md:text-3xl font-extrabold text-slate-800 dark:text-white mt-1">
+            <h3 className="text-xl md:text-3xl font-mono tabular-nums font-semibold text-zinc-900 dark:text-white mt-1">
               {stats.totalOrder}
             </h3>
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] md:text-[10px] font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 mt-2">
-              <CheckCircle2 className="w-3 h-3" />{" "}
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] md:text-[10px] font-semibold border border-zinc-300/70 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300 mt-2">
               {selectedMonth !== "all"
                 ? MONTH_NAMES[parseInt(selectedMonth)]
                 : "All Time"}
             </span>
           </div>
-          <div className="absolute -right-2 -bottom-2 md:static md:p-3 md:bg-green-50 dark:md:bg-green-900/20 md:rounded-full md:text-green-600 dark:md:text-green-500 opacity-20 md:opacity-100 transform scale-150 md:scale-100">
-            <CheckCircle2 className="w-10 h-10 md:w-6 md:h-6" />
-          </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-3 md:p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between relative overflow-hidden">
-          <div className="relative z-10">
-            <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+        <div className="bg-white dark:bg-zinc-950 p-3 md:p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row items-start md:items-center justify-between">
+          <div>
+            <p className="text-[10px] md:text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
               Total Pakaian
             </p>
-            <h3 className="text-xl md:text-3xl font-extrabold text-slate-800 dark:text-white mt-1">
+            <h3 className="text-xl md:text-3xl font-mono tabular-nums font-semibold text-zinc-900 dark:text-white mt-1">
               {stats.totalPcs.toLocaleString("id-ID")}
             </h3>
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] md:text-[10px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 mt-2">
-              <Package className="w-3 h-3" /> Pcs
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] md:text-[10px] font-semibold border border-zinc-300/70 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300 mt-2">
+              Pcs
             </span>
-          </div>
-          <div className="absolute -right-2 -bottom-2 md:static md:p-3 md:bg-blue-50 dark:md:bg-blue-900/20 md:rounded-full md:text-blue-600 dark:md:text-blue-500 opacity-20 md:opacity-100 transform scale-150 md:scale-100">
-            <Package className="w-10 h-10 md:w-6 md:h-6" />
           </div>
         </div>
 
-        <div className="col-span-2 md:col-span-1 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mb-2">
+        <div className="col-span-2 md:col-span-1 bg-white dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
             Tren{" "}
             {selectedMonth !== "all"
               ? MONTH_NAMES[parseInt(selectedMonth)]
@@ -277,26 +284,18 @@ export default function CompletedOrders({
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorSelesai" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#059669" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#059669" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <Tooltip
-                  contentStyle={{
-                    borderRadius: "12px",
-                    border: "none",
-                    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-                    fontSize: "10px",
-                    backgroundColor: "rgb(30, 41, 59)",
-                    color: "#fff",
-                  }}
-                  itemStyle={{ color: "#10b981", fontWeight: "bold" }}
-                  cursor={{ stroke: "#10b981", strokeWidth: 1 }}
+                  content={<ChartTooltip />}
+                  cursor={{ stroke: "#059669", strokeWidth: 1 }}
                 />
                 <Area
                   type="monotone"
                   dataKey="selesai"
-                  stroke="#10b981"
+                  stroke="#059669"
                   fillOpacity={1}
                   fill="url(#colorSelesai)"
                   strokeWidth={2}
@@ -308,12 +307,12 @@ export default function CompletedOrders({
       </div>
 
       {/* TABEL DATA */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden flex flex-col">
         <div className="overflow-x-auto overflow-y-auto max-h-[60vh] min-h-[300px] custom-scrollbar relative">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             {/* STICKY HEADER */}
-            <thead className="sticky top-0 z-10 shadow-sm">
-              <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-[10px] md:text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-[10px] md:text-xs text-zinc-500 dark:text-zinc-400 uppercase font-semibold tracking-[0.12em]">
                 <th className="px-4 py-3 md:px-6 md:py-4 bg-inherit">
                   No. Order
                 </th>
@@ -333,50 +332,50 @@ export default function CompletedOrders({
                   Status
                 </th>
                 {/* 🟢 KOLOM AKSI BARU */}
-                <th className="px-4 py-3 md:px-6 md:py-4 text-center sticky right-0 bg-slate-50 dark:bg-slate-800 shadow-l">
+                <th className="px-4 py-3 md:px-6 md:py-4 text-center sticky right-0 bg-zinc-50 dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800">
                   Aksi
                 </th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs md:text-sm">
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900 text-xs md:text-sm">
               {currentItems.length > 0 ? (
                 currentItems.map((order) => (
                   <tr
                     key={order.id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors group"
+                    className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/50 transition-colors duration-150 group"
                   >
-                    <td className="px-4 py-3 md:px-6 md:py-4 font-mono text-slate-500 dark:text-slate-400">
+                    <td className="px-4 py-3 md:px-6 md:py-4 font-mono text-zinc-500 dark:text-zinc-400">
                       #{order.kode_produksi}
                     </td>
-                    <td className="px-4 py-3 md:px-6 md:py-4 font-semibold text-slate-700 dark:text-slate-200">
+                    <td className="px-4 py-3 md:px-6 md:py-4 font-semibold text-zinc-700 dark:text-zinc-200">
                       {order.nama_pemesan}
                     </td>
                     <td className="px-4 py-3 md:px-6 md:py-4">
-                      <span className="inline-block px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-[9px] md:text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 uppercase">
+                      <span className="inline-block px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 text-[9px] md:text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900 uppercase">
                         {order.jenis_produksi}
                       </span>
                     </td>
-                    <td className="px-4 py-3 md:px-6 md:py-4 text-center font-bold text-slate-700 dark:text-slate-200">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center font-mono tabular-nums font-semibold text-zinc-700 dark:text-zinc-200">
                       {order.jumlah}
                     </td>
-                    <td className="px-4 py-3 md:px-6 md:py-4 text-slate-500 dark:text-slate-400">
+                    <td className="px-4 py-3 md:px-6 md:py-4 font-mono text-zinc-500 dark:text-zinc-400">
                       {formatDate(order.deadline)}
                     </td>
                     <td className="px-4 py-3 md:px-6 md:py-4 text-center">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 md:px-3 rounded-full text-[10px] md:text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-emerald-600 text-white">
                         Selesai <CheckCircle2 className="w-3 h-3" />
                       </span>
                     </td>
                     {/* 🟢 TOMBOL AKSI */}
-                    <td className="px-4 py-3 md:px-6 md:py-4 text-center sticky right-0 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center sticky right-0 bg-white dark:bg-zinc-950 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-900/50 border-l border-zinc-100 dark:border-zinc-900 transition-colors duration-150">
                       <button
                         onClick={() => onSelectOrder(order.id)}
-                        className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition border border-blue-100 dark:border-blue-900/50 flex items-center justify-center gap-1.5 mx-auto"
+                        className="p-2 rounded-md border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-[#49BFB4] hover:border-[#124540] hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150 flex items-center justify-center gap-1.5 mx-auto"
                         title="Lihat Detail Pesanan"
                       >
                         <Eye className="w-4 h-4" />
-                        <span className="hidden md:inline text-[10px] font-bold">
+                        <span className="hidden md:inline text-[10px] font-semibold">
                           Detail
                         </span>
                       </button>
@@ -388,9 +387,9 @@ export default function CompletedOrders({
                 <tr>
                   <td colSpan={7} className="p-0 border-none">
                     <div className="sticky left-0 w-[calc(100vw-3.5rem)] md:w-full min-h-[300px] flex flex-col items-center justify-center gap-3 px-4">
-                      <Package className="w-12 h-12 opacity-20 text-slate-600 dark:text-slate-400" />
+                      <Package className="w-12 h-12 opacity-20 text-zinc-500 dark:text-zinc-400" />
                       <div className="text-center">
-                        <p className="text-slate-600 dark:text-slate-500 font-medium">
+                        <p className="text-zinc-500 dark:text-zinc-400 font-medium">
                           {selectedMonth !== "all"
                             ? `Tidak ada pesanan selesai di bulan ${MONTH_NAMES[parseInt(selectedMonth)]}.`
                             : "Belum ada data pesanan selesai yang ditemukan."}
@@ -405,25 +404,27 @@ export default function CompletedOrders({
         </div>
 
         {/* FOOTER TABEL */}
-        <div className="bg-slate-50 dark:bg-slate-800/50 px-4 py-3 md:px-6 md:py-4 border-t border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-3 z-20 relative">
+        <div className="bg-zinc-50 dark:bg-zinc-900 px-4 py-3 md:px-6 md:py-4 border-t border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-3 z-20 relative">
           <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
             <div className="flex items-center gap-2 relative" ref={dropdownRef}>
-              <span className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold">
+              <span className="text-[10px] md:text-xs font-semibold text-zinc-500 dark:text-zinc-400">
                 Tampil:
               </span>
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-[10px] md:text-xs rounded-lg px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition min-w-[90px] justify-between h-8"
+                  className="flex items-center gap-1 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 text-[10px] md:text-xs rounded-lg px-3 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150 min-w-[90px] justify-between h-8"
                 >
-                  <span>{itemsPerPage} Baris</span>
+                  <span className="font-mono tabular-nums">
+                    {itemsPerPage} Baris
+                  </span>
                   <ChevronDown
-                    className={`w-3 h-3 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                    className={`w-3 h-3 transition-colors duration-150 ${isDropdownOpen ? "rotate-180" : ""}`}
                   />
                 </button>
 
                 {isDropdownOpen && (
-                  <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                  <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg z-50 overflow-hidden">
                     {[10, 20, 50].map((num) => (
                       <button
                         key={num}
@@ -432,7 +433,7 @@ export default function CompletedOrders({
                           setCurrentPage(1);
                           setIsDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 text-[10px] md:text-xs hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-between ${itemsPerPage === num ? "font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30" : "text-slate-600 dark:text-slate-400"}`}
+                        className={`w-full text-left px-3 py-2 text-[10px] md:text-xs font-mono tabular-nums transition-colors duration-150 flex items-center justify-between ${itemsPerPage === num ? "font-semibold text-[#2589ff] bg-[#2589ff]/10" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900"}`}
                       >
                         {num}
                         {itemsPerPage === num && <Check className="w-3 h-3" />}
@@ -443,13 +444,13 @@ export default function CompletedOrders({
               </div>
             </div>
 
-            <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-[10px] md:text-xs text-zinc-500 dark:text-zinc-400">
               Hal{" "}
-              <span className="font-bold text-slate-700 dark:text-slate-200">
+              <span className="font-mono tabular-nums font-semibold text-zinc-700 dark:text-zinc-200">
                 {currentPage}
               </span>{" "}
               dari{" "}
-              <span className="font-bold text-slate-700 dark:text-slate-200">
+              <span className="font-mono tabular-nums font-semibold text-zinc-700 dark:text-zinc-200">
                 {totalPages}
               </span>
             </p>
@@ -459,11 +460,11 @@ export default function CompletedOrders({
             <button
               onClick={handlePrevPage}
               disabled={currentPage === 1}
-              className="p-1.5 md:p-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+              className="p-1.5 md:p-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors duration-150"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <div className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 px-2 whitespace-nowrap">
+            <div className="text-[10px] md:text-xs font-mono tabular-nums font-semibold text-zinc-500 dark:text-zinc-400 px-2 whitespace-nowrap">
               {indexOfFirstItem + 1} -{" "}
               {Math.min(indexOfLastItem, finishedOrders.length)} dari{" "}
               {finishedOrders.length}
@@ -471,7 +472,7 @@ export default function CompletedOrders({
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages || totalPages === 0}
-              className="p-1.5 md:p-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+              className="p-1.5 md:p-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors duration-150"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

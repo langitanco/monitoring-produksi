@@ -196,10 +196,10 @@ export default function ConfigPriceView() {
   }) => (
     <div
       onClick={onToggle}
-      className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${isActive ? "bg-green-500" : "bg-gray-300 dark:bg-slate-700"}`}
+      className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-150 ${isActive ? "bg-emerald-600" : "bg-zinc-300 dark:bg-zinc-700"}`}
     >
       <div
-        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${isActive ? "translate-x-6" : "translate-x-0"}`}
+        className={`bg-white w-4 h-4 rounded-full shadow-sm transform transition-transform duration-150 ${isActive ? "translate-x-6" : "translate-x-0"}`}
       ></div>
     </div>
   );
@@ -207,31 +207,31 @@ export default function ConfigPriceView() {
   if (loading && configs.length === 0)
     return (
       <div className="flex flex-col items-center justify-center h-[60vh]">
-        <div className="w-12 h-12 border-4 border-blue-200 dark:border-slate-800 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+        <div className="w-12 h-12 border-4 border-zinc-200 dark:border-zinc-800 border-t-[#124540] rounded-full animate-spin mb-4"></div>
       </div>
     );
 
   const categories = ["GENERAL", "DTF", "MANUAL", "GROSIR"];
 
   return (
-    <div className="space-y-8 pb-20 transition-colors duration-300">
+    <div className="space-y-8 pb-20 transition-colors duration-150">
       {/* ✅ KOMPONEN CUSTOM ALERT */}
       <CustomAlert alertState={alertState} closeAlert={closeAlert} />
 
       {/* HEADER */}
-      <div className="sticky -top-3 z-20 pb-4 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="sticky -top-3 z-20 pb-4 pt-1 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             Pengaturan Harga
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             Kelola variabel HPP dasar & harga add-ons.
           </p>
         </div>
         <button
           onClick={handleSaveConfigs}
           disabled={saving}
-          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-lg  active:scale-95 disabled:opacity-70"
+          className="flex items-center justify-center gap-2 bg-[#124540] hover:bg-[#0d332f] text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-150 disabled:opacity-60"
         >
           <Save className="w-4 h-4" />{" "}
           {saving ? "Menyimpan..." : "Simpan Perubahan"}
@@ -246,10 +246,10 @@ export default function ConfigPriceView() {
           return (
             <div
               key={cat}
-              className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col h-full"
+              className="bg-white dark:bg-zinc-950 p-5 md:p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col h-full"
             >
-              <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">
-                <h3 className="font-bold text-slate-800 dark:text-white">
+              <div className="flex items-center justify-between mb-4 border-b border-zinc-200 dark:border-zinc-800 pb-2">
+                <h3 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
                   {cat}
                 </h3>
               </div>
@@ -260,16 +260,16 @@ export default function ConfigPriceView() {
                   return (
                     <div key={item.id}>
                       <div className="flex justify-between items-center mb-1.5">
-                        <label className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                        <label className="text-sm text-zinc-600 dark:text-zinc-400 font-medium">
                           {item.display_name}
                         </label>
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full border border-zinc-200 dark:border-zinc-700">
                           {item.unit}
                         </span>
                       </div>
                       <div className="relative">
                         {isCurrency && (
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-medium">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400 text-sm font-medium">
                             Rp
                           </span>
                         )}
@@ -280,10 +280,10 @@ export default function ConfigPriceView() {
                             .toString()
                             .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                           onChange={(e) => handleConfigChange(e, item.id)}
-                          className={`block w-full py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white font-bold text-lg outline-none transition ${isCurrency ? "pl-9 pr-3" : "pl-4 pr-8"}`}
+                          className={`block w-full py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#124540] focus:border-[#124540] text-zinc-900 dark:text-zinc-100 font-mono tabular-nums font-semibold text-lg transition-colors duration-150 ${isCurrency ? "pl-9 pr-3" : "pl-4 pr-8"}`}
                         />
                         {isPercentage && (
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-bold">
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400 text-sm font-semibold">
                             %
                           </span>
                         )}
@@ -298,9 +298,9 @@ export default function ConfigPriceView() {
       </div>
 
       {/* SECTION 2: ADD-ONS */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between md:items-center gap-4">
-          <h3 className="font-bold text-slate-800 dark:text-white text-lg">
+      <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+        <div className="p-5 md:p-6 border-b border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <h3 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             Daftar Bonus & Add-ons
           </h3>
           <div className="flex flex-col md:flex-row gap-2 md:items-center w-full md:w-auto">
@@ -309,18 +309,18 @@ export default function ConfigPriceView() {
               placeholder="Nama Item"
               value={newAddonName}
               onChange={(e) => setNewAddonName(e.target.value)}
-              className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white text-sm w-full md:w-48"
+              className="px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#124540] focus:border-[#124540] text-zinc-900 dark:text-zinc-100 text-sm w-full md:w-48 transition-colors duration-150"
             />
             <input
               type="number"
               placeholder="Harga (Rp)"
               value={newAddonCost}
               onChange={(e) => setNewAddonCost(e.target.value)}
-              className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white text-sm w-full md:w-32"
+              className="px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#124540] focus:border-[#124540] text-zinc-900 dark:text-zinc-100 text-sm w-full md:w-32 font-mono tabular-nums transition-colors duration-150"
             />
             <button
               onClick={handleAddAddon}
-              className="bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2"
+              className="bg-[#124540] hover:bg-[#0d332f] text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-150 flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4" /> Tambah
             </button>
@@ -329,22 +329,28 @@ export default function ConfigPriceView() {
 
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+            <thead className="bg-zinc-50 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
               <tr>
-                <th className="py-4 px-6 font-semibold w-32">Status</th>
-                <th className="py-4 px-6 font-semibold">Nama Item</th>
-                <th className="py-4 px-6 font-semibold">HPP (Rp)</th>
-                <th className="py-4 px-6 text-center font-semibold w-32">
+                <th className="py-3 px-6 text-[11px] font-semibold uppercase tracking-wide w-32">
+                  Status
+                </th>
+                <th className="py-3 px-6 text-[11px] font-semibold uppercase tracking-wide">
+                  Nama Item
+                </th>
+                <th className="py-3 px-6 text-[11px] font-semibold uppercase tracking-wide">
+                  HPP (Rp)
+                </th>
+                <th className="py-3 px-6 text-center text-[11px] font-semibold uppercase tracking-wide w-32">
                   Aksi
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {addons.length === 0 ? (
                 <tr>
                   <td
                     colSpan={4}
-                    className="py-8 text-center text-slate-400 dark:text-slate-600"
+                    className="py-8 text-center text-zinc-400 dark:text-zinc-600"
                   >
                     Belum ada data add-ons.
                   </td>
@@ -353,7 +359,7 @@ export default function ConfigPriceView() {
                 addons.map((addon) => (
                   <tr
                     key={addon.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition group"
+                    className="hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150 group"
                   >
                     <td className="py-3 px-6">
                       {editingId === addon.id ? (
@@ -367,10 +373,15 @@ export default function ConfigPriceView() {
                           }
                         />
                       ) : (
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold ${addon.is_active ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-500"}`}
-                        >
-                          {addon.is_active ? "AKTIF" : "OFF"}
+                        <span className="inline-flex items-center gap-1.5">
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${addon.is_active ? "bg-emerald-600" : "bg-zinc-400 dark:bg-zinc-600"}`}
+                          />
+                          <span
+                            className={`text-[10px] font-semibold uppercase tracking-wide ${addon.is_active ? "text-emerald-600" : "text-zinc-400 dark:text-zinc-500"}`}
+                          >
+                            {addon.is_active ? "Aktif" : "Off"}
+                          </span>
                         </span>
                       )}
                     </td>
@@ -379,7 +390,7 @@ export default function ConfigPriceView() {
                         <td className="py-3 px-6">
                           <input
                             type="text"
-                            className="w-full bg-white dark:bg-slate-800 border border-blue-300 dark:border-blue-900 rounded px-3 py-1.5 text-sm dark:text-white outline-none"
+                            className="w-full bg-white dark:bg-zinc-900 border border-[#2589ff]/50 dark:border-[#2589ff]/40 rounded-md px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition-colors duration-150"
                             value={tempEditData.name}
                             onChange={(e) =>
                               setTempEditData({
@@ -392,7 +403,7 @@ export default function ConfigPriceView() {
                         <td className="py-3 px-6">
                           <input
                             type="number"
-                            className="w-full bg-white dark:bg-slate-800 border border-blue-300 dark:border-blue-900 rounded px-3 py-1.5 text-sm dark:text-white outline-none"
+                            className="w-full bg-white dark:bg-zinc-900 border border-[#2589ff]/50 dark:border-[#2589ff]/40 rounded-md px-3 py-1.5 text-sm font-mono tabular-nums text-zinc-900 dark:text-zinc-100 outline-none transition-colors duration-150"
                             value={tempEditData.cost}
                             onChange={(e) =>
                               setTempEditData({
@@ -402,16 +413,16 @@ export default function ConfigPriceView() {
                             }
                           />
                         </td>
-                        <td className="py-3 px-6 flex justify-center gap-2">
+                        <td className="py-3 px-6 flex justify-center gap-1">
                           <button
                             onClick={() => handleUpdateAddon(addon.id)}
-                            className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg"
+                            className="p-1.5 text-emerald-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150"
                           >
                             <Check className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => setEditingId(null)}
-                            className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg"
+                            className="p-1.5 text-red-600 dark:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -419,22 +430,22 @@ export default function ConfigPriceView() {
                       </>
                     ) : (
                       <>
-                        <td className="py-3 px-6 font-bold text-slate-800 dark:text-slate-200">
+                        <td className="py-3 px-6 font-semibold text-zinc-800 dark:text-zinc-200">
                           {addon.name}
                         </td>
-                        <td className="py-3 px-6 font-mono text-slate-700 dark:text-slate-400">
+                        <td className="py-3 px-6 font-mono tabular-nums text-zinc-700 dark:text-zinc-400">
                           Rp {Number(addon.cost).toLocaleString("id-ID")}
                         </td>
-                        <td className="py-3 px-6 flex justify-center gap-2">
+                        <td className="py-3 px-6 flex justify-center gap-1">
                           <button
                             onClick={() => startEditing(addon)}
-                            className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition"
+                            className="p-1.5 text-zinc-400 hover:text-[#2589ff] hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteAddon(addon.id)}
-                            className="p-2 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
+                            className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -449,42 +460,58 @@ export default function ConfigPriceView() {
         </div>
 
         {/* MOBILE VIEW */}
-        <div className="md:hidden flex flex-col divide-y divide-slate-100 dark:divide-slate-800">
-          {addons.map((addon) => (
-            <div key={addon.id} className="p-4 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2.5 rounded-xl ${addon.is_active ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600"}`}
-                  >
-                    <Package className="w-5 h-5" />
+        <div className="md:hidden flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+          {addons.length === 0 ? (
+            <div className="py-8 text-center text-sm text-zinc-400 dark:text-zinc-600">
+              Belum ada data add-ons.
+            </div>
+          ) : (
+            addons.map((addon) => (
+              <div key={addon.id} className="p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+                      <Package className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm text-zinc-800 dark:text-zinc-200">
+                        {addon.name}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-xs font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
+                          Rp {Number(addon.cost).toLocaleString("id-ID")}
+                        </p>
+                        <span className="inline-flex items-center gap-1">
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${addon.is_active ? "bg-emerald-600" : "bg-zinc-400 dark:bg-zinc-600"}`}
+                          />
+                          <span
+                            className={`text-[10px] font-semibold uppercase tracking-wide ${addon.is_active ? "text-emerald-600" : "text-zinc-400 dark:text-zinc-500"}`}
+                          >
+                            {addon.is_active ? "Aktif" : "Off"}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">
-                      {addon.name}
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                      Rp {Number(addon.cost).toLocaleString("id-ID")}
-                    </p>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => startEditing(addon)}
+                      className="p-1.5 text-zinc-400 hover:text-[#2589ff] hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteAddon(addon.id)}
+                      className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => startEditing(addon)}
-                    className="p-2 text-blue-600 dark:text-blue-400"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteAddon(addon.id)}
-                    className="p-2 text-red-500 dark:text-red-400"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

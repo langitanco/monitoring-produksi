@@ -53,10 +53,10 @@ function Field({
 }) {
   return (
     <div className="flex flex-col h-full">
-      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1.5">
+      <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 block mb-1.5">
         {label}{" "}
         {hint && (
-          <span className="font-normal text-slate-400 dark:text-slate-500">
+          <span className="font-normal text-zinc-400 dark:text-zinc-500">
             {hint}
           </span>
         )}
@@ -67,7 +67,7 @@ function Field({
 }
 
 const inputCls =
-  "w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 dark:focus:border-blue-500 transition-all";
+  "w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-md px-3 py-2.5 text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 hover:border-[#49bfb4]/50 focus:outline-none focus:ring-2 focus:ring-[#49bfb4] focus:border-[#49bfb4] transition-colors duration-150";
 
 // Wajibkan komponen menerima properti poId
 interface POProductListProps {
@@ -249,29 +249,29 @@ export default function POProductList({ poId }: POProductListProps) {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-40">
-        <div className="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-4 border-[#49bfb4] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (showForm) {
     return (
-      <div className="animate-in fade-in zoom-in-95 duration-200 origin-top bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 md:p-6 lg:p-8 max-w-4xl mx-auto shadow-sm">
+      <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 md:p-6 lg:p-8 max-w-4xl mx-auto">
         <div className="flex items-start gap-4 mb-8">
           <button
             onClick={() => {
               setPendingDeleteUrls([]);
               setShowForm(false);
             }}
-            className="p-2 -ml-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 -ml-2 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150"
           >
             <ArrowLeft size={20} />
           </button>
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400 dark:text-zinc-500 mb-1">
               {editTarget ? "Edit" : "Baru"}
             </p>
-            <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white">
+            <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
               {editTarget ? editTarget.name : "Tambah Produk"}
             </h2>
           </div>
@@ -306,10 +306,10 @@ export default function POProductList({ poId }: POProductListProps) {
               <button
                 type="button"
                 onClick={() => setForm({ ...form, category: "dewasa" })}
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-bold transition-all ${
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-md border text-sm font-semibold transition-colors duration-150 ${
                   form.category === "dewasa"
-                    ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    ? "border-[#49bfb4] bg-[#49bfb4]/10 text-[#49bfb4]"
+                    : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                 }`}
               >
                 Dewasa / Umum
@@ -317,10 +317,10 @@ export default function POProductList({ poId }: POProductListProps) {
               <button
                 type="button"
                 onClick={() => setForm({ ...form, category: "kids" })}
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-bold transition-all ${
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-md border text-sm font-semibold transition-colors duration-150 ${
                   form.category === "kids"
-                    ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    ? "border-[#49bfb4] bg-[#49bfb4]/10 text-[#49bfb4]"
+                    : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                 }`}
               >
                 Anak-anak
@@ -341,10 +341,10 @@ export default function POProductList({ poId }: POProductListProps) {
                   key={opt.value}
                   type="button"
                   onClick={() => setForm({ ...form, garment_type: opt.value })}
-                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-bold transition-all ${
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-md border text-sm font-semibold transition-colors duration-150 ${
                     form.garment_type === opt.value
-                      ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                      : "border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      ? "border-[#49bfb4] bg-[#49bfb4]/10 text-[#49bfb4]"
+                      : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                   }`}
                 >
                   {opt.label}
@@ -403,8 +403,8 @@ export default function POProductList({ poId }: POProductListProps) {
             />
           </Field>
 
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
-            <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+          <div className="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+            <p className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
               Biaya Tambahan Tambahan (Surcharge)
             </p>
             <label className="flex items-center gap-3 cursor-pointer select-none">
@@ -414,9 +414,9 @@ export default function POProductList({ poId }: POProductListProps) {
                 onChange={(e) =>
                   setForm({ ...form, enable_xxl_surcharge: e.target.checked })
                 }
-                className="w-4 h-4 text-blue-600"
+                className="w-4 h-4 accent-[#49bfb4]"
               />
-              <span className="text-sm text-slate-600 dark:text-slate-300">
+              <span className="text-sm text-zinc-600 dark:text-zinc-300">
                 Aktifkan biaya tambahan untuk size XXL (Kaos Dewasa)
               </span>
             </label>
@@ -430,9 +430,9 @@ export default function POProductList({ poId }: POProductListProps) {
                     enable_sleeve_surcharge: e.target.checked,
                   })
                 }
-                className="w-4 h-4 text-blue-600"
+                className="w-4 h-4 accent-[#49bfb4]"
               />
-              <span className="text-sm text-slate-600 dark:text-slate-300">
+              <span className="text-sm text-zinc-600 dark:text-zinc-300">
                 Aktifkan biaya tambahan untuk Lengan Panjang (Kaos)
               </span>
             </label>
@@ -446,9 +446,9 @@ export default function POProductList({ poId }: POProductListProps) {
                     enable_sweater_xxl_surcharge: e.target.checked,
                   })
                 }
-                className="w-4 h-4 text-blue-600"
+                className="w-4 h-4 accent-[#49bfb4]"
               />
-              <span className="text-sm text-slate-600 dark:text-slate-300">
+              <span className="text-sm text-zinc-600 dark:text-zinc-300">
                 Aktifkan biaya tambahan untuk size XXL (Sweater/Hoodie)
               </span>
             </label>
@@ -466,17 +466,17 @@ export default function POProductList({ poId }: POProductListProps) {
           </Field>
 
           <div className="pt-2">
-            <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-2">
+            <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 block mb-2">
               Foto Produk
             </label>
-            <div className="relative border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-8 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex flex-col items-center justify-center gap-2 group overflow-hidden">
-              <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <div className="relative border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl p-8 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors duration-150 flex flex-col items-center justify-center gap-2 overflow-hidden">
+              <div className="w-12 h-12 rounded-full bg-[#49bfb4]/10 text-[#49bfb4] flex items-center justify-center">
                 <UploadCloud size={24} />
               </div>
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-2">
+              <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mt-2">
                 Klik atau Drag gambar ke sini
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-500 text-center max-w-xs">
+              <p className="text-xs text-zinc-400 dark:text-zinc-500 text-center max-w-xs">
                 (Direkomendasikan max 2MB)
               </p>
               <input
@@ -495,11 +495,11 @@ export default function POProductList({ poId }: POProductListProps) {
                     <img
                       src={url}
                       alt={`Saved ${i}`}
-                      className="w-full h-full object-cover rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm"
+                      className="w-full h-full object-cover rounded-lg border border-zinc-200 dark:border-zinc-800"
                     />
                     <button
                       onClick={() => removeOldImage(i)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-transform hover:scale-110"
+                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors duration-150"
                     >
                       <X size={14} />
                     </button>
@@ -510,14 +510,14 @@ export default function POProductList({ poId }: POProductListProps) {
                     <img
                       src={url}
                       alt={`New ${i}`}
-                      className="w-full h-full object-cover rounded-lg border-2 border-blue-400 shadow-sm"
+                      className="w-full h-full object-cover rounded-lg border-2 border-[#49bfb4]"
                     />
-                    <span className="absolute bottom-1 right-1 text-[8px] font-bold bg-blue-500 text-white px-1.5 rounded-full shadow-sm">
+                    <span className="absolute bottom-1 right-1 font-mono text-[8px] font-semibold px-1.5 py-0.5 rounded-full border border-zinc-300/70 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300">
                       BARU
                     </span>
                     <button
                       onClick={() => removeNewImage(i)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-transform hover:scale-110"
+                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors duration-150"
                     >
                       <X size={14} />
                     </button>
@@ -531,32 +531,32 @@ export default function POProductList({ poId }: POProductListProps) {
             <label className="flex items-center gap-3 cursor-pointer">
               <div
                 onClick={() => setForm({ ...form, is_active: !form.is_active })}
-                className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${form.is_active ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-600"}`}
+                className={`relative w-10 h-5 rounded-full transition-colors duration-150 cursor-pointer ${form.is_active ? "bg-[#49bfb4]" : "bg-zinc-300 dark:bg-zinc-600"}`}
               >
                 <span
-                  className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_active ? "translate-x-5" : "translate-x-0.5"}`}
+                  className={`absolute top-0.5 w-4 h-4 bg-white rounded-full ${form.is_active ? "translate-x-5" : "translate-x-0.5"}`}
                 />
               </div>
-              <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">
+              <span className="text-sm text-zinc-700 dark:text-zinc-300 font-medium">
                 Produk aktif (tampil di katalog)
               </span>
             </label>
           </div>
 
-          <div className="flex flex-col-reverse md:flex-row gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col-reverse md:flex-row gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
             <button
               onClick={() => {
                 setPendingDeleteUrls([]);
                 setShowForm(false);
               }}
-              className="w-full md:w-auto px-6 py-3 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="w-full md:w-auto px-6 py-3 border border-zinc-200 dark:border-zinc-700 rounded-md font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-150"
             >
               Batal
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="w-full md:flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-sm shadow-blue-500/20 transition-all disabled:opacity-50"
+              className="w-full md:flex-1 bg-[#124540] hover:bg-[#0d332f] text-white px-6 py-3 rounded-md font-semibold transition-colors duration-150 disabled:opacity-50"
             >
               {saving ? "Menyimpan..." : "Simpan Produk"}
             </button>
@@ -567,51 +567,52 @@ export default function POProductList({ poId }: POProductListProps) {
   }
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-300">
-      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 md:p-6 shadow-sm">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 md:p-6">
         <div>
-          <h2 className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-lg md:text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
             Katalog Produk
           </h2>
-          <p className="text-xs text-slate-500 mt-1 font-medium">
-            {products.length} produk terdaftar dalam katalog
+          <p className="text-xs text-zinc-500 mt-1">
+            <span className="font-mono tabular-nums">{products.length}</span>{" "}
+            produk terdaftar dalam katalog
           </p>
         </div>
         <button
           onClick={openCreate}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-blue-500/20 transition-all active:scale-95"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#124540] hover:bg-[#0d332f] text-white px-5 py-2.5 rounded-md text-sm font-semibold transition-colors duration-150"
         >
           <Plus size={16} /> Tambah Produk
         </button>
       </div>
 
       {products.length === 0 ? (
-        <div className="bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-full shadow-sm flex items-center justify-center text-slate-400 mb-4">
+        <div className="bg-zinc-50 dark:bg-zinc-900 border border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl p-12 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 bg-white dark:bg-zinc-800 rounded-full flex items-center justify-center text-zinc-400 mb-4">
             <ImageOff size={24} />
           </div>
-          <h3 className="font-bold text-slate-700 dark:text-slate-200 mb-1">
+          <h3 className="font-semibold text-zinc-700 dark:text-zinc-200 mb-1">
             Belum ada produk
           </h3>
-          <p className="text-sm text-slate-500 mb-6 max-w-sm">
+          <p className="text-sm text-zinc-500 mb-6 max-w-sm">
             Katalog masih kosong. Tambahkan produk pertama Anda untuk mulai
             menerima pesanan.
           </p>
           <button
             onClick={openCreate}
-            className="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm font-semibold text-[#49bfb4] hover:underline"
           >
             + Tambah Produk Sekarang
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {products.map((p) => (
             <div
               key={p.id}
-              className={`flex flex-col sm:flex-row gap-4 p-4 border rounded-2xl bg-white dark:bg-slate-900 transition-colors ${!p.is_active ? "border-slate-200 dark:border-slate-800 opacity-60" : "border-slate-200 dark:border-slate-700 shadow-sm"}`}
+              className={`flex flex-col sm:flex-row gap-4 p-5 border rounded-xl bg-white dark:bg-zinc-950 transition-colors duration-150 ${!p.is_active ? "border-zinc-200 dark:border-zinc-800 opacity-60" : "border-zinc-200 dark:border-zinc-800"}`}
             >
-              <div className="w-full sm:w-28 h-48 sm:h-28 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 overflow-hidden relative">
+              <div className="w-full sm:w-28 h-48 sm:h-28 rounded-xl bg-zinc-100 dark:bg-zinc-800 shrink-0 overflow-hidden relative">
                 {p.image_urls && p.image_urls.length > 0 ? (
                   <img
                     src={p.image_urls[0]}
@@ -619,16 +620,16 @@ export default function POProductList({ poId }: POProductListProps) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+                  <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
                     <ImageOff size={20} className="mb-1 opacity-50" />
-                    <span className="text-[9px] font-bold uppercase">
+                    <span className="text-[9px] font-semibold uppercase">
                       No Image
                     </span>
                   </div>
                 )}
                 {!p.is_active && (
-                  <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px] flex items-center justify-center">
-                    <span className="bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded">
+                  <div className="absolute inset-0 bg-zinc-900/40 flex items-center justify-center">
+                    <span className="font-mono bg-zinc-900 text-white text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-md">
                       NONAKTIF
                     </span>
                   </div>
@@ -637,44 +638,44 @@ export default function POProductList({ poId }: POProductListProps) {
               <div className="flex-1 flex flex-col sm:flex-row sm:items-start justify-between min-w-0">
                 <div className="flex-1 min-w-0 pr-0 sm:pr-4">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">
+                    <span className="font-mono tabular-nums text-[11px] font-semibold px-2.5 py-1 rounded-full border border-zinc-300/70 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300">
                       {p.product_code}
                     </span>
                     {!p.is_active && (
-                      <span className="text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-lg">
+                      <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
                         Nonaktif
                       </span>
                     )}
                   </div>
                   <h3
-                    className="font-extrabold text-slate-800 dark:text-slate-100 truncate mb-1"
+                    className="font-semibold text-zinc-800 dark:text-zinc-100 truncate mb-1"
                     title={p.name}
                   >
                     {p.name}
                   </h3>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 truncate">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 truncate">
                     {p.available_sizes.join(", ")} • {p.colors.length} Warna
                   </div>
-                  <p className="text-lg font-black text-blue-600 dark:text-blue-400 mt-auto">
+                  <p className="font-mono tabular-nums text-lg font-semibold text-[#49bfb4] mt-auto">
                     {formatRupiah(p.base_price)}
                   </p>
                 </div>
-                <div className="grid grid-cols-3 sm:flex gap-2 sm:gap-1.5 shrink-0 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
+                <div className="grid grid-cols-3 sm:flex gap-2 sm:gap-1.5 shrink-0 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-zinc-100 dark:border-zinc-800">
                   <button
                     onClick={() => handleToggle(p.id, p.is_active)}
-                    className="text-xs border border-slate-200 dark:border-slate-700 px-3 py-2 sm:py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold transition-colors"
+                    className="text-xs border border-zinc-200 dark:border-zinc-700 px-3 py-2 sm:py-1.5 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold transition-colors duration-150"
                   >
                     {p.is_active ? "Nonaktifkan" : "Aktifkan"}
                   </button>
                   <button
                     onClick={() => openEdit(p)}
-                    className="text-xs border border-slate-200 dark:border-slate-700 px-3 py-2 sm:py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold transition-colors"
+                    className="text-xs border border-zinc-200 dark:border-zinc-700 px-3 py-2 sm:py-1.5 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold transition-colors duration-150"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(p.id, p.name)}
-                    className="text-xs border border-red-200 dark:border-red-900/50 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-2 sm:py-1.5 rounded-lg font-semibold transition-colors"
+                    className="text-xs border border-red-200 dark:border-red-900/50 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-2 sm:py-1.5 rounded-md font-semibold transition-colors duration-150"
                   >
                     Hapus
                   </button>

@@ -15,8 +15,9 @@ import ChartBar from "@/app/components/dashboard/ChartBar";
 import ChartPie from "@/app/components/dashboard/ChartPie";
 import ActionList from "@/app/components/dashboard/ActionList";
 
-// Warna untuk Pie Chart (dipakai juga oleh ChartPie secara internal)
-const COLORS = ["#3b82f6", "#f59e0b", "#10b981", "#ef4444"];
+// Warna untuk Pie Chart (dipakai juga oleh ChartPie secara internal) —
+// harus konsisten dengan palette chart pada THEME-GUIDE
+const COLORS = ["#2589ff", "#f4435e", "#e4e596"];
 
 interface DashboardProps {
   role: string;

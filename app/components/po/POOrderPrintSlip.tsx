@@ -13,6 +13,10 @@ import { formatRupiah } from "@/lib/po/pricing";
  *   Kalau kamu punya nama toko / logo di tabel po_settings, sambungkan
  *   dari sana (mis. setting.store_name, setting.logo_url). Kalau belum
  *   ada kolomnya, tinggal hardcode dulu.
+ *
+ * Styling: mengikuti resep "Dokumen / tiket hasil render (html-to-image)"
+ * dari THEME-GUIDE "LCO Flat" — dipaksa light-mode penuh, palet zinc,
+ * angka/kode pakai font-mono tabular-nums, status pakai stempel border-2.
  */
 
 interface POOrderPrintSlipProps {
@@ -28,11 +32,11 @@ const PAYMENT_LABEL: Record<string, string> = {
   LUNAS: "Lunas",
 };
 
-// Warna badge status pembayaran: { background, text }
-const PAYMENT_COLOR: Record<string, { bg: string; text: string }> = {
-  BELUM_BAYAR: { bg: "#FCEBEB", text: "#791F1F" },
-  DP: { bg: "#FAEEDA", text: "#633806" },
-  LUNAS: { bg: "#EAF3DE", text: "#173404" },
+// Warna stempel status pembayaran, mengikuti token status tema (border + teks).
+const PAYMENT_STAMP: Record<string, string> = {
+  BELUM_BAYAR: "border-red-600 text-red-600",
+  DP: "border-orange-600 text-orange-600",
+  LUNAS: "border-emerald-600 text-emerald-600",
 };
 
 export default function POOrderPrintSlip({
@@ -54,8 +58,8 @@ export default function POOrderPrintSlip({
     order.total_amount - (order.paid_amount || 0),
   );
 
-  const paymentColor =
-    PAYMENT_COLOR[order.payment_status] ?? PAYMENT_COLOR.BELUM_BAYAR;
+  const paymentStamp =
+    PAYMENT_STAMP[order.payment_status] ?? PAYMENT_STAMP.BELUM_BAYAR;
 
   // Urutkan item: kode/nama produk -> lengan -> warna -> ukuran.
   const sortedItems = [...order.order_items].sort((a, b) => {
@@ -87,69 +91,31 @@ export default function POOrderPrintSlip({
   return (
     <div
       id="po-print-area"
-      style={{
-        width: "210mm",
-        minHeight: "297mm",
-        margin: "0 auto",
-        background: "#ffffff",
-        color: "#1a1a1a",
-        fontFamily: "Arial, Helvetica, sans-serif",
-        fontSize: "12px",
-        boxSizing: "border-box",
-      }}
+      className="w-[210mm] min-h-[297mm] mx-auto bg-white text-zinc-800"
+      style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "12px" }}
     >
       {/* ── Header toko ─────────────────────────────────────── */}
-      <div
-        style={{
-          borderBottom: logoUrl ? "none" : "2px solid #1a1a1a",
-        }}
-      >
+      <div className={logoUrl ? "" : "border-b-2 border-zinc-900"}>
         {logoUrl ? (
           // Gambar kop/header custom, selebar penuh kertas (edge-to-edge) —
           // dianggap sudah lengkap dengan nama, alamat, kontak di dalam
           // desainnya sendiri, jadi tidak perlu elemen teks tambahan di sini.
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logoUrl}
-            alt={storeName}
-            style={{ width: "100%", height: "auto", display: "block" }}
-          />
+          <img src={logoUrl} alt={storeName} className="w-full h-auto block" />
         ) : (
           // Fallback: avatar inisial + nama toko, dipakai hanya kalau
           // logo/kop belum diupload.
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "15mm 15mm 14px",
-            }}
+            className="flex items-center gap-3"
+            style={{ padding: "15mm 15mm 14px" }}
           >
-            <div
-              style={{
-                width: "48px",
-                height: "48px",
-                borderRadius: "10px",
-                background: "#E6F1FB",
-                color: "#0C447C",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 700,
-                fontSize: "16px",
-                flexShrink: 0,
-              }}
-            >
+            <div className="w-12 h-12 rounded-md bg-zinc-100 text-zinc-900 flex items-center justify-center font-semibold text-base shrink-0">
               {storeInitials || "T"}
             </div>
             <div>
-              <p style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>
-                {storeName}
-              </p>
+              <p className="text-base font-semibold m-0">{storeName}</p>
               {storeAddress && (
-                <p
-                  style={{ fontSize: "10px", color: "#666", margin: "3px 0 0" }}
-                >
+                <p className="text-[10px] text-zinc-500 mt-0.5 mb-0">
                   {storeAddress}
                 </p>
               )}
@@ -160,66 +126,30 @@ export default function POOrderPrintSlip({
 
       {/* ── Bar detail pesanan (dulunya di header, sekarang di bawah kop) ── */}
       <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "16px",
-          background: "#f4f3f0",
-          padding: "14px 15mm",
-          borderBottom: "1px solid #e5e5e5",
-        }}
+        className="flex justify-between items-center flex-wrap gap-4 bg-zinc-50 border-b border-zinc-200"
+        style={{ padding: "14px 15mm" }}
       >
         <div>
-          <p
-            style={{
-              fontSize: "9px",
-              letterSpacing: "0.06em",
-              color: "#999",
-              margin: 0,
-            }}
-          >
+          <p className="text-[9px] font-mono uppercase tracking-[0.14em] text-zinc-400 m-0">
             STRUK PESANAN
           </p>
-          <p
-            style={{
-              fontSize: "16px",
-              fontWeight: 700,
-              margin: "4px 0 0",
-              fontFamily: "monospace",
-            }}
-          >
+          <p className="text-base font-semibold font-mono tabular-nums mt-1 mb-0">
             {order.po_number}
           </p>
         </div>
         <div>
-          <p
-            style={{
-              fontSize: "9px",
-              letterSpacing: "0.06em",
-              color: "#999",
-              margin: 0,
-            }}
-          >
+          <p className="text-[9px] font-mono uppercase tracking-[0.14em] text-zinc-400 m-0">
             TIPE CUSTOMER
           </p>
-          <p style={{ fontSize: "13px", fontWeight: 700, margin: "4px 0 0" }}>
+          <p className="text-[13px] font-semibold mt-1 mb-0">
             {order.customer_type}
           </p>
         </div>
         <div>
-          <p
-            style={{
-              fontSize: "9px",
-              letterSpacing: "0.06em",
-              color: "#999",
-              margin: 0,
-            }}
-          >
+          <p className="text-[9px] font-mono uppercase tracking-[0.14em] text-zinc-400 m-0">
             TANGGAL
           </p>
-          <p style={{ fontSize: "13px", fontWeight: 700, margin: "4px 0 0" }}>
+          <p className="text-[13px] font-semibold font-mono tabular-nums mt-1 mb-0">
             {new Date(order.created_at).toLocaleDateString("id-ID", {
               day: "numeric",
               month: "long",
@@ -227,27 +157,12 @@ export default function POOrderPrintSlip({
             })}
           </p>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <p
-            style={{
-              fontSize: "9px",
-              letterSpacing: "0.06em",
-              color: "#999",
-              margin: "0 0 6px",
-            }}
-          >
+        <div className="text-right">
+          <p className="text-[9px] font-mono uppercase tracking-[0.14em] text-zinc-400 mb-1.5">
             STATUS BAYAR
           </p>
           <span
-            style={{
-              display: "inline-block",
-              padding: "3px 10px",
-              borderRadius: "5px",
-              fontSize: "10px",
-              fontWeight: 700,
-              background: paymentColor.bg,
-              color: paymentColor.text,
-            }}
+            className={`inline-block px-2.5 py-0.5 rounded-md border-2 text-[10px] font-mono font-semibold uppercase tracking-[0.1em] ${paymentStamp}`}
           >
             {PAYMENT_LABEL[order.payment_status] ?? order.payment_status}
           </span>
@@ -256,49 +171,29 @@ export default function POOrderPrintSlip({
 
       <div style={{ padding: "0 15mm" }}>
         {/* ── Info pelanggan ────────────────────────────────── */}
-        <table style={{ width: "100%", margin: "18px 0", fontSize: "12px" }}>
+        <table className="w-full my-4 text-xs">
           <tbody>
             <tr>
-              <td style={{ width: "50%", verticalAlign: "top", padding: 0 }}>
-                <p
-                  style={{
-                    color: "#999",
-                    letterSpacing: "0.06em",
-                    margin: "0 0 6px",
-                    fontSize: "9px",
-                  }}
-                >
+              <td className="w-1/2 align-top p-0">
+                <p className="text-[9px] font-mono uppercase tracking-[0.14em] text-zinc-400 mb-1.5">
                   PELANGGAN
                 </p>
-                <p style={{ fontWeight: 700, margin: "0 0 3px" }}>
-                  {order.customer_name}
-                </p>
-                <p style={{ margin: "0 0 3px", color: "#555" }}>
-                  {order.customer_wa}
-                </p>
+                <p className="font-semibold mb-0.5">{order.customer_name}</p>
+                <p className="text-zinc-500 mb-0.5">{order.customer_wa}</p>
                 {order.po_resellers && (
-                  <p style={{ margin: 0, color: "#555" }}>
+                  <p className="text-zinc-500 m-0">
                     Reseller: {order.po_resellers.nama} (
                     {order.po_resellers.kode})
                   </p>
                 )}
               </td>
-              <td style={{ width: "50%", verticalAlign: "top", padding: 0 }}>
-                <p
-                  style={{
-                    color: "#999",
-                    letterSpacing: "0.06em",
-                    margin: "0 0 6px",
-                    fontSize: "9px",
-                  }}
-                >
+              <td className="w-1/2 align-top p-0">
+                <p className="text-[9px] font-mono uppercase tracking-[0.14em] text-zinc-400 mb-1.5">
                   PENGIRIMAN
                 </p>
-                <p style={{ fontWeight: 700, margin: "0 0 3px" }}>
-                  {order.delivery_method}
-                </p>
+                <p className="font-semibold mb-0.5">{order.delivery_method}</p>
                 {order.shipping_address && (
-                  <p style={{ margin: "0 0 3px", color: "#555" }}>
+                  <p className="text-zinc-500 mb-0.5">
                     {order.shipping_address}
                   </p>
                 )}
@@ -308,86 +203,28 @@ export default function POOrderPrintSlip({
         </table>
 
         {/* ── Tabel item ────────────────────────────────────── */}
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginBottom: "16px",
-            fontSize: "11px",
-          }}
-        >
+        <table className="w-full border-collapse mb-4 text-[11px]">
           <thead>
-            <tr style={{ background: "#f4f3f0" }}>
-              <th
-                style={{
-                  textAlign: "left",
-                  padding: "8px 10px",
-                  fontWeight: 700,
-                  color: "#555",
-                  borderRadius: "6px 0 0 6px",
-                }}
-              >
+            <tr className="bg-zinc-50">
+              <th className="text-left py-2 px-2.5 font-semibold text-zinc-500 rounded-l-md">
                 Produk
               </th>
-              <th
-                style={{
-                  textAlign: "center",
-                  padding: "8px 6px",
-                  fontWeight: 700,
-                  color: "#555",
-                }}
-              >
+              <th className="text-center py-2 px-1.5 font-semibold text-zinc-500">
                 Warna
               </th>
-              <th
-                style={{
-                  textAlign: "center",
-                  padding: "8px 6px",
-                  fontWeight: 700,
-                  color: "#555",
-                }}
-              >
+              <th className="text-center py-2 px-1.5 font-semibold text-zinc-500">
                 Lengan
               </th>
-              <th
-                style={{
-                  textAlign: "center",
-                  padding: "8px 6px",
-                  fontWeight: 700,
-                  color: "#555",
-                }}
-              >
+              <th className="text-center py-2 px-1.5 font-semibold text-zinc-500">
                 Ukuran
               </th>
-              <th
-                style={{
-                  textAlign: "center",
-                  padding: "8px 6px",
-                  fontWeight: 700,
-                  color: "#555",
-                }}
-              >
+              <th className="text-center py-2 px-1.5 font-semibold text-zinc-500">
                 Qty
               </th>
-              <th
-                style={{
-                  textAlign: "right",
-                  padding: "8px 6px",
-                  fontWeight: 700,
-                  color: "#555",
-                }}
-              >
+              <th className="text-right py-2 px-1.5 font-semibold text-zinc-500">
                 Harga
               </th>
-              <th
-                style={{
-                  textAlign: "right",
-                  padding: "8px 10px",
-                  fontWeight: 700,
-                  color: "#555",
-                  borderRadius: "0 6px 6px 0",
-                }}
-              >
+              <th className="text-right py-2 px-2.5 font-semibold text-zinc-500 rounded-r-md">
                 Subtotal
               </th>
             </tr>
@@ -396,62 +233,31 @@ export default function POOrderPrintSlip({
             {sortedItems.map((item, i) => (
               <tr
                 key={i}
-                style={{
-                  borderBottom:
-                    i === order.order_items.length - 1
-                      ? "none"
-                      : "0.5px solid #e5e5e5",
-                }}
+                className={
+                  i === order.order_items.length - 1
+                    ? ""
+                    : "border-b border-zinc-200"
+                }
               >
-                <td style={{ padding: "9px 10px", fontWeight: 700 }}>
+                <td className="py-2.5 px-2.5 font-semibold">
                   {item.product_name}
                 </td>
-                <td
-                  style={{
-                    padding: "9px 6px",
-                    textAlign: "center",
-                    color: "#555",
-                  }}
-                >
+                <td className="py-2.5 px-1.5 text-center text-zinc-500">
                   {item.warna}
                 </td>
-                <td
-                  style={{
-                    padding: "9px 6px",
-                    textAlign: "center",
-                    color: "#555",
-                  }}
-                >
+                <td className="py-2.5 px-1.5 text-center text-zinc-500">
                   {item.lengan}
                 </td>
-                <td
-                  style={{
-                    padding: "9px 6px",
-                    textAlign: "center",
-                    color: "#555",
-                  }}
-                >
+                <td className="py-2.5 px-1.5 text-center text-zinc-500">
                   {item.ukuran}
                 </td>
-                <td style={{ padding: "9px 6px", textAlign: "center" }}>
+                <td className="py-2.5 px-1.5 text-center font-mono tabular-nums">
                   {item.qty}
                 </td>
-                <td
-                  style={{
-                    padding: "9px 6px",
-                    textAlign: "right",
-                    color: "#555",
-                  }}
-                >
+                <td className="py-2.5 px-1.5 text-right text-zinc-500 font-mono tabular-nums">
                   {formatRupiah(item.harga_satuan)}
                 </td>
-                <td
-                  style={{
-                    padding: "9px 10px",
-                    textAlign: "right",
-                    fontWeight: 700,
-                  }}
-                >
+                <td className="py-2.5 px-2.5 text-right font-semibold font-mono tabular-nums">
                   {formatRupiah(item.subtotal)}
                 </td>
               </tr>
@@ -460,79 +266,37 @@ export default function POOrderPrintSlip({
         </table>
 
         {/* ── Total ─────────────────────────────────────────── */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            marginBottom: "20px",
-          }}
-        >
-          <div
-            style={{
-              minWidth: "260px",
-              background: "#f4f3f0",
-              borderRadius: "8px",
-              padding: "14px 16px",
-              fontSize: "12px",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "3px 0",
-              }}
-            >
-              <span style={{ color: "#666" }}>Total</span>
-              <span style={{ fontWeight: 700 }}>
+        <div className="flex justify-end mb-5">
+          <div className="min-w-[260px] bg-zinc-50 rounded-md p-3.5 text-xs">
+            <div className="flex justify-between py-0.5">
+              <span className="text-zinc-500">Total</span>
+              <span className="font-semibold font-mono tabular-nums">
                 {formatRupiah(order.total_amount)}
               </span>
             </div>
 
             {order.payment_status !== "BELUM_BAYAR" && (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  padding: "3px 0",
-                }}
-              >
-                <span style={{ color: "#666" }}>Sudah Dibayar</span>
-                <span>{formatRupiah(order.paid_amount || 0)}</span>
+              <div className="flex justify-between py-0.5">
+                <span className="text-zinc-500">Sudah Dibayar</span>
+                <span className="font-mono tabular-nums">
+                  {formatRupiah(order.paid_amount || 0)}
+                </span>
               </div>
             )}
 
             {sisaTagihan > 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  padding: "8px 0 0",
-                  marginTop: "6px",
-                  borderTop: "0.5px solid #ddd",
-                  fontSize: "13px",
-                }}
-              >
-                <span style={{ fontWeight: 700, color: "#a32d2d" }}>
-                  Sisa Tagihan
-                </span>
-                <span style={{ fontWeight: 700, color: "#a32d2d" }}>
+              <div className="flex justify-between pt-2 mt-1.5 border-t border-zinc-300 text-[13px]">
+                <span className="font-semibold text-red-600">Sisa Tagihan</span>
+                <span className="font-semibold font-mono tabular-nums text-red-600">
                   {formatRupiah(sisaTagihan)}
                 </span>
               </div>
             ) : (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  padding: "8px 0 0",
-                  marginTop: "6px",
-                  borderTop: "0.5px solid #ddd",
-                  fontSize: "13px",
-                }}
-              >
-                <span style={{ fontWeight: 700 }}>Lunas</span>
-                <span style={{ fontWeight: 700, color: "#3b6d11" }}>Rp 0</span>
+              <div className="flex justify-between pt-2 mt-1.5 border-t border-zinc-300 text-[13px]">
+                <span className="font-semibold">Lunas</span>
+                <span className="font-semibold font-mono tabular-nums text-emerald-600">
+                  Rp 0
+                </span>
               </div>
             )}
           </div>
@@ -540,48 +304,23 @@ export default function POOrderPrintSlip({
 
         {/* ── Catatan ───────────────────────────────────────── */}
         {order.notes && (
-          <div
-            style={{
-              borderLeft: "3px solid #bbb",
-              borderRadius: 0,
-              padding: "8px 14px",
-              marginBottom: "24px",
-              fontSize: "11px",
-              background: "#f9f9f7",
-            }}
-          >
-            <p style={{ fontWeight: 700, margin: "0 0 4px" }}>
-              Catatan Pembeli:
-            </p>
-            <p style={{ margin: 0, color: "#444" }}>{order.notes}</p>
+          <div className="border-l-2 border-zinc-900 bg-zinc-50 rounded-r-md py-2 px-3.5 mb-6 text-[11px]">
+            <p className="font-semibold mb-1">Catatan Pembeli:</p>
+            <p className="text-zinc-600 m-0">{order.notes}</p>
           </div>
         )}
 
         {/* ── Tanda tangan ──────────────────────────────────── */}
-        <table style={{ width: "100%", marginTop: "48px", fontSize: "11px" }}>
+        <table className="w-full mt-12 text-[11px]">
           <tbody>
             <tr>
-              <td style={{ width: "50%", textAlign: "center" }}>
-                <div
-                  style={{
-                    borderTop: "0.5px solid #999",
-                    paddingTop: "8px",
-                    margin: "0 24px",
-                    color: "#666",
-                  }}
-                >
+              <td className="w-1/2 text-center">
+                <div className="border-t border-zinc-400 pt-2 mx-6 text-zinc-500">
                   Disiapkan oleh
                 </div>
               </td>
-              <td style={{ width: "50%", textAlign: "center" }}>
-                <div
-                  style={{
-                    borderTop: "0.5px solid #999",
-                    paddingTop: "8px",
-                    margin: "0 24px",
-                    color: "#666",
-                  }}
-                >
+              <td className="w-1/2 text-center">
+                <div className="border-t border-zinc-400 pt-2 mx-6 text-zinc-500">
                   Tanda Tangan Penerima
                 </div>
               </td>
@@ -590,12 +329,8 @@ export default function POOrderPrintSlip({
         </table>
 
         <p
-          style={{
-            textAlign: "center",
-            fontSize: "9px",
-            color: "#aaa",
-            margin: "32px 0 15mm",
-          }}
+          className="text-center text-[9px] text-zinc-400 mt-8"
+          style={{ marginBottom: "15mm" }}
         >
           Dicetak {printedAt}
         </p>

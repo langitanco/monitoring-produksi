@@ -44,18 +44,18 @@ export function ShareTicket({ item }: ShareTicketProps) {
     }[type as keyof typeof THEME] ?? "Info";
 
   return (
-    <div className="w-[600px] bg-white text-slate-800 p-10 font-sans border border-slate-300 rounded-lg">
+    <div className="w-[600px] bg-white text-zinc-800 p-10 font-sans border border-zinc-300 rounded-lg">
       {/* Kop dokumen */}
-      <div className="border-b-2 border-slate-900 pb-4 mb-6 flex items-end justify-between">
+      <div className="border-b-2 border-zinc-900 pb-4 mb-6 flex items-end justify-between">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-400 mb-1">
             LCO · Production Control
           </p>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
             Kartu Kontrol Produksi
           </h1>
         </div>
-        <p className="font-mono text-xs text-slate-400">
+        <p className="font-mono text-xs text-zinc-400">
           {new Date().toLocaleDateString("id-ID", {
             day: "2-digit",
             month: "short",
@@ -67,13 +67,13 @@ export function ShareTicket({ item }: ShareTicketProps) {
       {/* Identitas order + stempel status */}
       <div className="flex items-start justify-between gap-6 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-2xl font-bold text-zinc-900">
             {order.nama_pemesan}
           </h2>
-          <p className="font-mono text-sm text-slate-500 mt-1">
+          <p className="font-mono text-sm text-zinc-500 mt-1">
             #{order.kode_produksi}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-zinc-500 mt-1">
             Dibuat: {formatDate(order.tanggal_masuk)}
           </p>
         </div>
@@ -86,20 +86,20 @@ export function ShareTicket({ item }: ShareTicketProps) {
       </div>
 
       {/* Detail grid */}
-      <div className="grid grid-cols-3 gap-px bg-slate-200 border border-slate-200 rounded-md overflow-hidden mb-6">
+      <div className="grid grid-cols-3 gap-px bg-zinc-200 border border-zinc-200 rounded-md overflow-hidden mb-6">
         <div className="bg-white p-4">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mb-1">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-zinc-400 mb-1">
             Jumlah
           </p>
-          <p className="font-mono text-xl font-semibold text-slate-900">
+          <p className="font-mono text-xl font-semibold text-zinc-900">
             {order.jumlah} pcs
           </p>
         </div>
         <div className="bg-white p-4">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mb-1">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-zinc-400 mb-1">
             Tipe
           </p>
-          <p className="font-mono text-xl font-semibold text-slate-900 uppercase">
+          <p className="font-mono text-xl font-semibold text-zinc-900 uppercase">
             {order.jenis_produksi}
           </p>
         </div>
@@ -117,7 +117,7 @@ export function ShareTicket({ item }: ShareTicketProps) {
 
       {/* Catatan */}
       <div
-        className={`border-l-2 border-slate-900 ${theme.softBg} p-4 rounded-r-md`}
+        className={`border-l-2 border-zinc-900 ${theme.softBg} p-4 rounded-r-md`}
       >
         <div className="flex items-start gap-3">
           <AlertCircle
@@ -129,10 +129,10 @@ export function ShareTicket({ item }: ShareTicketProps) {
             >
               Catatan {type === "KENDALA" ? "produksi" : "sistem"}
             </p>
-            <p className="text-base font-semibold text-slate-900 leading-snug">
+            <p className="text-base font-semibold text-zinc-900 leading-snug">
               {detail}
             </p>
-            <p className="font-mono text-[10px] text-slate-400 mt-2">
+            <p className="font-mono text-[10px] text-zinc-400 mt-2">
               Dicetak {new Date().toLocaleString("id-ID")}
             </p>
           </div>

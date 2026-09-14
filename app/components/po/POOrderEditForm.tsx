@@ -8,7 +8,7 @@ import { POOrder, POOrderItem, POProduct, POSetting } from "@/types/po";
 import { ArrowLeft, Plus, Trash2, Save, X } from "lucide-react";
 
 const inputCls =
-  "w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 dark:focus:border-blue-500 transition-all";
+  "w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-md px-3 py-2.5 text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 hover:border-[#49bfb4]/50 focus:ring-2 focus:ring-[#49bfb4] focus:border-[#49bfb4] outline-none transition-colors duration-150";
 
 function Field({
   label,
@@ -19,7 +19,7 @@ function Field({
 }) {
   return (
     <div className="flex flex-col">
-      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1.5">
+      <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 block mb-1.5">
         {label}
       </label>
       {children}
@@ -106,14 +106,14 @@ function AddItemRow({
   }
 
   return (
-    <div className="border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-xl p-4 space-y-3 bg-blue-50/30 dark:bg-blue-900/10">
+    <div className="border border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl p-4 space-y-3 bg-zinc-50 dark:bg-zinc-900">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-extrabold uppercase tracking-wide text-blue-600 dark:text-blue-400">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
           Tambah Item Baru
         </p>
         <button
           onClick={onCancel}
-          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+          className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors duration-150"
         >
           <X size={16} />
         </button>
@@ -197,11 +197,11 @@ function AddItemRow({
       )}
 
       {product && (
-        <div className="flex items-center justify-between pt-2 border-t border-blue-200 dark:border-blue-800">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-zinc-800">
+          <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
             Subtotal item ini
           </span>
-          <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400">
+          <span className="font-mono tabular-nums text-sm font-semibold text-[#49bfb4]">
             {formatRupiah(subtotal)}
           </span>
         </div>
@@ -210,7 +210,7 @@ function AddItemRow({
       <button
         onClick={handleAdd}
         disabled={!product}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
+        className="w-full bg-[#124540] hover:bg-[#0d332f] disabled:bg-zinc-300 dark:disabled:bg-zinc-700 text-white text-sm font-semibold py-2.5 rounded-md transition-colors duration-150"
       >
         Tambahkan ke Pesanan
       </button>
@@ -312,26 +312,26 @@ export default function POOrderEditForm({
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-5 animate-in fade-in duration-200">
+    <div className="w-full max-w-4xl mx-auto space-y-5">
       <button
         onClick={onCancel}
-        className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+        className="flex items-center gap-2 text-sm font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-white transition-colors duration-150"
       >
         <ArrowLeft size={15} /> Batal, kembali ke detail
       </button>
 
       <div>
-        <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400 dark:text-zinc-500 mb-1">
           Edit Pesanan
         </p>
-        <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white font-mono">
+        <h2 className="text-xl md:text-2xl font-semibold text-zinc-900 dark:text-white font-mono tabular-nums">
           {order.po_number}
         </h2>
       </div>
 
       {/* Biodata */}
-      <div className="space-y-4 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-5">
-        <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+      <div className="space-y-4 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 md:p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
           Data Pemesan
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -389,15 +389,15 @@ export default function POOrderEditForm({
       </div>
 
       {/* Items */}
-      <div className="space-y-3 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-5">
+      <div className="space-y-3 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 md:p-5">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
             Item Pesanan
           </p>
           {!showAddRow && (
             <button
               onClick={() => setShowAddRow(true)}
-              className="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#49bfb4] hover:underline transition-colors duration-150"
             >
               <Plus size={14} /> Tambah Item
             </button>
@@ -405,7 +405,7 @@ export default function POOrderEditForm({
         </div>
 
         {items.length === 0 && (
-          <p className="text-sm text-slate-400 text-center py-4">
+          <p className="text-sm text-zinc-400 text-center py-4">
             Belum ada item. Tambahkan minimal 1 item.
           </p>
         )}
@@ -414,15 +414,18 @@ export default function POOrderEditForm({
           {items.map((item, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-700"
+              className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800"
             >
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate">
+                <p className="font-semibold text-sm text-zinc-800 dark:text-zinc-200 truncate">
                   {item.product_name}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   {item.ukuran} · {item.lengan} · {item.warna} ·{" "}
-                  {formatRupiah(item.harga_satuan)}/pcs
+                  <span className="font-mono tabular-nums">
+                    {formatRupiah(item.harga_satuan)}
+                  </span>
+                  /pcs
                 </p>
               </div>
               <input
@@ -432,14 +435,14 @@ export default function POOrderEditForm({
                 onChange={(e) =>
                   updateItemQty(i, Math.max(1, Number(e.target.value)))
                 }
-                className="w-16 text-sm text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5"
+                className="w-16 text-sm text-center font-mono tabular-nums bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-md px-2 py-1.5 hover:border-[#49bfb4]/50 focus:ring-2 focus:ring-[#49bfb4] focus:border-[#49bfb4] outline-none transition-colors duration-150"
               />
-              <span className="text-sm font-bold text-slate-800 dark:text-slate-200 w-28 text-right">
+              <span className="font-mono tabular-nums text-sm font-semibold text-zinc-800 dark:text-zinc-200 w-28 text-right">
                 {formatRupiah(item.subtotal)}
               </span>
               <button
                 onClick={() => removeItem(i)}
-                className="text-red-400 hover:text-red-600 dark:hover:text-red-400 shrink-0"
+                className="text-red-500/70 hover:text-red-600 dark:hover:text-red-500 shrink-0 transition-colors duration-150"
               >
                 <Trash2 size={16} />
               </button>
@@ -456,11 +459,11 @@ export default function POOrderEditForm({
           />
         )}
 
-        <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-700">
-          <span className="text-xs font-extrabold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <div className="flex justify-between items-center pt-3 border-t border-zinc-200 dark:border-zinc-800">
+          <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             Total Keseluruhan
           </span>
-          <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+          <span className="font-mono tabular-nums text-lg font-semibold text-emerald-600 dark:text-emerald-500">
             {formatRupiah(grandTotal)}
           </span>
         </div>
@@ -470,14 +473,14 @@ export default function POOrderEditForm({
       <div className="flex flex-col sm:flex-row gap-3">
         <button
           onClick={onCancel}
-          className="w-full sm:w-auto px-6 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          className="w-full sm:w-auto px-6 py-3 border border-zinc-300 dark:border-zinc-700 rounded-md text-sm font-semibold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150"
         >
           Batal
         </button>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full sm:flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 rounded-xl text-sm font-bold transition-colors"
+          className="w-full sm:flex-1 flex items-center justify-center gap-2 bg-[#124540] hover:bg-[#0d332f] disabled:bg-zinc-300 dark:disabled:bg-zinc-700 text-white py-3 rounded-md text-sm font-semibold transition-colors duration-150"
         >
           {saving ? (
             <>

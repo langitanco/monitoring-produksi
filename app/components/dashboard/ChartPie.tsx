@@ -3,7 +3,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { ProductionTypeDataPoint } from "@/hooks/useDashboard";
 
 // Warna disesuaikan dengan referensi gambar (Sablon: Biru, Bordir: Merah, DTF: Kuning)
-const COLORS = ["#2589ff", "#f4435e", "#e4e596"];
+const COLORS = ["#49BFB4", "#ff6437", "#e4e596"];
 
 interface ChartPieProps {
   productionTypeData: ProductionTypeDataPoint[];
@@ -44,12 +44,12 @@ const ChartPie = memo(function ChartPie({
     activeIndex !== null ? COLORS[activeIndex % COLORS.length] : centerColor;
 
   return (
-    <div className="bg-white dark:bg-slate-950 p-5 md:p-6 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col">
+    <div className="bg-white dark:bg-zinc-950 p-5 md:p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col">
       <div className="mb-4">
-        <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-base tracking-tight">
+        <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-base tracking-tight">
           Jenis Produksi
         </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
           Distribusi tipe order keseluruhan
         </p>
       </div>
@@ -88,19 +88,19 @@ const ChartPie = memo(function ChartPie({
         {/* Center label & value yang sekarang sudah terhubung dengan state hover */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span
-            className="font-mono tabular-nums text-2xl md:text-3xl font-semibold transition-colors duration-200 text-slate-900 dark:text-white"
+            className="font-mono tabular-nums text-2xl md:text-3xl font-semibold transition-colors duration-200 text-zinc-900 dark:text-white"
             style={displayColor ? { color: displayColor } : undefined}
           >
             {displayValue.toLocaleString("id-ID")}
           </span>
-          <span className="text-[9px] md:text-[10px] uppercase tracking-[0.14em] text-slate-400 font-semibold mt-1 transition-colors duration-200">
+          <span className="text-[9px] md:text-[10px] uppercase tracking-[0.14em] text-zinc-400 font-semibold mt-1 transition-colors duration-200">
             {displayLabel}
           </span>
         </div>
       </div>
 
       {/* Legend kustom */}
-      <ul className="mt-4 divide-y divide-slate-100 dark:divide-slate-800/70 border-t border-slate-100 dark:border-slate-800/70">
+      <ul className="mt-4 divide-y divide-zinc-100 dark:divide-zinc-800/70 border-t border-zinc-100 dark:border-zinc-800/70">
         {productionTypeData.map((entry, index) => {
           const pct = total > 0 ? Math.round((entry.value / total) * 100) : 0;
           const isActive = activeIndex === index;
@@ -115,7 +115,7 @@ const ChartPie = memo(function ChartPie({
                 onFocus={() => setActiveIndex(index)}
                 onBlur={() => setActiveIndex(null)}
                 className={`w-full flex items-center gap-2.5 py-2 text-left transition-colors duration-150 ${
-                  isActive ? "bg-slate-50 dark:bg-slate-900" : ""
+                  isActive ? "bg-zinc-50 dark:bg-zinc-900" : ""
                 }`}
               >
                 <span
@@ -123,18 +123,18 @@ const ChartPie = memo(function ChartPie({
                   style={{ backgroundColor: itemColor }}
                 />
                 <span
-                  className="text-xs flex-1 truncate transition-colors duration-150 text-slate-600 dark:text-slate-300"
+                  className="text-xs flex-1 truncate transition-colors duration-150 text-zinc-600 dark:text-zinc-300"
                   style={isActive ? { color: itemColor } : undefined}
                 >
                   {entry.name}
                 </span>
                 <span
-                  className="font-mono tabular-nums text-xs font-semibold transition-colors duration-150 text-slate-900 dark:text-slate-100"
+                  className="font-mono tabular-nums text-xs font-semibold transition-colors duration-150 text-zinc-900 dark:text-zinc-100"
                   style={isActive ? { color: itemColor } : undefined}
                 >
                   {entry.value.toLocaleString("id-ID")}
                 </span>
-                <span className="font-mono tabular-nums text-[10px] text-slate-400 w-9 text-right">
+                <span className="font-mono tabular-nums text-[10px] text-zinc-400 w-9 text-right">
                   {pct}%
                 </span>
               </button>

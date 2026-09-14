@@ -195,42 +195,42 @@ export default function POShippingList({ poId }: POShippingListProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-3 py-8 text-slate-400">
-        <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin" />
+      <div className="flex items-center gap-3 py-8 text-zinc-400">
+        <div className="w-5 h-5 border-2 border-zinc-300 border-t-[#49bfb4] rounded-full animate-spin" />
         <span className="text-sm">Memuat data pengiriman...</span>
       </div>
     );
   }
 
   return (
-    <div className="w-full space-y-4 animate-in fade-in duration-200">
+    <div className="w-full space-y-6">
       {/* ── HEADER & FILTER ── */}
       <div className="flex flex-col lg:flex-row gap-3">
         <div className="relative w-full lg:flex-1">
           <Search
             size={16}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400"
           />
           <input
             type="text"
             placeholder="Cari nama atau kode PO..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/30"
+            className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-md pl-10 pr-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:border-[#49bfb4]/50 focus:outline-none focus:ring-2 focus:ring-[#49bfb4] focus:border-[#49bfb4] transition-colors duration-150"
           />
         </div>
 
         <div className="flex flex-row gap-2 overflow-x-auto no-scrollbar">
           {/* Filter Tipe (Public/Reseller) */}
-          <div className="flex bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-1.5">
+          <div className="flex bg-zinc-100 dark:bg-zinc-900 rounded-md p-1.5">
             {(["ALL", "PUBLIC", "RESELLER"] as const).map((tipe) => (
               <button
                 key={tipe}
                 onClick={() => setFilterType(tipe)}
-                className={`text-xs font-bold px-4 py-2 rounded-lg transition-all ${
+                className={`text-xs font-semibold px-4 py-2 rounded-md transition-colors duration-150 whitespace-nowrap ${
                   filterType === tipe
-                    ? "bg-white dark:bg-slate-700 shadow-sm"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100"
+                    : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                 }`}
               >
                 {tipe === "ALL" ? "Semua Tipe" : tipe}
@@ -239,15 +239,15 @@ export default function POShippingList({ poId }: POShippingListProps) {
           </div>
 
           {/* Filter Metode (Dikirim/Diambil) */}
-          <div className="flex bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-1.5">
+          <div className="flex bg-zinc-100 dark:bg-zinc-900 rounded-md p-1.5">
             {(["ALL", "Dikirim", "Diambil"] as const).map((metode) => (
               <button
                 key={metode}
                 onClick={() => setFilterMetode(metode)}
-                className={`text-xs font-bold px-4 py-2 rounded-lg transition-all ${
+                className={`text-xs font-semibold px-4 py-2 rounded-md transition-colors duration-150 whitespace-nowrap ${
                   filterMetode === metode
-                    ? "bg-white dark:bg-slate-700 shadow-sm"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100"
+                    : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                 }`}
               >
                 {metode === "ALL" ? "Semua Metode" : metode}
@@ -260,7 +260,7 @@ export default function POShippingList({ poId }: POShippingListProps) {
         <button
           onClick={handlePrintMassal}
           disabled={selectedIds.size === 0 || printing}
-          className="flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-bold text-sm transition-colors min-w-[190px]"
+          className="flex items-center justify-center gap-2 px-5 py-3 bg-[#124540] hover:bg-[#0d332f] disabled:opacity-50 text-white rounded-md font-semibold text-sm transition-colors duration-150 min-w-[190px]"
         >
           {printing ? (
             <>
@@ -277,44 +277,36 @@ export default function POShippingList({ poId }: POShippingListProps) {
       </div>
 
       {/* ── TABEL DATA PENGIRIMAN ── */}
-      <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden overflow-x-auto bg-white dark:bg-slate-900/20">
+      <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden overflow-x-auto bg-white dark:bg-zinc-950">
         <table className="w-full text-sm min-w-[700px]">
-          <thead>
-            <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-xs text-slate-500">
+          <thead className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-[10px] text-zinc-500 dark:text-zinc-400 uppercase font-semibold tracking-wider">
+            <tr>
               <th className="px-5 py-3.5 text-left w-12">
                 <button
                   onClick={toggleSelectAll}
-                  className="text-slate-400 hover:text-blue-500"
+                  className="text-zinc-400 hover:text-[#49bfb4] transition-colors duration-150"
                 >
                   <CheckSquare
                     size={18}
                     className={
                       selectedIds.size === filtered.length &&
                       filtered.length > 0
-                        ? "text-blue-600"
+                        ? "text-[#49bfb4]"
                         : ""
                     }
                   />
                 </button>
               </th>
-              <th className="text-left px-5 py-3.5 font-bold uppercase">
-                Kode PO
-              </th>
-              <th className="text-left px-5 py-3.5 font-bold uppercase">
-                Pelanggan
-              </th>
-              <th className="text-left px-5 py-3.5 font-bold uppercase">
-                Metode
-              </th>
-              <th className="text-left px-5 py-3.5 font-bold uppercase">
-                Alamat
-              </th>
+              <th className="text-left px-5 py-3.5">Kode PO</th>
+              <th className="text-left px-5 py-3.5">Pelanggan</th>
+              <th className="text-left px-5 py-3.5">Metode</th>
+              <th className="text-left px-5 py-3.5">Alamat</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-8 text-slate-400">
+                <td colSpan={5} className="text-center py-8 text-zinc-400">
                   Tidak ada data yang cocok dengan filter.
                 </td>
               </tr>
@@ -325,10 +317,10 @@ export default function POShippingList({ poId }: POShippingListProps) {
                   <tr
                     key={order.id}
                     onClick={() => toggleSelect(order.id)}
-                    className={`border-b border-slate-100 dark:border-slate-800/60 last:border-0 cursor-pointer transition-colors ${
+                    className={`border-b border-zinc-200 dark:border-zinc-800 last:border-0 cursor-pointer transition-colors duration-150 ${
                       isSelected
-                        ? "bg-blue-50/50 dark:bg-blue-900/10"
-                        : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                        ? "bg-[#49bfb4]/10"
+                        : "hover:bg-zinc-50 dark:hover:bg-zinc-900"
                     }`}
                   >
                     <td className="px-5 py-4">
@@ -336,26 +328,20 @@ export default function POShippingList({ poId }: POShippingListProps) {
                         type="checkbox"
                         checked={isSelected}
                         readOnly
-                        className="w-4 h-4 text-blue-600 rounded border-slate-300 pointer-events-none"
+                        className="w-4 h-4 accent-[#49bfb4] rounded border-zinc-300 pointer-events-none"
                       />
                     </td>
-                    <td className="px-5 py-4 font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <td className="px-5 py-4 font-mono tabular-nums text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                       {order.po_number}
                     </td>
                     <td className="px-5 py-4">
                       <p className="font-semibold">{order.customer_name}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-zinc-500">
                         {order.customer_wa}
                       </p>
                     </td>
                     <td className="px-5 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${
-                          order.delivery_method === "Dikirim"
-                            ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
-                            : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                        }`}
-                      >
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border border-zinc-300/70 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300">
                         {order.delivery_method === "Dikirim" ? (
                           <Truck size={12} />
                         ) : (
@@ -364,7 +350,7 @@ export default function POShippingList({ poId }: POShippingListProps) {
                         {order.delivery_method}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-xs text-slate-600 dark:text-slate-400 max-w-[250px] truncate">
+                    <td className="px-5 py-4 text-xs text-zinc-600 dark:text-zinc-400 max-w-[250px] truncate">
                       {order.shipping_address || "-"}
                     </td>
                   </tr>

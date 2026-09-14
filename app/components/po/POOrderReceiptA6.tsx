@@ -2,6 +2,14 @@
 
 import { POOrder } from "@/types/po";
 
+/**
+ * Resi cetak A6 (thermal/label), dirender sebagai gambar/print oleh
+ * pemanggilnya. Styling mengikuti resep "Dokumen / tiket hasil render
+ * (html-to-image)" dari THEME-GUIDE "LCO Flat" — dipaksa light-mode
+ * penuh, palet zinc, angka/kode pakai font-mono tabular-nums, status
+ * pakai stempel border.
+ */
+
 interface POOrderReceiptA6Props {
   order: POOrder;
   storeName?: string;
@@ -55,23 +63,14 @@ export default function POOrderReceiptA6({
 
   return (
     <div
-      style={{
-        width: "100%",
-        fontFamily: "Arial, Helvetica, sans-serif",
-        fontSize: "10px",
-        color: "#000",
-        boxSizing: "border-box",
-        lineHeight: "1.35",
-      }}
+      className="w-full bg-white text-zinc-800 leading-snug"
+      style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "10px" }}
     >
       {/* ── HEADER RESI ── */}
       <div
-        style={{
-          textAlign: "center",
-          borderBottom: logoUrl ? "none" : "2px solid #000",
-          paddingBottom: logoUrl ? 0 : "10px",
-          marginBottom: "12px",
-        }}
+        className={`text-center mb-3 ${
+          logoUrl ? "" : "border-b-2 border-zinc-900 pb-2.5"
+        }`}
       >
         {logoUrl ? (
           // Gambar kop/header custom, selebar area cetak — dianggap
@@ -82,35 +81,20 @@ export default function POOrderReceiptA6({
           <img
             src={logoUrl}
             alt={storeName}
-            style={{
-              width: "100%",
-              height: "auto",
-              display: "block",
-              margin: "0 auto",
-            }}
+            className="w-full h-auto block mx-auto"
           />
         ) : (
           // Fallback teks: dipakai hanya kalau logo belum diupload,
           // supaya header resi tidak kosong.
           <>
-            <h2
-              style={{
-                fontSize: "16px",
-                margin: "0 0 4px 0",
-                fontWeight: "900",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-              }}
-            >
+            <h2 className="text-base font-semibold uppercase tracking-[0.06em] m-0 mb-1">
               {storeName}
             </h2>
             {storeAddress && (
-              <p style={{ margin: "0 0 4px 0", fontSize: "9px" }}>
-                {storeAddress}
-              </p>
+              <p className="m-0 mb-1 text-[9px]">{storeAddress}</p>
             )}
             {adminPhone && (
-              <p style={{ margin: 0, fontSize: "9px", fontWeight: "bold" }}>
+              <p className="m-0 text-[9px] font-semibold">
                 Layanan Pelanggan (WA): {adminPhone}
               </p>
             )}
@@ -119,36 +103,31 @@ export default function POOrderReceiptA6({
       </div>
 
       {/* ── INFO TRANSAKSI ── */}
-      <table style={{ width: "100%", marginBottom: "10px", fontSize: "10px" }}>
+      <table className="w-full mb-2.5 text-[10px]">
         <tbody>
           <tr>
-            <td style={{ verticalAlign: "top", width: "50%" }}>
-              <p style={{ margin: "0 0 2px 0" }}>
-                <strong>No. PO:</strong> {order.po_number}
+            <td className="align-top w-1/2">
+              <p className="m-0 mb-0.5 font-mono tabular-nums">
+                <span className="font-semibold not-italic font-sans">
+                  No. PO:
+                </span>{" "}
+                {order.po_number}
               </p>
-              <p style={{ margin: "0" }}>
-                <strong>Tgl:</strong>{" "}
+              <p className="m-0 font-mono tabular-nums">
+                <span className="font-semibold font-sans">Tgl:</span>{" "}
                 {new Date(order.created_at).toLocaleDateString("id-ID")}
               </p>
             </td>
-            <td
-              style={{ verticalAlign: "top", textAlign: "right", width: "50%" }}
-            >
-              <p style={{ margin: "0 0 4px 0" }}>
-                <strong>Status Bayar: </strong>
-                <span
-                  style={{
-                    padding: "2px 6px",
-                    border: "1px solid #000",
-                    borderRadius: "4px",
-                    fontWeight: "bold",
-                  }}
-                >
+            <td className="align-top text-right w-1/2">
+              <p className="m-0 mb-1">
+                <span className="font-semibold">Status Bayar: </span>
+                <span className="px-1.5 py-0.5 border border-zinc-900 rounded-md font-semibold uppercase text-[9px]">
                   {PAYMENT_LABEL[order.payment_status] ?? order.payment_status}
                 </span>
               </p>
-              <p style={{ margin: "0" }}>
-                <strong>Metode:</strong> {order.delivery_method}
+              <p className="m-0">
+                <span className="font-semibold">Metode:</span>{" "}
+                {order.delivery_method}
               </p>
             </td>
           </tr>
@@ -156,110 +135,47 @@ export default function POOrderReceiptA6({
       </table>
 
       {/* ── DETAIL PENGIRIMAN ── */}
-      <div
-        style={{
-          border: "2px solid #000",
-          borderRadius: "8px",
-          padding: "8px",
-          marginBottom: "12px",
-        }}
-      >
-        <table style={{ width: "100%", fontSize: "9px" }}>
+      <div className="border-2 border-zinc-900 rounded-md p-2 mb-3">
+        <table className="w-full text-[9px]">
           <tbody>
             <tr>
               <td
-                style={{
-                  width: "50%",
-                  verticalAlign: "top",
-                  paddingRight: "10px",
-                  borderRight: isDikirim ? "1px dashed #ccc" : "none",
-                }}
+                className={`w-1/2 align-top pr-2.5 ${
+                  isDikirim ? "border-r border-dashed border-zinc-300" : ""
+                }`}
               >
-                <p
-                  style={{
-                    margin: "0 0 4px 0",
-                    fontSize: "8px",
-                    color: "#555",
-                    fontWeight: "bold",
-                  }}
-                >
-                  PENGIRIM:
+                <p className="m-0 mb-1 text-[8px] text-zinc-500 font-semibold uppercase tracking-wide">
+                  Pengirim
                 </p>
-                <p
-                  style={{
-                    margin: "0 0 2px 0",
-                    fontWeight: "bold",
-                    fontSize: "10px",
-                  }}
-                >
+                <p className="m-0 mb-0.5 font-semibold text-[10px]">
                   {storeName}
                 </p>
-                {storeAddress && (
-                  <p style={{ margin: "0 0 2px 0" }}>{storeAddress}</p>
-                )}
-                {adminPhone && <p style={{ margin: 0 }}>{adminPhone}</p>}
+                {storeAddress && <p className="m-0 mb-0.5">{storeAddress}</p>}
+                {adminPhone && <p className="m-0">{adminPhone}</p>}
               </td>
 
               {isDikirim ? (
-                <td
-                  style={{
-                    width: "50%",
-                    verticalAlign: "top",
-                    paddingLeft: "10px",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: "0 0 4px 0",
-                      fontSize: "8px",
-                      color: "#555",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    PENERIMA:
+                <td className="w-1/2 align-top pl-2.5">
+                  <p className="m-0 mb-1 text-[8px] text-zinc-500 font-semibold uppercase tracking-wide">
+                    Penerima
                   </p>
-                  <p
-                    style={{
-                      margin: "0 0 2px 0",
-                      fontWeight: "bold",
-                      fontSize: "10px",
-                    }}
-                  >
+                  <p className="m-0 mb-0.5 font-semibold text-[10px]">
                     {order.customer_name}
                   </p>
-                  <p style={{ margin: "0 0 2px 0" }}>{order.customer_wa}</p>
-                  <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+                  <p className="m-0 mb-0.5">{order.customer_wa}</p>
+                  <p className="m-0 whitespace-pre-wrap">
                     {order.shipping_address}
                   </p>
                 </td>
               ) : (
-                <td
-                  style={{
-                    width: "50%",
-                    verticalAlign: "top",
-                    paddingLeft: "10px",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: "0 0 4px 0",
-                      fontSize: "8px",
-                      color: "#555",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    PEMESAN (AMBIL DI TOKO):
+                <td className="w-1/2 align-top pl-2.5">
+                  <p className="m-0 mb-1 text-[8px] text-zinc-500 font-semibold uppercase tracking-wide">
+                    Pemesan (Ambil di Toko)
                   </p>
-                  <p
-                    style={{
-                      margin: "0 0 2px 0",
-                      fontWeight: "bold",
-                      fontSize: "10px",
-                    }}
-                  >
+                  <p className="m-0 mb-0.5 font-semibold text-[10px]">
                     {order.customer_name}
                   </p>
-                  <p style={{ margin: "0" }}>{order.customer_wa}</p>
+                  <p className="m-0">{order.customer_wa}</p>
                 </td>
               )}
             </tr>
@@ -268,47 +184,24 @@ export default function POOrderReceiptA6({
       </div>
 
       {/* ── TABEL PESANAN ── */}
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginBottom: "10px",
-          fontSize: "9px",
-        }}
-      >
+      <table className="w-full border-collapse mb-2.5 text-[9px]">
         <thead>
-          <tr
-            style={{
-              borderBottom: "2px solid #000",
-              borderTop: "2px solid #000",
-            }}
-          >
-            <th style={{ textAlign: "left", padding: "5px 0", width: "80%" }}>
-              Item
-            </th>
-            <th style={{ textAlign: "center", padding: "5px 0", width: "20%" }}>
-              Qty
-            </th>
+          <tr className="border-t-2 border-b-2 border-zinc-900">
+            <th className="text-left py-1.5 w-4/5 font-semibold">Item</th>
+            <th className="text-center py-1.5 w-1/5 font-semibold">Qty</th>
           </tr>
         </thead>
         <tbody>
           {sortedItems.map((item, i) => (
-            <tr key={i} style={{ borderBottom: "1px dotted #888" }}>
-              <td style={{ padding: "5px 0" }}>
-                <span style={{ fontWeight: "bold" }}>{item.product_name}</span>
-                <span style={{ fontSize: "8px", color: "#444" }}>
+            <tr key={i} className="border-b border-dotted border-zinc-400">
+              <td className="py-1.5">
+                <span className="font-semibold">{item.product_name}</span>
+                <span className="text-[8px] text-zinc-500">
                   {" "}
                   — {item.ukuran} | {item.lengan} | {item.warna}
                 </span>
               </td>
-              <td
-                style={{
-                  textAlign: "center",
-                  padding: "5px 0",
-                  verticalAlign: "top",
-                  fontWeight: "bold",
-                }}
-              >
+              <td className="text-center py-1.5 align-top font-semibold font-mono tabular-nums">
                 {item.qty}
               </td>
             </tr>
@@ -318,43 +211,19 @@ export default function POOrderReceiptA6({
 
       {/* ── CATATAN PEMBELI ── */}
       {order.notes && (
-        <div
-          style={{
-            border: "1px dashed #000",
-            padding: "6px",
-            marginBottom: "12px",
-            fontSize: "9px",
-            backgroundColor: "#f9f9f9",
-          }}
-        >
-          <strong style={{ display: "block", marginBottom: "2px" }}>
-            Catatan Pembeli:
-          </strong>
+        <div className="border border-dashed border-zinc-900 p-1.5 mb-3 text-[9px] bg-zinc-50">
+          <strong className="block mb-0.5">Catatan Pembeli:</strong>
           {order.notes}
         </div>
       )}
 
       {/* ── FOOTER RESI ── */}
-      <div
-        style={{
-          textAlign: "center",
-          fontSize: "9px",
-          marginTop: "16px",
-          borderTop: "1px dashed #000",
-          paddingTop: "10px",
-        }}
-      >
-        <p
-          style={{ margin: "0 0 3px 0", fontWeight: "bold", fontSize: "10px" }}
-        >
-          Terima Kasih!
-        </p>
-        <p style={{ margin: "0 0 4px 0" }}>
+      <div className="text-center text-[9px] mt-4 border-t border-dashed border-zinc-900 pt-2.5">
+        <p className="m-0 mb-1 font-semibold text-[10px]">Terima Kasih!</p>
+        <p className="m-0 mb-1">
           Harap melakukan video unboxing disaat membuka paket.
         </p>
-        <p style={{ margin: "0", color: "#666", fontSize: "8px" }}>
-          Dicetak: {printedAt}
-        </p>
+        <p className="m-0 text-zinc-500 text-[8px]">Dicetak: {printedAt}</p>
       </div>
     </div>
   );

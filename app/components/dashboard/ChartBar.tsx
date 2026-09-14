@@ -23,11 +23,11 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shadow-xl transition-colors">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">
+      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2.5 shadow-xl transition-colors">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-0.5">
           {label}
         </p>
-        <p className="font-mono tabular-nums text-xs font-semibold text-slate-900 dark:text-slate-100">
+        <p className="font-mono tabular-nums text-xs font-semibold text-zinc-900 dark:text-zinc-100">
           {`${payload[0].value?.toLocaleString("id-ID")} pcs`}
         </p>
       </div>
@@ -49,12 +49,12 @@ const ChartBar = memo(function ChartBar({ monthlyData }: ChartBarProps) {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-slate-950 p-5 md:p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+    <div className="bg-white dark:bg-zinc-950 p-5 md:p-6 rounded-xl border border-zinc-200 dark:border-zinc-800">
       <div className="mb-5">
-        <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-base tracking-tight">
+        <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-base tracking-tight">
           Tren Volume
         </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
           Jumlah item masuk · 6 bulan terakhir
         </p>
       </div>
@@ -69,7 +69,7 @@ const ChartBar = memo(function ChartBar({ monthlyData }: ChartBarProps) {
             >
               <CartesianGrid
                 vertical={false}
-                className="stroke-slate-200 dark:stroke-slate-800/80"
+                className="stroke-zinc-200 dark:stroke-zinc-800/80"
               />
               <XAxis
                 dataKey="name"
@@ -94,12 +94,12 @@ const ChartBar = memo(function ChartBar({ monthlyData }: ChartBarProps) {
               />
               {/* Menggunakan CustomTooltip dengan cursor highlight yang senada */}
               <RechartsTooltip
-                cursor={{ fill: "#2589ff", opacity: 0.08 }}
+                cursor={{ fill: "#49BFB4", opacity: 0.08 }}
                 content={<CustomTooltip />}
               />
               <Bar
                 dataKey="pcs"
-                fill="#2589ff"
+                fill="#49BFB4"
                 radius={[2, 2, 0, 0]}
                 maxBarSize={32}
               />

@@ -28,20 +28,20 @@ const UpdateBanner = memo(function UpdateBanner({
     <div
       role="alert"
       aria-live="polite"
-      className="flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3"
+      className="flex items-center justify-between gap-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3"
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="flex-shrink-0 w-7 h-7 rounded-md bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 flex items-center justify-center">
           <RefreshCw className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight">
+          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">
             Pembaruan tersedia{" "}
             <span className="font-mono tabular-nums text-indigo-600 dark:text-indigo-400">
               {updateInfo.newVersion}
             </span>
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-1">
             {updateInfo.releaseNotes}
           </p>
         </div>
@@ -51,7 +51,7 @@ const UpdateBanner = memo(function UpdateBanner({
         <button
           onClick={onDismiss}
           disabled={isUpdating}
-          className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150 disabled:opacity-50"
+          className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150 disabled:opacity-50"
           aria-label="Tutup notifikasi"
         >
           <X className="w-4 h-4" />

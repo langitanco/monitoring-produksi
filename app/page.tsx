@@ -32,7 +32,7 @@ const Dashboard = dynamic(
   {
     loading: () => (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#49BFB4] border-t-transparent rounded-full animate-spin" />
       </div>
     ),
     ssr: false,
@@ -76,7 +76,7 @@ const FinanceView = dynamic(
   {
     loading: () => (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#49BFB4] border-t-transparent rounded-full animate-spin" />
       </div>
     ),
     ssr: false,
@@ -415,8 +415,8 @@ export default function ProductionApp() {
 
   if (loadingUser)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950">
-        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="w-10 h-10 border-4 border-[#49BFB4] border-t-transparent rounded-full animate-spin" />
       </div>
     );
 
@@ -427,7 +427,7 @@ export default function ProductionApp() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-screen overflow-hidden bg-gray-100 dark:bg-slate-950 flex flex-col md:flex-row font-sans text-slate-800 dark:text-slate-100 relative">
+    <div className="h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row font-sans text-zinc-900 dark:text-zinc-100 relative">
       <input
         type="file"
         ref={fileInputRef}
@@ -437,10 +437,10 @@ export default function ProductionApp() {
       />
 
       {isUploading && (
-        <div className="absolute inset-0 z-9999 bg-black/60 flex flex-col items-center justify-center text-white backdrop-blur-sm">
-          <Loader2 className="w-12 h-12 animate-spin mb-3 text-blue-400" />
-          <p className="font-bold">Mengupload File...</p>
-          <p className="text-xs text-gray-300 mt-1">
+        <div className="absolute inset-0 z-[9999] bg-zinc-950/80 flex flex-col items-center justify-center text-white">
+          <Loader2 className="w-12 h-12 animate-spin mb-3 text-[#49BFB4]" />
+          <p className="text-sm font-semibold">Mengupload File...</p>
+          <p className="text-xs text-zinc-400 mt-1">
             Mohon tunggu, jangan tutup aplikasi
           </p>
         </div>
@@ -487,7 +487,7 @@ export default function ProductionApp() {
         {/* ref ditambahkan di sini agar scroll bisa dikontrol secara programatik */}
         <main
           ref={mainRef}
-          className="flex-1 overflow-y-auto px-4 md:px-6 py-2 md:py-3 pb-32 relative bg-gray-100 dark:bg-slate-950 no-scrollbar"
+          className="flex-1 overflow-y-auto px-4 md:px-6 py-2 md:py-3 pb-32 relative bg-zinc-50 dark:bg-zinc-950 no-scrollbar"
         >
           <div className="max-w-7xl mx-auto h-full">
             {activeTab === "dashboard" && p?.dashboard?.view && (
@@ -554,8 +554,7 @@ export default function ProductionApp() {
                     onDelete={handleDeleteOrder}
                     onConfirm={showConfirm}
                     onUpdatePayment={handleUpdatePayment}
-                    // @ts-ignore
-                    onLogActivity={writeLog}
+                    writeLog={writeLog}
                   />
                 )}
               </>

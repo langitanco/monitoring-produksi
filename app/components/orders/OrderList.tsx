@@ -54,7 +54,7 @@ const isSpecialStatus = (status: string) =>
 function statusBadgeClass(status: string): string {
   switch (status) {
     case "Pesanan Masuk":
-      return "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700";
+      return "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700";
     case "On Process":
       return "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800";
     case "Finishing":
@@ -70,7 +70,7 @@ function statusBadgeClass(status: string): string {
     case "Telat":
       return "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800";
     default:
-      return "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700";
+      return "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700";
   }
 }
 
@@ -93,9 +93,9 @@ function ProgressBar({ status }: { status: string }) {
             if (isOverdue || isKendala)
               barClass += "bg-red-400 dark:bg-red-600";
             else if (isRevisi) barClass += "bg-orange-400 dark:bg-orange-500";
-            else barClass += "bg-blue-400 dark:bg-blue-500";
+            else barClass += "bg-[#2589ff]";
           } else {
-            barClass += "bg-slate-200 dark:bg-slate-700";
+            barClass += "bg-zinc-200 dark:bg-zinc-700";
           }
           return <div key={i} className={barClass} />;
         })}
@@ -111,9 +111,9 @@ function ProgressBar({ status }: { status: string }) {
             else if (isRevisi)
               labelClass +=
                 "text-orange-600 dark:text-orange-400 font-semibold";
-            else labelClass += "text-blue-600 dark:text-blue-400 font-semibold";
+            else labelClass += "text-[#2589ff] font-semibold";
           } else {
-            labelClass += "text-slate-400 dark:text-slate-600";
+            labelClass += "text-zinc-400 dark:text-zinc-600";
           }
           const shortNames = [
             "Masuk",
@@ -156,25 +156,25 @@ function MobileCard({
   const isKendala = order.status === "Ada Kendala";
   const isDone = order.status === "Selesai" || order.status === "Kirim";
 
-  let borderAccent = "border-slate-200 dark:border-slate-800";
+  let borderAccent = "border-zinc-200 dark:border-zinc-800";
   if (isOverdue)
     borderAccent =
-      "border-t-2 border-t-red-400 border-x-slate-200 border-b-slate-200 dark:border-t-red-600 dark:border-x-slate-800 dark:border-b-slate-800";
+      "border-t-2 border-t-red-400 border-x-zinc-200 border-b-zinc-200 dark:border-t-red-600 dark:border-x-zinc-800 dark:border-b-zinc-800";
   else if (isKendala)
     borderAccent =
-      "border-t-2 border-t-orange-400 border-x-slate-200 border-b-slate-200 dark:border-t-orange-500 dark:border-x-slate-800 dark:border-b-slate-800";
+      "border-t-2 border-t-orange-400 border-x-zinc-200 border-b-zinc-200 dark:border-t-orange-500 dark:border-x-zinc-800 dark:border-b-zinc-800";
   else if (isDone)
     borderAccent =
-      "border-t-2 border-t-emerald-400 border-x-slate-200 border-b-slate-200 dark:border-t-emerald-600 dark:border-x-slate-800 dark:border-b-slate-800";
+      "border-t-2 border-t-emerald-400 border-x-zinc-200 border-b-zinc-200 dark:border-t-emerald-600 dark:border-x-zinc-800 dark:border-b-zinc-800";
 
   return (
     <div
       onClick={() => onSelectOrder(order.id)}
-      className={`block bg-white dark:bg-slate-900 rounded-xl border ${borderAccent} p-3 active:scale-[0.98] transition-transform cursor-pointer`}
+      className={`block bg-white dark:bg-zinc-950 rounded-xl border ${borderAccent} p-3 transition-colors duration-150 cursor-pointer`}
     >
       {/* Row 1: kode + badge status */}
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">
+        <span className="text-[10px] font-mono font-semibold text-zinc-400 dark:text-zinc-500">
           #{order.kode_produksi}
         </span>
         <div className="flex items-center gap-1">
@@ -182,7 +182,7 @@ function MobileCard({
             <AlertTriangle className="w-3 h-3 text-red-500 dark:text-red-400" />
           )}
           <span
-            className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wide ${statusBadgeClass(order.status)}`}
+            className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wide ${statusBadgeClass(order.status)}`}
           >
             {order.status}
           </span>
@@ -190,27 +190,27 @@ function MobileCard({
       </div>
 
       {/* Nama pemesan */}
-      <p className="font-semibold text-sm text-slate-800 dark:text-white line-clamp-1 mb-1 leading-tight">
+      <p className="font-semibold text-sm text-zinc-900 dark:text-white line-clamp-1 mb-1 leading-tight">
         {order.nama_pemesan}
       </p>
 
       <ProgressBar status={order.status} />
 
       {/* Detail ringkas */}
-      <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-            {order.jumlah} pcs
+          <span className="font-mono tabular-nums text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
+            {order.jumlah.toLocaleString("id-ID")} pcs
           </span>
-          <span className="text-[10px] text-slate-400 dark:text-slate-600">
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-600">
             ·
           </span>
-          <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-semibold">
+          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase font-semibold">
             {order.jenis_produksi}
           </span>
         </div>
         <span
-          className={`text-[10px] font-semibold ${isOverdue ? "text-red-500 dark:text-red-400" : "text-slate-500 dark:text-slate-400"}`}
+          className={`text-[10px] font-semibold ${isOverdue ? "text-red-500 dark:text-red-400" : "text-zinc-500 dark:text-zinc-400"}`}
         >
           {formatDate(order.deadline)}
         </span>
@@ -239,7 +239,7 @@ function MobileCard({
             e.stopPropagation();
             onDeleteOrder(order.id);
           }}
-          className="mt-2 w-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg text-[10px] font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition border border-red-200 dark:border-red-900/50 flex items-center justify-center gap-1.5"
+          className="mt-2 w-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-md text-[10px] font-semibold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors duration-150 border border-red-200 dark:border-red-900/50 flex items-center justify-center gap-1.5"
         >
           <Trash2 className="w-3 h-3" /> Hapus
         </button>
@@ -261,11 +261,10 @@ const KANBAN_COLUMNS: {
   {
     status: "Pesanan Masuk",
     label: "Pesanan Masuk",
-    borderClass: "border-t-slate-400 dark:border-t-slate-500",
-    bgClass: "bg-slate-100 dark:bg-slate-800/60",
-    textClass: "text-slate-700 dark:text-slate-200",
-    countClass:
-      "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300",
+    borderClass: "border-t-zinc-400 dark:border-t-zinc-500",
+    bgClass: "bg-zinc-100 dark:bg-zinc-800/60",
+    textClass: "text-zinc-700 dark:text-zinc-200",
+    countClass: "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300",
   },
   {
     status: "On Process",
@@ -334,17 +333,17 @@ function KanbanCard({
   return (
     <div
       onClick={() => onSelectOrder(order.id)}
-      className={`block bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 ${leftBorder} p-3 hover:shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition group cursor-pointer`}
+      className={`block bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 ${leftBorder} p-3 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors duration-150 group cursor-pointer`}
     >
       {/* Kode + Badge */}
       <div className="flex items-start justify-between gap-1 mb-1.5">
-        <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 font-bold mt-0.5">
+        <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500 font-semibold mt-0.5">
           #{order.kode_produksi}
         </span>
         <div className="flex flex-col items-end gap-0.5">
           {isSpecialStatus(order.status) && (
             <span
-              className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full border uppercase tracking-wide flex items-center gap-0.5 ${statusBadgeClass(order.status)}`}
+              className={`text-[8px] font-semibold px-1.5 py-0.5 rounded-full border uppercase tracking-wide flex items-center gap-0.5 ${statusBadgeClass(order.status)}`}
             >
               <AlertTriangle className="w-2 h-2" />
               {order.status}
@@ -354,16 +353,18 @@ function KanbanCard({
       </div>
 
       {/* Nama */}
-      <p className="font-semibold text-xs text-slate-800 dark:text-white line-clamp-2 leading-tight mb-2">
+      <p className="font-semibold text-xs text-zinc-900 dark:text-white line-clamp-2 leading-tight mb-2">
         {order.nama_pemesan}
       </p>
 
       {/* Detail */}
-      <div className="space-y-1 text-[10px] text-slate-500 dark:text-slate-400">
+      <div className="space-y-1 text-[10px] text-zinc-500 dark:text-zinc-400">
         <div className="flex items-center gap-1">
           <FileText className="w-3 h-3 shrink-0" />
-          <span className="font-medium">{order.jumlah} pcs</span>
-          <span className="text-slate-300 dark:text-slate-600">·</span>
+          <span className="font-mono tabular-nums font-medium">
+            {order.jumlah.toLocaleString("id-ID")} pcs
+          </span>
+          <span className="text-zinc-300 dark:text-zinc-600">·</span>
           <span className="uppercase font-semibold">
             {order.jenis_produksi}
           </span>
@@ -387,7 +388,7 @@ function KanbanCard({
 
       {/* PIC & Helper */}
       {isManagement && (
-        <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
           {order.assigned_user && (
             <div className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-1.5 py-0.5 rounded text-[9px] font-semibold border border-blue-100 dark:border-blue-900/30">
               <User className="w-2.5 h-2.5" /> {order.assigned_user.name}
@@ -408,7 +409,7 @@ function KanbanCard({
             e.stopPropagation();
             onDeleteOrder(order.id);
           }}
-          className="mt-2 w-full bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 px-2 py-1 rounded text-[9px] font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition border border-red-100 dark:border-red-900/30 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100"
+          className="mt-2 w-full bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 px-2 py-1 rounded-md text-[9px] font-semibold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors duration-150 border border-red-100 dark:border-red-900/30 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100"
         >
           <Trash2 className="w-2.5 h-2.5" /> Hapus
         </button>
@@ -475,13 +476,13 @@ function KanbanBoard({
         return (
           <div key={col.status} className="flex-1 min-w-44">
             <div
-              className={`rounded-xl border-t-2 border border-slate-200 dark:border-slate-800 ${col.borderClass} ${col.bgClass} mb-2 px-3 py-2 flex items-center justify-between`}
+              className={`rounded-xl border-t-2 border border-zinc-200 dark:border-zinc-800 ${col.borderClass} ${col.bgClass} mb-2 px-3 py-2 flex items-center justify-between`}
             >
-              <span className={`text-xs font-bold ${col.textClass}`}>
+              <span className={`text-xs font-semibold ${col.textClass}`}>
                 {col.label}
               </span>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${col.countClass}`}
+                className={`font-mono tabular-nums text-[10px] font-semibold px-2 py-0.5 rounded-full ${col.countClass}`}
               >
                 {colOrders.length}
               </span>
@@ -498,7 +499,7 @@ function KanbanBoard({
                 />
               ))}
               {colOrders.length === 0 && (
-                <div className="text-center text-[10px] text-slate-300 dark:text-slate-700 py-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
+                <div className="text-center text-[10px] text-zinc-300 dark:text-zinc-700 py-6 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md">
                   Kosong
                 </div>
               )}
@@ -584,16 +585,19 @@ export default function OrderList({
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <div className="hidden md:block">
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
             Daftar Pesanan
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            {filteredOrders.length} pesanan ditampilkan
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <span className="font-mono tabular-nums">
+              {filteredOrders.length}
+            </span>{" "}
+            pesanan ditampilkan
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <select
-            className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs rounded-lg px-2 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs rounded-md px-2 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-150"
             value={monthFilter}
             onChange={(e) => setMonthFilter(e.target.value)}
           >
@@ -605,7 +609,7 @@ export default function OrderList({
             ))}
           </select>
           <select
-            className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs rounded-lg px-2 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs rounded-md px-2 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-150"
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
           >
@@ -619,7 +623,7 @@ export default function OrderList({
           {canCreateOrder && (
             <button
               onClick={onNewOrder}
-              className="ml-auto md:ml-0 bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-blue-700 transition shadow-sm active:scale-95 whitespace-nowrap"
+              className="ml-auto md:ml-0 bg-[#124540] hover:bg-[#0d332f] text-white px-3 py-2 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors duration-150 whitespace-nowrap"
             >
               <ClipboardList className="w-3.5 h-3.5" /> Tambah Pesanan
             </button>
@@ -633,16 +637,16 @@ export default function OrderList({
           <button
             key={f.id ?? "all"}
             onClick={() => setStatusFilter(f.id)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition border ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors duration-150 border ${
               statusFilter === f.id
-                ? "bg-slate-800 text-white border-slate-800 dark:bg-blue-600 dark:border-blue-600"
-                : "bg-white text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
+                ? "bg-zinc-800 text-white border-zinc-800 dark:bg-[#124540] dark:border-[#124540]"
+                : "bg-white text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
             }`}
           >
             {f.label}
             {f.count !== null && f.count > 0 && (
               <span
-                className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ${
+                className={`font-mono tabular-nums text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
                   statusFilter === f.id
                     ? "bg-white/20 text-white"
                     : "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
@@ -666,7 +670,7 @@ export default function OrderList({
             onDeleteOrder={onDeleteOrder}
           />
         ) : (
-          <div className="text-center text-slate-400 dark:text-slate-500 py-16 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-sm">
+          <div className="text-center text-zinc-400 dark:text-zinc-500 py-16 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 text-sm">
             Tidak ada pesanan sesuai filter
           </div>
         )}
@@ -686,7 +690,7 @@ export default function OrderList({
             />
           ))
         ) : (
-          <div className="text-center text-slate-400 dark:text-slate-500 py-12 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-xs">
+          <div className="text-center text-zinc-400 dark:text-zinc-500 py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 text-xs">
             Tidak ada pesanan sesuai filter
           </div>
         )}

@@ -39,13 +39,13 @@ function Field({
 }) {
   return (
     <div className="flex flex-col h-full">
-      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">
+      <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
         <Icon size={11} />
         {label}
       </label>
       {children}
       {hint && (
-        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
+        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1.5">
           {hint}
         </p>
       )}
@@ -56,14 +56,14 @@ function Field({
 /* ── Section header ──────────────────────────────────────────────── */
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500 pt-2 pb-1 border-t border-slate-100 dark:border-slate-800">
+    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500 pt-2 pb-1 border-t border-zinc-200 dark:border-zinc-800">
       {children}
     </p>
   );
 }
 
 const INPUT =
-  "w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all";
+  "w-full border border-zinc-300 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-950 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 hover:border-[#49bfb4]/50 focus:outline-none focus:ring-2 focus:ring-[#49bfb4] focus:border-[#49bfb4] transition-colors duration-150";
 
 // Tambahkan ini di POSettings.tsx
 interface POSettingsProps {
@@ -303,7 +303,7 @@ export default function POSettings({ poId }: POSettingsProps) {
   // ✅ Early return SETELAH semua hooks
   if (loading) {
     return (
-      <div className="flex items-center gap-3 py-8 text-slate-400 dark:text-slate-500">
+      <div className="flex items-center gap-3 py-8 text-zinc-400 dark:text-zinc-500">
         <Clock size={16} className="animate-pulse" />
         <span className="text-sm">Memuat pengaturan...</span>
       </div>
@@ -320,22 +320,22 @@ export default function POSettings({ poId }: POSettingsProps) {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-5 md:space-y-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-4xl mx-auto space-y-5 md:space-y-6">
       {/* ── Status Toggle ─────────────────────────────────────────── */}
       <div
-        className={`flex items-center justify-between gap-4 rounded-2xl border-2 p-5 transition-colors ${form.is_active ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-950/20" : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30"}`}
+        className={`flex items-center justify-between gap-4 rounded-xl border p-5 transition-colors duration-150 ${form.is_active ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-950/20" : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900"}`}
       >
         <div className="flex items-center gap-3">
           {form.is_active ? (
             <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
           ) : (
-            <XCircle size={18} className="text-slate-400 shrink-0" />
+            <XCircle size={18} className="text-zinc-400 shrink-0" />
           )}
           <div>
-            <p className="font-bold text-slate-900 dark:text-white text-sm">
+            <p className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">
               Status PO
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               {form.is_active
                 ? "PO sedang aktif — publik bisa memesan"
                 : "PO nonaktif — form pemesanan ditutup"}
@@ -344,7 +344,7 @@ export default function POSettings({ poId }: POSettingsProps) {
         </div>
         <button
           onClick={() => setForm({ ...form, is_active: !form.is_active })}
-          className="shrink-0 transition-colors"
+          className="shrink-0 transition-colors duration-150"
           aria-label="Toggle status PO"
         >
           {form.is_active ? (
@@ -352,7 +352,7 @@ export default function POSettings({ poId }: POSettingsProps) {
           ) : (
             <ToggleLeft
               size={36}
-              className="text-slate-300 dark:text-slate-600"
+              className="text-zinc-300 dark:text-zinc-600"
             />
           )}
         </button>
@@ -366,7 +366,7 @@ export default function POSettings({ poId }: POSettingsProps) {
       >
         <div className="flex flex-col sm:flex-row gap-4 items-start">
           {/* Preview */}
-          <div className="w-40 h-25 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800/50 shrink-0">
+          <div className="w-40 h-25 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex items-center justify-center overflow-hidden bg-zinc-50 dark:bg-zinc-900 shrink-0">
             {logoPreview ? (
               <img
                 src={logoPreview}
@@ -374,7 +374,7 @@ export default function POSettings({ poId }: POSettingsProps) {
                 className="w-full h-full object-contain p-2"
               />
             ) : (
-              <div className="text-center text-slate-400">
+              <div className="text-center text-zinc-400 dark:text-zinc-500">
                 <ImageIcon size={28} className="mx-auto mb-1" />
                 <p className="text-[11px]">Belum ada logo</p>
               </div>
@@ -392,10 +392,10 @@ export default function POSettings({ poId }: POSettingsProps) {
                 disabled={uploadingLogo}
               />
               <span
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-md border text-sm font-semibold transition-colors duration-150 ${
                   uploadingLogo
-                    ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
-                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 cursor-pointer"
+                    ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-400 border-zinc-200 dark:border-zinc-800 cursor-not-allowed"
+                    : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-[#49bfb4] hover:text-[#49bfb4] cursor-pointer"
                 }`}
               >
                 {uploadingLogo ? (
@@ -415,14 +415,14 @@ export default function POSettings({ poId }: POSettingsProps) {
             {logoPreview && (
               <button
                 onClick={handleLogoDelete}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors duration-150"
               >
                 <Trash2 size={14} />
                 Hapus Kop
               </button>
             )}
 
-            <p className="text-[11px] text-slate-400 max-w-[200px]">
+            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 max-w-[200px]">
               Format: JPG, PNG, atau WebP. Upload langsung tersimpan otomatis.
             </p>
           </div>
@@ -446,7 +446,7 @@ export default function POSettings({ poId }: POSettingsProps) {
           hint="Contoh hasil: website.com/po/katalog-merch"
         >
           <div className="flex items-center">
-            <span className="px-3 py-2.5 bg-slate-100 dark:bg-slate-800/80 border border-r-0 border-slate-200 dark:border-slate-700 rounded-l-xl text-slate-500 text-sm font-mono">
+            <span className="px-3 py-2.5 bg-zinc-100 dark:bg-zinc-900 border border-r-0 border-zinc-200 dark:border-zinc-800 rounded-l-md text-zinc-500 dark:text-zinc-400 text-sm font-mono">
               /po/
             </span>
             <input
@@ -595,7 +595,7 @@ export default function POSettings({ poId }: POSettingsProps) {
       >
         <div className="flex flex-col sm:flex-row gap-4 items-start">
           {/* Preview */}
-          <div className="w-40 h-40 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800/50 shrink-0">
+          <div className="w-40 h-40 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex items-center justify-center overflow-hidden bg-zinc-50 dark:bg-zinc-900 shrink-0">
             {qrisPreview ? (
               <img
                 src={qrisPreview}
@@ -603,7 +603,7 @@ export default function POSettings({ poId }: POSettingsProps) {
                 className="w-full h-full object-contain p-2"
               />
             ) : (
-              <div className="text-center text-slate-400">
+              <div className="text-center text-zinc-400 dark:text-zinc-500">
                 <ImageIcon size={28} className="mx-auto mb-1" />
                 <p className="text-[11px]">Belum ada QRIS</p>
               </div>
@@ -621,10 +621,10 @@ export default function POSettings({ poId }: POSettingsProps) {
                 disabled={uploadingQris}
               />
               <span
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-md border text-sm font-semibold transition-colors duration-150 ${
                   uploadingQris
-                    ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
-                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 cursor-pointer"
+                    ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-400 border-zinc-200 dark:border-zinc-800 cursor-not-allowed"
+                    : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-[#49bfb4] hover:text-[#49bfb4] cursor-pointer"
                 }`}
               >
                 {uploadingQris ? (
@@ -644,14 +644,14 @@ export default function POSettings({ poId }: POSettingsProps) {
             {qrisPreview && (
               <button
                 onClick={handleQrisDelete}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors duration-150"
               >
                 <Trash2 size={14} />
                 Hapus QRIS
               </button>
             )}
 
-            <p className="text-[11px] text-slate-400 max-w-[200px]">
+            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 max-w-[200px]">
               Format: JPG, PNG, atau WebP. Upload langsung tersimpan otomatis.
             </p>
           </div>
@@ -661,14 +661,16 @@ export default function POSettings({ poId }: POSettingsProps) {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-40 transition-colors md:w-auto md:px-8 md:ml-auto"
+        className="w-full flex items-center justify-center gap-2 bg-[#124540] hover:bg-[#0d332f] text-white py-3 rounded-md font-semibold text-sm disabled:opacity-40 transition-colors duration-150 md:w-auto md:px-8 md:ml-auto"
       >
         <Save size={14} /> {saving ? "Menyimpan..." : "Simpan Semua Pengaturan"}
       </button>
 
-      <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 md:justify-end">
+      <div className="flex items-center justify-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500 md:justify-end">
         <Clock size={11} /> Terakhir diperbarui:{" "}
-        {new Date(setting.updated_at || new Date()).toLocaleString("id-ID")}
+        <span className="font-mono tabular-nums">
+          {new Date(setting.updated_at || new Date()).toLocaleString("id-ID")}
+        </span>
       </div>
     </div>
   );

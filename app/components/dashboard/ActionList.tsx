@@ -135,7 +135,7 @@ const ActionRow = memo(
 
     return (
       <div
-        className="group flex items-stretch cursor-pointer transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-slate-900"
+        className="group flex items-stretch cursor-pointer transition-colors duration-150 hover:bg-zinc-50 dark:hover:bg-zinc-900"
         onClick={() => onSelectOrder(order.id)}
       >
         {/* Indikator */}
@@ -145,17 +145,17 @@ const ActionRow = memo(
 
         <div className="flex-1 min-w-0 flex items-center gap-3 md:gap-4 px-3 md:px-4 py-3">
           {/* Nomor urut */}
-          <span className="font-mono tabular-nums text-[10px] text-slate-400 dark:text-slate-600 w-5 flex-shrink-0 pt-0.5">
+          <span className="font-mono tabular-nums text-[10px] text-zinc-400 dark:text-zinc-600 w-5 flex-shrink-0 pt-0.5">
             {String(index + 1).padStart(2, "0")}
           </span>
 
           {/* Isi */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 min-w-0">
-              <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
+              <p className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm truncate">
                 {order.nama_pemesan}
               </p>
-              <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 hidden md:inline">
+              <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500 hidden md:inline">
                 #{order.kode_produksi}
               </span>
               <span
@@ -174,7 +174,7 @@ const ActionRow = memo(
 
           {/* Deadline */}
           <div className="flex-shrink-0 text-right self-center">
-            <p className="font-mono tabular-nums text-[10px] text-slate-500 dark:text-slate-400">
+            <p className="font-mono tabular-nums text-[10px] text-zinc-500 dark:text-zinc-400">
               DL{" "}
               {new Date(order.deadline).toLocaleDateString("id-ID", {
                 day: "numeric",
@@ -187,7 +187,7 @@ const ActionRow = memo(
           <button
             onClick={handleShare}
             disabled={isSharing}
-            className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors duration-150 disabled:opacity-50 flex-shrink-0 self-center"
+            className="p-1.5 text-zinc-300 dark:text-zinc-600 hover:text-[#2589ff] hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150 disabled:opacity-50 flex-shrink-0 self-center"
             style={{ WebkitTapHighlightColor: "transparent" }}
             aria-label="Bagikan laporan"
           >
@@ -217,17 +217,17 @@ const ActionList = memo(function ActionList({
   onSelectOrder,
 }: ActionListProps) {
   return (
-    <section className="bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-      <header className="px-4 md:px-5 py-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
-        <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm md:text-base tracking-tight">
+    <section className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+      <header className="px-4 md:px-5 py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
+        <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm md:text-base tracking-tight">
           Perlu Tindakan Segera
         </h3>
-        <span className="font-mono tabular-nums text-[11px] text-slate-500 dark:text-slate-400">
+        <span className="font-mono tabular-nums text-[11px] text-zinc-500 dark:text-zinc-400">
           {String(actionItems.length).padStart(2, "0")} isu
         </span>
       </header>
 
-      <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
+      <div className="divide-y divide-zinc-100 dark:divide-zinc-800/70">
         {actionItems.slice(0, 10).map((item, index) => (
           <ActionRow
             key={item.uniqueKey}
@@ -238,7 +238,7 @@ const ActionList = memo(function ActionList({
         ))}
 
         {actionItems.length === 0 && (
-          <div className="px-4 py-10 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">
+          <div className="px-4 py-10 text-center flex flex-col items-center text-zinc-400 dark:text-zinc-500">
             <CheckCircle2
               className="w-8 h-8 mb-2 text-emerald-500"
               strokeWidth={1.5}

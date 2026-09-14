@@ -581,29 +581,32 @@ export default function PORekapList({ poId }: PORekapListProps) {
   /* ── Loading ── */
   if (loading)
     return (
-      <div className="flex items-center gap-3 py-8 text-slate-400 dark:text-slate-500">
-        <div className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 border-t-blue-500 rounded-full animate-spin" />
+      <div className="flex items-center gap-3 py-8 text-zinc-400 dark:text-zinc-500">
+        <div className="w-5 h-5 border-2 border-zinc-300 dark:border-zinc-700 border-t-[#49bfb4] rounded-full animate-spin" />
         <span className="text-sm">Memuat rekap...</span>
       </div>
     );
 
   return (
-    <div className="w-full space-y-5 animate-in fade-in duration-200">
+    <div className="w-full space-y-5">
       {/* Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-            {rekapList.length} produk dengan pesanan
+          <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+            <span className="font-mono tabular-nums">{rekapList.length}</span>{" "}
+            produk dengan pesanan
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-            Total {totalUnitProduksi} pcs untuk diproduksi
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+            Total{" "}
+            <span className="font-mono tabular-nums">{totalUnitProduksi}</span>{" "}
+            pcs untuk diproduksi
           </p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => load(true)}
             disabled={refreshing}
-            className="flex justify-center items-center gap-2 text-sm px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+            className="flex justify-center items-center gap-2 text-sm px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors duration-150"
           >
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
             Refresh
@@ -619,7 +622,7 @@ export default function PORekapList({ poId }: PORekapListProps) {
                 ? exporting || rekapList.length === 0
                 : exportingShortage || shortageList.length === 0
             }
-            className="flex justify-center items-center gap-2 text-sm px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-xl font-bold transition-colors"
+            className="flex justify-center items-center gap-2 text-sm px-4 py-2.5 bg-[#124540] hover:bg-[#0d332f] disabled:opacity-40 text-white rounded-md font-semibold transition-colors duration-150"
           >
             <Download
               size={14}
@@ -641,28 +644,28 @@ export default function PORekapList({ poId }: PORekapListProps) {
       </div>
 
       {/* ── Switcher Sub-Tab: Rekap Produksi vs Rekap Kekurangan ── */}
-      <div className="flex bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-1.5 w-fit">
+      <div className="flex bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-1.5 w-fit">
         <button
           onClick={() => setSubTab("produksi")}
-          className={`text-xs font-bold px-4 py-2 rounded-lg transition-all ${
+          className={`text-xs font-semibold px-4 py-2 rounded-md transition-colors duration-150 ${
             subTab === "produksi"
-              ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-              : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+              ? "bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100"
+              : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
           }`}
         >
           Rekap Produksi
         </button>
         <button
           onClick={() => setSubTab("kekurangan")}
-          className={`flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg transition-all ${
+          className={`flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-md transition-colors duration-150 ${
             subTab === "kekurangan"
-              ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-              : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+              ? "bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100"
+              : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
           }`}
         >
           Rekap Kekurangan
           {totalShortageUnits > 0 && (
-            <span className="bg-red-500 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full leading-none">
+            <span className="font-mono tabular-nums bg-red-600 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
               {totalShortageUnits}
             </span>
           )}
@@ -675,11 +678,14 @@ export default function PORekapList({ poId }: PORekapListProps) {
           {belanjaSections.length > 0 && (
             <div className="space-y-5">
               <div className="flex items-center gap-2">
-                <ShoppingBag size={16} className="text-slate-400" />
-                <h2 className="text-sm font-extrabold text-slate-700 dark:text-slate-200">
+                <ShoppingBag
+                  size={16}
+                  className="text-zinc-400 dark:text-zinc-500"
+                />
+                <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
                   Rekap Belanja Bahan
                 </h2>
-                <span className="text-xs text-slate-400 font-medium">
+                <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
                   — per warna & lengan, lintas semua produk
                 </span>
               </div>
@@ -695,19 +701,19 @@ export default function PORekapList({ poId }: PORekapListProps) {
                   return (
                     <div
                       key={section.key}
-                      className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden"
+                      className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden"
                     >
-                      <div className="bg-slate-50 dark:bg-slate-800/60 px-4 sm:px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+                      <div className="bg-zinc-50 dark:bg-zinc-900 px-4 sm:px-5 py-3.5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5">
                           <Icon
                             size={16}
-                            className="text-slate-500 dark:text-slate-400"
+                            className="text-zinc-500 dark:text-zinc-400"
                           />
-                          <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">
+                          <h3 className="font-semibold text-sm text-zinc-800 dark:text-zinc-200">
                             {section.label}
                           </h3>
                         </div>
-                        <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 shrink-0">
+                        <span className="font-mono tabular-nums text-xs font-semibold text-zinc-900 dark:text-zinc-100 shrink-0">
                           {section.totalJumlah} pcs
                         </span>
                       </div>
@@ -715,19 +721,19 @@ export default function PORekapList({ poId }: PORekapListProps) {
                       <div className="overflow-x-auto">
                         <table className="w-full text-xs sm:text-sm min-w-[420px]">
                           <thead>
-                            <tr className="bg-white dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-700">
-                              <th className="text-left px-4 py-2.5 font-extrabold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            <tr className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+                              <th className="text-left px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                                 WARNA / LENGAN
                               </th>
                               {section.columns.map((ukuran) => (
                                 <th
                                   key={ukuran}
-                                  className="text-center px-3 py-2.5 font-extrabold text-slate-600 dark:text-slate-300 whitespace-nowrap"
+                                  className="text-center px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 whitespace-nowrap"
                                 >
                                   {ukuran}
                                 </th>
                               ))}
-                              <th className="text-center px-4 py-2.5 font-extrabold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                              <th className="text-center px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                                 JML
                               </th>
                             </tr>
@@ -736,41 +742,41 @@ export default function PORekapList({ poId }: PORekapListProps) {
                             {section.rows.map((row) => (
                               <tr
                                 key={row.label}
-                                className="border-b border-slate-100 dark:border-slate-800 last:border-0"
+                                className="border-b border-zinc-200 dark:border-zinc-800 last:border-0"
                               >
-                                <td className="px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                                <td className="px-4 py-2.5 font-semibold text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                   {row.label}
                                 </td>
                                 {section.columns.map((ukuran) => (
                                   <td
                                     key={ukuran}
-                                    className="text-center px-3 py-2.5 text-slate-600 dark:text-slate-400"
+                                    className="font-mono tabular-nums text-center px-3 py-2.5 text-zinc-600 dark:text-zinc-400"
                                   >
                                     {row.perUkuran[ukuran] > 0
                                       ? row.perUkuran[ukuran]
                                       : ""}
                                   </td>
                                 ))}
-                                <td className="text-center px-4 py-2.5 font-bold text-slate-800 dark:text-slate-200">
+                                <td className="font-mono tabular-nums text-center px-4 py-2.5 font-semibold text-zinc-800 dark:text-zinc-200">
                                   {row.jumlah}
                                 </td>
                               </tr>
                             ))}
                           </tbody>
                           <tfoot>
-                            <tr className="bg-slate-50 dark:bg-slate-800/60 border-t-2 border-slate-300 dark:border-slate-600">
-                              <td className="px-4 py-3 font-extrabold text-slate-800 dark:text-slate-100">
+                            <tr className="bg-zinc-50 dark:bg-zinc-900 border-t-2 border-zinc-300 dark:border-zinc-700">
+                              <td className="px-4 py-3 font-semibold text-zinc-800 dark:text-zinc-100">
                                 TOTAL
                               </td>
                               {section.columns.map((ukuran) => (
                                 <td
                                   key={ukuran}
-                                  className="text-center px-3 py-3 font-extrabold text-slate-800 dark:text-slate-100"
+                                  className="font-mono tabular-nums text-center px-3 py-3 font-semibold text-zinc-800 dark:text-zinc-100"
                                 >
                                   {section.totalPerUkuran[ukuran] || 0}
                                 </td>
                               ))}
-                              <td className="text-center px-4 py-3 font-extrabold text-emerald-600 dark:text-emerald-400">
+                              <td className="font-mono tabular-nums text-center px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
                                 {section.totalJumlah}
                               </td>
                             </tr>
@@ -786,7 +792,7 @@ export default function PORekapList({ poId }: PORekapListProps) {
 
           {/* Empty State */}
           {rekapList.length === 0 ? (
-            <div className="py-16 flex flex-col items-center gap-3 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800 border-dashed rounded-2xl">
+            <div className="py-16 flex flex-col items-center gap-3 text-zinc-400 dark:text-zinc-500 border border-zinc-200 dark:border-zinc-800 border-dashed rounded-xl">
               <ClipboardList size={32} strokeWidth={1.2} />
               <p className="text-sm font-semibold">Belum ada data rekap</p>
               <p className="text-xs">
@@ -798,19 +804,19 @@ export default function PORekapList({ poId }: PORekapListProps) {
               {rekapList.map((rekap) => (
                 <div
                   key={rekap.product_id}
-                  className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden"
+                  className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden"
                 >
                   {/* Header produk */}
-                  <div className="bg-slate-50 dark:bg-slate-800/60 px-4 sm:px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+                  <div className="bg-zinc-50 dark:bg-zinc-900 px-4 sm:px-5 py-3.5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-md shrink-0">
+                      <span className="text-[10px] font-mono font-semibold text-zinc-500 dark:text-zinc-400 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 px-2 py-1 rounded-md shrink-0">
                         {rekap.product_code}
                       </span>
-                      <h3 className="font-bold text-sm sm:text-[15px] text-slate-800 dark:text-slate-200 truncate">
+                      <h3 className="font-semibold text-sm sm:text-[15px] text-zinc-800 dark:text-zinc-200 truncate">
                         {rekap.product_name}
                       </h3>
                     </div>
-                    <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 shrink-0">
+                    <span className="font-mono tabular-nums text-xs font-semibold text-zinc-900 dark:text-zinc-100 shrink-0">
                       {rekap.totalJumlah} pcs
                     </span>
                   </div>
@@ -819,19 +825,19 @@ export default function PORekapList({ poId }: PORekapListProps) {
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs sm:text-sm min-w-[480px]">
                       <thead>
-                        <tr className="bg-white dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-700">
-                          <th className="text-left px-4 py-2.5 font-extrabold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                        <tr className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+                          <th className="text-left px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                             JENIS
                           </th>
                           {rekap.ukuranList.map((ukuran) => (
                             <th
                               key={ukuran}
-                              className="text-center px-3 py-2.5 font-extrabold text-slate-600 dark:text-slate-300 whitespace-nowrap"
+                              className="text-center px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 whitespace-nowrap"
                             >
                               {ukuran}
                             </th>
                           ))}
-                          <th className="text-center px-4 py-2.5 font-extrabold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          <th className="text-center px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                             JUMLAH
                           </th>
                         </tr>
@@ -840,16 +846,16 @@ export default function PORekapList({ poId }: PORekapListProps) {
                         {rekap.rows.map((row) => (
                           <tr
                             key={row.jenis}
-                            className="border-b border-slate-100 dark:border-slate-800 last:border-0"
+                            className="border-b border-zinc-200 dark:border-zinc-800 last:border-0"
                           >
-                            <td className="px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                            <td className="px-4 py-2.5 font-semibold text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                               <span className="inline-flex items-center gap-1.5">
                                 {row.jenis}
                                 {row.isExtra && (
                                   <span title="Kombinasi ini tidak terdaftar di master produk saat ini">
                                     <AlertTriangle
                                       size={12}
-                                      className="text-amber-500"
+                                      className="text-orange-500"
                                     />
                                   </span>
                                 )}
@@ -858,33 +864,33 @@ export default function PORekapList({ poId }: PORekapListProps) {
                             {rekap.ukuranList.map((ukuran) => (
                               <td
                                 key={ukuran}
-                                className="text-center px-3 py-2.5 text-slate-600 dark:text-slate-400"
+                                className="font-mono tabular-nums text-center px-3 py-2.5 text-zinc-600 dark:text-zinc-400"
                               >
                                 {row.perUkuran[ukuran] > 0
                                   ? row.perUkuran[ukuran]
                                   : ""}
                               </td>
                             ))}
-                            <td className="text-center px-4 py-2.5 font-bold text-slate-800 dark:text-slate-200">
+                            <td className="font-mono tabular-nums text-center px-4 py-2.5 font-semibold text-zinc-800 dark:text-zinc-200">
                               {row.jumlah}
                             </td>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot>
-                        <tr className="bg-slate-50 dark:bg-slate-800/60 border-t-2 border-slate-300 dark:border-slate-600">
-                          <td className="px-4 py-3 font-extrabold text-slate-800 dark:text-slate-100">
+                        <tr className="bg-zinc-50 dark:bg-zinc-900 border-t-2 border-zinc-300 dark:border-zinc-700">
+                          <td className="px-4 py-3 font-semibold text-zinc-800 dark:text-zinc-100">
                             TOTAL
                           </td>
                           {rekap.ukuranList.map((ukuran) => (
                             <td
                               key={ukuran}
-                              className="text-center px-3 py-3 font-extrabold text-slate-800 dark:text-slate-100"
+                              className="font-mono tabular-nums text-center px-3 py-3 font-semibold text-zinc-800 dark:text-zinc-100"
                             >
                               {rekap.totalPerUkuran[ukuran] || 0}
                             </td>
                           ))}
-                          <td className="text-center px-4 py-3 font-extrabold text-emerald-600 dark:text-emerald-400">
+                          <td className="font-mono tabular-nums text-center px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
                             {rekap.totalJumlah}
                           </td>
                         </tr>
@@ -901,7 +907,7 @@ export default function PORekapList({ poId }: PORekapListProps) {
       {/* ── Sub-Tab: Rekap Kekurangan Stok ── */}
       {subTab === "kekurangan" &&
         (shortageList.length === 0 ? (
-          <div className="py-16 flex flex-col items-center gap-3 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800 border-dashed rounded-2xl">
+          <div className="py-16 flex flex-col items-center gap-3 text-zinc-400 dark:text-zinc-500 border border-zinc-200 dark:border-zinc-800 border-dashed rounded-xl">
             <PackageCheck
               size={32}
               strokeWidth={1.2}
@@ -915,56 +921,66 @@ export default function PORekapList({ poId }: PORekapListProps) {
         ) : (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <PackageX size={16} className="text-red-500" />
-              <h2 className="text-sm font-extrabold text-slate-700 dark:text-slate-200">
+              <PackageX size={16} className="text-red-600" />
+              <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
                 Rekap Kekurangan Stok
               </h2>
-              <span className="text-xs text-slate-400 font-medium">
-                — total {totalShortageUnits} pcs kurang, dikelompokkan per kode
-                produk
+              <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
+                — total{" "}
+                <span className="font-mono tabular-nums">
+                  {totalShortageUnits}
+                </span>{" "}
+                pcs kurang, dikelompokkan per kode produk
               </span>
             </div>
 
             {shortageList.map((produk) => (
               <div
                 key={produk.product_id}
-                className="border border-red-200 dark:border-red-900/50 rounded-2xl overflow-hidden"
+                className="border border-red-200 dark:border-red-900/50 rounded-xl overflow-hidden"
               >
                 <div className="bg-red-50 dark:bg-red-950/30 px-4 sm:px-5 py-3.5 border-b border-red-200 dark:border-red-900/50 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-[10px] font-mono font-bold text-red-600 dark:text-red-400 bg-white dark:bg-slate-900 border border-red-200 dark:border-red-900/50 px-2 py-1 rounded-md shrink-0">
+                    <span className="text-[10px] font-mono font-semibold text-red-600 dark:text-red-400 bg-white dark:bg-zinc-950 border border-red-200 dark:border-red-900/50 px-2 py-1 rounded-md shrink-0">
                       {produk.product_code}
                     </span>
-                    <h3 className="font-bold text-sm sm:text-[15px] text-slate-800 dark:text-slate-200 truncate">
+                    <h3 className="font-semibold text-sm sm:text-[15px] text-zinc-800 dark:text-zinc-200 truncate">
                       {produk.product_name}
                     </h3>
                   </div>
-                  <span className="text-xs font-extrabold text-red-600 dark:text-red-400 shrink-0">
+                  <span className="font-mono tabular-nums text-xs font-semibold text-red-600 dark:text-red-400 shrink-0">
                     {produk.totalKurang} pcs kurang
                   </span>
                 </div>
 
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
                   {produk.rows.map((row) => (
                     <div
                       key={`${row.jenis}::${row.ukuran}`}
                       className="px-4 sm:px-5 py-3"
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
                           {row.jenis} · Ukuran {row.ukuran}
                         </p>
-                        <span className="text-xs font-extrabold text-red-600 dark:text-red-400 shrink-0">
-                          Kurang {row.totalKurang}
+                        <span className="text-xs font-semibold text-red-600 dark:text-red-400 shrink-0">
+                          Kurang{" "}
+                          <span className="font-mono tabular-nums">
+                            {row.totalKurang}
+                          </span>
                         </span>
                       </div>
                       <div className="mt-1.5 flex flex-wrap gap-1.5">
                         {row.details.map((d, i) => (
                           <span
                             key={i}
-                            className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-lg"
+                            className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-1 rounded-md"
                           >
-                            {d.po_number} · {d.customer_name} ({d.qty})
+                            {d.po_number} · {d.customer_name} (
+                            <span className="font-mono tabular-nums">
+                              {d.qty}
+                            </span>
+                            )
                           </span>
                         ))}
                       </div>

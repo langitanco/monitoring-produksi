@@ -46,22 +46,20 @@ const PAYMENT_CONFIG: Record<
   BELUM_BAYAR: {
     label: "Belum Bayar",
     icon: XCircle,
-    className: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
-    iconClass: "text-red-600 dark:text-red-400",
+    className: "text-red-600 dark:text-red-500",
+    iconClass: "text-red-600 dark:text-red-500",
   },
   DP: {
     label: "DP",
     icon: CircleDollarSign,
-    className:
-      "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
-    iconClass: "text-amber-600 dark:text-amber-400",
+    className: "text-orange-600 dark:text-orange-500",
+    iconClass: "text-orange-600 dark:text-orange-500",
   },
   LUNAS: {
     label: "Lunas",
     icon: CheckCircle2,
-    className:
-      "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
-    iconClass: "text-emerald-600 dark:text-emerald-400",
+    className: "text-emerald-600 dark:text-emerald-500",
+    iconClass: "text-emerald-600 dark:text-emerald-500",
   },
 };
 
@@ -112,17 +110,17 @@ function PaymentStatusBadge({
           value={dpValue}
           onChange={(e) => setDpValue(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleConfirmDp()}
-          className="w-24 text-xs px-2 py-1 border border-amber-300 dark:border-amber-700 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-400"
+          className="w-24 text-xs px-2 py-1 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 hover:border-[#49bfb4]/50 focus:ring-2 focus:ring-[#49bfb4] focus:border-[#49bfb4] outline-none transition-colors duration-150"
         />
         <button
           onClick={handleConfirmDp}
-          className="text-[10px] font-bold px-2 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md"
+          className="text-[10px] font-semibold px-2 py-1 bg-[#124540] hover:bg-[#0d332f] text-white rounded-md transition-colors duration-150"
         >
           OK
         </button>
         <button
           onClick={() => setShowDpInput(false)}
-          className="text-[10px] font-bold px-2 py-1 text-slate-400 hover:text-slate-600"
+          className="text-[10px] font-semibold px-2 py-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors duration-150"
         >
           Batal
         </button>
@@ -134,12 +132,12 @@ function PaymentStatusBadge({
     <div className="relative inline-block" onClick={(e) => e.stopPropagation()}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-lg ${config.className} hover:opacity-80 transition-opacity`}
+        className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-150 ${config.className}`}
       >
         <Icon size={11} />
         {config.label}
         {order.payment_status === "DP" && order.paid_amount > 0 && (
-          <span className="opacity-75">
+          <span className="font-mono tabular-nums normal-case opacity-75">
             · {formatRupiah(order.paid_amount)}
           </span>
         )}
@@ -149,7 +147,7 @@ function PaymentStatusBadge({
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute z-20 mt-1.5 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden min-w-[140px]">
+          <div className="absolute z-20 mt-1.5 right-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden min-w-[140px]">
             {PAYMENT_OPTIONS.map((status) => {
               const c = PAYMENT_CONFIG[status];
               const I = c.icon;
@@ -157,7 +155,7 @@ function PaymentStatusBadge({
                 <button
                   key={status}
                   onClick={() => handleSelect(status)}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-150 text-left"
                 >
                   <I size={13} className={c.iconClass} />
                   {c.label}
@@ -633,8 +631,8 @@ export default function POOrderList({ poId }: POOrderListProps) {
   /* ── Loading ───────────────────────────────────────────────── */
   if (loading)
     return (
-      <div className="flex items-center gap-3 py-8 text-slate-400 dark:text-slate-500">
-        <div className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 border-t-blue-500 rounded-full animate-spin" />
+      <div className="flex items-center gap-3 py-8 text-zinc-400 dark:text-zinc-500">
+        <div className="w-5 h-5 border-2 border-zinc-300 dark:border-zinc-600 border-t-[#49bfb4] rounded-full animate-spin" />
         <span className="text-sm">Memuat pesanan...</span>
       </div>
     );
@@ -655,10 +653,10 @@ export default function POOrderList({ poId }: POOrderListProps) {
   /* ── Detail View ───────────────────────────────────────────── */
   if (selected) {
     return (
-      <div className="w-full max-w-4xl mx-auto space-y-5 animate-in fade-in duration-200">
+      <div className="w-full max-w-4xl mx-auto space-y-5">
         <button
           onClick={() => setSelected(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+          className="flex items-center gap-2 text-sm font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-white transition-colors duration-150"
         >
           <ArrowLeft size={15} /> Kembali ke daftar
         </button>
@@ -667,20 +665,20 @@ export default function POOrderList({ poId }: POOrderListProps) {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400 dark:text-zinc-500 mb-1">
                 Kode PO
               </p>
-              <p className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white font-mono tracking-tight">
+              <p className="text-2xl md:text-3xl font-semibold text-zinc-900 dark:text-white font-mono tabular-nums tracking-tight">
                 {selected.po_number}
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
               <span
-                className={`inline-flex w-max text-xs font-extrabold px-3 py-1.5 rounded-xl
+                className={`inline-flex w-max text-[10px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full border border-zinc-300/70 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80
                 ${
                   selected.customer_type === "RESELLER"
-                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                    ? "text-[#49bfb4]"
+                    : "text-zinc-500 dark:text-zinc-400"
                 }`}
               >
                 {selected.customer_type}
@@ -693,7 +691,7 @@ export default function POOrderList({ poId }: POOrderListProps) {
           </div>
 
           {/* Info Card */}
-          <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-5 space-y-4 text-sm">
+          <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 md:p-5 space-y-4 text-sm">
             {[
               { label: "Nama", value: selected.customer_name, bold: true },
               {
@@ -702,7 +700,7 @@ export default function POOrderList({ poId }: POOrderListProps) {
                   <a
                     href={`https://wa.me/${selected.customer_wa}`}
                     target="_blank"
-                    className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                    className="font-semibold text-[#49bfb4] hover:underline"
                   >
                     {selected.customer_wa}
                   </a>
@@ -746,18 +744,18 @@ export default function POOrderList({ poId }: POOrderListProps) {
                   key={row.label}
                   className={`flex flex-col sm:flex-row sm:justify-between items-start gap-1 sm:gap-4 ${
                     idx !== 0
-                      ? "pt-3 border-t border-slate-200 dark:border-slate-700/50"
+                      ? "pt-3 border-t border-zinc-200 dark:border-zinc-800"
                       : ""
                   }`}
                 >
-                  <span className="text-slate-500 dark:text-slate-400 shrink-0 text-xs sm:text-sm font-semibold sm:font-normal">
+                  <span className="text-zinc-500 dark:text-zinc-400 shrink-0 text-xs sm:text-sm font-semibold sm:font-normal">
                     {row.label}
                   </span>
                   <span
                     className={`sm:text-right ${
                       row.bold
-                        ? "font-bold text-slate-900 dark:text-white"
-                        : "text-slate-700 dark:text-slate-300"
+                        ? "font-semibold text-zinc-900 dark:text-white"
+                        : "text-zinc-700 dark:text-zinc-300"
                     }`}
                   >
                     {row.value}
@@ -767,15 +765,15 @@ export default function POOrderList({ poId }: POOrderListProps) {
           </div>
 
           {/* Items Table */}
-          <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden overflow-x-auto">
-            <div className="bg-slate-50 dark:bg-slate-800/60 px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-              <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden overflow-x-auto">
+            <div className="bg-zinc-50 dark:bg-zinc-900 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                 <Package size={12} /> Item Pesanan
               </p>
             </div>
             <table className="w-full text-xs min-w-[500px]">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900/50">
+                <tr className="border-b border-zinc-100 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 bg-white dark:bg-zinc-950">
                   <th className="text-left px-4 py-3 font-semibold">Produk</th>
                   <th className="text-center px-3 py-3 font-semibold">Warna</th>
                   <th className="text-center px-3 py-3 font-semibold">
@@ -794,43 +792,45 @@ export default function POOrderList({ poId }: POOrderListProps) {
                 {selected.order_items.map((item, i) => (
                   <tr
                     key={i}
-                    className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors"
+                    className="border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150"
                   >
-                    <td className="px-4 py-3 font-bold text-slate-800 dark:text-slate-200">
+                    <td className="px-4 py-3 font-semibold text-zinc-800 dark:text-zinc-200">
                       {item.product_name}
                     </td>
-                    <td className="px-3 py-3 text-center text-slate-600 dark:text-slate-400">
+                    <td className="px-3 py-3 text-center text-zinc-600 dark:text-zinc-400">
                       {item.warna}
                     </td>
-                    <td className="px-3 py-3 text-center text-slate-600 dark:text-slate-400">
+                    <td className="px-3 py-3 text-center text-zinc-600 dark:text-zinc-400">
                       {item.lengan}
                     </td>
-                    <td className="px-3 py-3 text-center text-slate-600 dark:text-slate-400">
+                    <td className="px-3 py-3 text-center text-zinc-600 dark:text-zinc-400">
                       {item.ukuran}
                     </td>
-                    <td className="px-3 py-3 text-center font-semibold text-slate-700 dark:text-slate-300">
+                    <td className="px-3 py-3 text-center font-mono tabular-nums font-semibold text-zinc-700 dark:text-zinc-300">
                       {item.qty}
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-slate-800 dark:text-slate-200">
+                    <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-zinc-800 dark:text-zinc-200">
                       {formatRupiah(item.subtotal)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="flex justify-between items-center px-4 py-4 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-700">
-              <span className="text-xs font-extrabold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <div className="flex justify-between items-center px-4 py-4 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 Total Keseluruhan
               </span>
-              <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+              <span className="font-mono tabular-nums text-lg font-semibold text-emerald-600 dark:text-emerald-500">
                 {formatRupiah(selected.total_amount)}
               </span>
             </div>
           </div>
 
           {selected.notes && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-xl px-4 py-3.5 text-sm text-amber-800 dark:text-amber-400 leading-relaxed">
-              <span className="font-bold block mb-1">Catatan Pembeli:</span>
+            <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500 block mb-1">
+                Catatan Pembeli
+              </span>
               {selected.notes}
             </div>
           )}
@@ -840,10 +840,10 @@ export default function POOrderList({ poId }: POOrderListProps) {
             <button
               onClick={openEditMode}
               disabled={loadingMeta}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 text-sm border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 py-3 rounded-xl font-semibold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 text-sm border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 py-3 rounded-md font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150 disabled:opacity-50"
             >
               {loadingMeta ? (
-                <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-zinc-300 border-t-[#49bfb4] rounded-full animate-spin" />
               ) : (
                 <Pencil size={15} />
               )}
@@ -856,7 +856,7 @@ export default function POOrderList({ poId }: POOrderListProps) {
             <button
               onClick={() => handleDownloadPdf(selected)}
               disabled={downloadingPdf}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 text-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 py-3 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 text-sm border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 py-3 rounded-md font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150 disabled:opacity-50"
             >
               <Download
                 size={15}
@@ -872,13 +872,13 @@ export default function POOrderList({ poId }: POOrderListProps) {
                 buildOrderConfirmationMessage(selected),
               )}
               target="_blank"
-              className="w-full sm:flex-1 flex items-center justify-center gap-2 text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl transition-colors shadow-sm"
+              className="w-full sm:flex-1 flex items-center justify-center gap-2 text-sm font-semibold bg-[#124540] hover:bg-[#0d332f] text-white py-3 rounded-md transition-colors duration-150"
             >
               <MessageCircle size={16} /> Hubungi via WhatsApp
             </a>
             <button
               onClick={() => handleDelete(selected.id, selected.po_number)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 text-sm border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 py-3 rounded-xl font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 text-sm border border-red-200 dark:border-red-900 text-red-600 dark:text-red-500 py-3 rounded-md font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150"
             >
               <Trash2 size={15} /> Hapus Pesanan
             </button>
@@ -902,21 +902,21 @@ export default function POOrderList({ poId }: POOrderListProps) {
 
   /* ── List View ─────────────────────────────────────────────── */
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 animate-in fade-in duration-200">
+    <div className="w-full max-w-5xl mx-auto space-y-4">
       {/* Filter & Search */}
       <div className="flex flex-col lg:flex-row gap-3">
         {/* Search Bar */}
         <div className="relative w-full lg:flex-1">
           <Search
             size={16}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500"
           />
           <input
             type="text"
             placeholder="Cari nama atau kode PO..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 dark:focus:border-blue-500 transition-all"
+            className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-md pl-10 pr-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 hover:border-[#49bfb4]/50 focus:ring-2 focus:ring-[#49bfb4] focus:border-[#49bfb4] outline-none transition-colors duration-150"
           />
         </div>
 
@@ -925,7 +925,7 @@ export default function POOrderList({ poId }: POOrderListProps) {
           <button
             onClick={() => load(true)}
             disabled={refreshing}
-            className="flex-1 sm:w-auto flex justify-center items-center gap-2 text-sm px-3 sm:px-5 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+            className="flex-1 sm:w-auto flex justify-center items-center gap-2 text-sm px-3 sm:px-5 py-3 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150"
           >
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
             Refresh
@@ -934,7 +934,7 @@ export default function POOrderList({ poId }: POOrderListProps) {
           <button
             onClick={handleExportExcel}
             disabled={exporting || filtered.length === 0}
-            className="flex-1 sm:w-auto flex justify-center items-center gap-2 text-sm px-3 sm:px-5 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-xl font-bold transition-colors"
+            className="flex-1 sm:w-auto flex justify-center items-center gap-2 text-sm px-3 sm:px-5 py-3 bg-[#124540] hover:bg-[#0d332f] disabled:bg-zinc-300 dark:disabled:bg-zinc-700 text-white rounded-md font-semibold transition-colors duration-150"
           >
             <Download size={14} className={exporting ? "animate-bounce" : ""} />
             {exporting ? "Membuat..." : "Excel"}
@@ -944,16 +944,16 @@ export default function POOrderList({ poId }: POOrderListProps) {
 
       {/* Tab Filter Tipe & Pembayaran */}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-        <div className="flex w-full sm:w-auto bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-1.5">
+        <div className="flex w-full sm:w-auto bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-1.5">
           {(["ALL", "PUBLIC", "RESELLER"] as const).map((type) => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`flex-1 sm:flex-none text-xs font-bold px-4 py-2 rounded-lg transition-all
+              className={`flex-1 sm:flex-none text-xs font-semibold px-4 py-2 rounded-md transition-colors duration-150
                 ${
                   filterType === type
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                    : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
                 }`}
             >
               {type === "ALL" ? "Semua" : type}
@@ -961,16 +961,16 @@ export default function POOrderList({ poId }: POOrderListProps) {
           ))}
         </div>
 
-        <div className="flex w-full sm:w-auto bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-1.5">
+        <div className="flex w-full sm:w-auto bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-1.5">
           {(["ALL", "BELUM_BAYAR", "DP", "LUNAS"] as const).map((status) => (
             <button
               key={status}
               onClick={() => setFilterPayment(status)}
-              className={`flex-1 sm:flex-none text-xs font-bold px-4 py-2 rounded-lg transition-all
+              className={`flex-1 sm:flex-none text-xs font-semibold px-4 py-2 rounded-md transition-colors duration-150
                 ${
                   filterPayment === status
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                    : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
                 }`}
             >
               {status === "ALL" ? "Semua Bayar" : PAYMENT_CONFIG[status].label}
@@ -979,23 +979,24 @@ export default function POOrderList({ poId }: POOrderListProps) {
         </div>
       </div>
 
-      <p className="text-xs font-medium text-slate-400 dark:text-slate-500">
-        {filtered.length} pesanan ditemukan
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+        <span className="font-mono tabular-nums">{filtered.length}</span>{" "}
+        pesanan ditemukan
       </p>
 
       {/* Empty State */}
       {filtered.length === 0 ? (
-        <div className="py-16 flex flex-col items-center gap-3 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800 border-dashed rounded-2xl">
+        <div className="py-16 flex flex-col items-center gap-3 text-zinc-400 dark:text-zinc-500 border border-zinc-200 dark:border-zinc-800 border-dashed rounded-xl">
           <Package size={32} strokeWidth={1.2} />
           <p className="text-sm font-semibold">Belum ada pesanan</p>
           <p className="text-xs">Coba ubah filter atau kata kunci pencarian</p>
         </div>
       ) : (
         /* Order Table */
-        <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden overflow-x-auto bg-white dark:bg-slate-900/20">
+        <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden overflow-x-auto bg-white dark:bg-zinc-950">
           <table className="w-full text-sm min-w-[820px]">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 <th className="text-left px-5 py-3.5">Kode PO</th>
                 <th className="text-left px-5 py-3.5">Pelanggan</th>
                 <th className="text-center px-5 py-3.5">Tipe</th>
@@ -1010,30 +1011,30 @@ export default function POOrderList({ poId }: POOrderListProps) {
                 <tr
                   key={order.id}
                   onClick={() => setSelected(order)}
-                  className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer group transition-colors"
+                  className="border-b border-zinc-100 dark:border-zinc-800/60 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer group transition-colors duration-150"
                 >
                   <td className="px-5 py-4">
-                    <span className="font-mono text-xs font-extrabold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
+                    <span className="font-mono tabular-nums text-xs font-semibold px-2.5 py-1 rounded-full border border-zinc-300/70 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300">
                       {order.po_number}
                     </span>
                   </td>
                   <td className="px-5 py-4">
-                    <p className="font-semibold text-slate-800 dark:text-slate-200">
+                    <p className="font-semibold text-zinc-800 dark:text-zinc-200">
                       {order.customer_name}
                     </p>
                     {order.po_resellers && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                         {order.po_resellers.kode}
                       </p>
                     )}
                   </td>
                   <td className="px-5 py-4 text-center">
                     <span
-                      className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg
+                      className={`text-[10px] font-semibold uppercase tracking-wide
                       ${
                         order.customer_type === "RESELLER"
-                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                          ? "text-[#49bfb4]"
+                          : "text-zinc-400 dark:text-zinc-500"
                       }`}
                     >
                       {order.customer_type}
@@ -1045,10 +1046,10 @@ export default function POOrderList({ poId }: POOrderListProps) {
                       onChange={handlePaymentChange}
                     />
                   </td>
-                  <td className="px-5 py-4 text-right font-bold text-slate-800 dark:text-slate-200">
+                  <td className="px-5 py-4 text-right font-mono tabular-nums font-semibold text-zinc-800 dark:text-zinc-200">
                     {formatRupiah(order.total_amount)}
                   </td>
-                  <td className="px-5 py-4 text-right text-xs text-slate-500 dark:text-slate-400">
+                  <td className="px-5 py-4 text-right font-mono tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
                     {new Date(order.created_at).toLocaleDateString("id-ID", {
                       day: "numeric",
                       month: "short",
@@ -1057,7 +1058,7 @@ export default function POOrderList({ poId }: POOrderListProps) {
                   <td className="px-5 py-4 text-right">
                     <ChevronRight
                       size={18}
-                      className="text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors ml-auto"
+                      className="text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors duration-150 ml-auto"
                     />
                   </td>
                 </tr>

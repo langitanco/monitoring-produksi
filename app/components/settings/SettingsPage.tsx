@@ -4,16 +4,12 @@
 import React, { useState, useEffect } from "react";
 import {
   Trash2,
-  UserPlus,
-  Package,
   Pencil,
   X,
   Eye,
   EyeOff,
   Check,
   Minus,
-  Shield,
-  Megaphone,
   Bell,
 } from "lucide-react";
 import {
@@ -221,7 +217,7 @@ function PermCell({
   if (disabled) {
     return (
       <td className="px-3 py-2.5 text-center">
-        <Minus className="w-3.5 h-3.5 text-slate-300 dark:text-slate-700 mx-auto" />
+        <Minus className="w-3.5 h-3.5 text-zinc-300 dark:text-zinc-700 mx-auto" />
       </td>
     );
   }
@@ -229,10 +225,10 @@ function PermCell({
     <td className="px-3 py-2.5 text-center" title={tooltip}>
       <button
         onClick={onChange}
-        className={`w-5 h-5 rounded border mx-auto flex items-center justify-center transition-all ${
+        className={`w-5 h-5 rounded-md border mx-auto flex items-center justify-center transition-colors duration-150 ${
           active
-            ? "bg-blue-600 border-blue-600 shadow-sm"
-            : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:border-blue-400"
+            ? "bg-[#124540] border-[#124540]"
+            : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-500"
         }`}
       >
         {active && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
@@ -259,32 +255,32 @@ function PermissionTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr className="bg-slate-50 dark:bg-slate-800/60">
-            <th className="px-3 py-2.5 text-left text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide border-b border-slate-200 dark:border-slate-700 w-[40%]">
+          <tr className="bg-zinc-50 dark:bg-zinc-900">
+            <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em] border-b border-zinc-200 dark:border-zinc-800 w-[40%]">
               Modul / Fitur
             </th>
-            <th className="px-3 py-2.5 text-center text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide border-b border-slate-200 dark:border-slate-700">
+            <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em] border-b border-zinc-200 dark:border-zinc-800">
               Lihat
             </th>
-            <th className="px-3 py-2.5 text-center text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide border-b border-slate-200 dark:border-slate-700">
+            <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em] border-b border-zinc-200 dark:border-zinc-800">
               Buat
             </th>
-            <th className="px-3 py-2.5 text-center text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide border-b border-slate-200 dark:border-slate-700">
+            <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em] border-b border-zinc-200 dark:border-zinc-800">
               Edit
             </th>
-            <th className="px-3 py-2.5 text-center text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide border-b border-slate-200 dark:border-slate-700">
+            <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em] border-b border-zinc-200 dark:border-zinc-800">
               Hapus
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+        <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
           {MODULES.map((mod) => (
             <tr
               key={mod.key}
-              className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition"
+              className="hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150"
             >
               <td className="px-3 py-2.5">
-                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                   {mod.label}
                 </span>
               </td>
@@ -587,75 +583,79 @@ export default function SettingsPage({
   // ─── Shared styles ──────────────────────────────────────────────────────────
 
   const inputCls =
-    "w-full border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500 transition placeholder-slate-400 dark:placeholder-slate-500";
+    "w-full border border-zinc-200 dark:border-zinc-800 rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-600 transition-colors duration-150 placeholder-zinc-400 dark:placeholder-zinc-500";
   const labelCls =
-    "block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1";
+    "block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em] mb-1";
 
   const showEditor = selectedUser !== null || isNewUser;
 
-  const typeColors: Record<Announcement["type"], string> = {
-    info: "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-900/40",
-    warning:
-      "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border-yellow-100 dark:border-yellow-900/40",
-    success:
-      "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/40",
-    update:
-      "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-900/40",
+  // Status = indikator titik + teks berwarna (bukan badge kotak penuh)
+  const typeTextColors: Record<Announcement["type"], string> = {
+    info: "text-zinc-500 dark:text-zinc-400",
+    warning: "text-orange-600 dark:text-orange-500",
+    success: "text-emerald-600 dark:text-emerald-500",
+    update: "text-purple-600 dark:text-purple-500",
+  };
+
+  const typeDotColors: Record<Announcement["type"], string> = {
+    info: "bg-zinc-400",
+    warning: "bg-orange-600",
+    success: "bg-emerald-600",
+    update: "bg-purple-600",
   };
 
   const typeLabels: Record<Announcement["type"], string> = {
-    info: "ℹ️ Info",
-    warning: "⚠️ Peringatan",
-    success: "✅ Sukses",
-    update: "📣 Update",
+    info: "Info",
+    warning: "Peringatan",
+    success: "Sukses",
+    update: "Update",
   };
 
   return (
     <div className="space-y-8 pb-24">
       {/* ── BAGIAN 1: JENIS PRODUKSI ── */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+        <div className="flex justify-between items-center bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 md:p-6">
           <div>
-            <h2 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <Package className="w-4 h-4 text-green-600 dark:text-green-500" />{" "}
+            <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
               Jenis Produksi
             </h2>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               Master data varian produksi
             </p>
           </div>
           <button
             onClick={() => openTypeModal()}
-            className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition shadow-sm"
+            className="bg-[#124540] hover:bg-[#0d332f] text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors duration-150"
           >
             + Tambah
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {productionTypes.map((pt) => (
             <div
               key={pt.id}
-              className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex justify-between items-center shadow-sm"
+              className="bg-white dark:bg-zinc-950 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 flex justify-between items-center"
             >
               <div>
-                <div className="font-bold text-slate-700 dark:text-slate-200 text-sm">
+                <div className="font-semibold text-zinc-800 dark:text-zinc-200 text-sm">
                   {pt.name}
                 </div>
-                <div className="font-mono text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded mt-0.5 w-fit">
+                <div className="font-mono tabular-nums text-[11px] px-2.5 py-1 rounded-full border border-zinc-300/70 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 mt-1 w-fit">
                   {pt.value}
                 </div>
               </div>
               <div className="flex gap-1">
                 <button
                   onClick={() => openTypeModal(pt)}
-                  className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition"
+                  className="p-1.5 text-zinc-300 dark:text-zinc-600 hover:text-[#2589ff] hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150"
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => onDeleteProductionType(pt.id)}
-                  className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
+                  className="p-1.5 text-zinc-300 dark:text-zinc-600 hover:text-red-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -665,73 +665,72 @@ export default function SettingsPage({
         </div>
       </div>
 
-      <hr className="border-slate-200 dark:border-slate-800" />
+      <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
 
       {/* ── BAGIAN 2: DATA PENGGUNA ── */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+        <div className="flex justify-between items-center bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 md:p-6">
           <div>
-            <h2 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <UserPlus className="w-4 h-4 text-blue-600 dark:text-blue-500" />{" "}
+            <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
               Data Pengguna
             </h2>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               Kelola akses user aplikasi
             </p>
           </div>
           <button
             onClick={handleNewUser}
-            className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-sm"
+            className="bg-[#124540] hover:bg-[#0d332f] text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors duration-150"
           >
             + User Baru
           </button>
         </div>
 
         <div
-          className={`grid gap-4 ${showEditor ? "grid-cols-1 lg:grid-cols-5" : "grid-cols-1"}`}
+          className={`grid gap-4 md:gap-6 ${showEditor ? "grid-cols-1 lg:grid-cols-5" : "grid-cols-1"}`}
         >
           {/* Daftar User */}
           <div
-            className={`${showEditor ? "lg:col-span-2" : ""} bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm`}
+            className={`${showEditor ? "lg:col-span-2" : ""} bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden`}
           >
-            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-              <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+            <div className="px-4 md:px-5 py-4 border-b border-zinc-200 dark:border-zinc-800">
+              <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em]">
                 Daftar User
               </p>
             </div>
-            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+            <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {users.map((u) => {
                 const isSelected = selectedUser?.id === u.id;
                 return (
                   <li
                     key={u.id}
                     onClick={() => handleSelectUser(u)}
-                    className={`flex items-center justify-between px-4 py-3 cursor-pointer transition ${
+                    className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors duration-150 ${
                       isSelected
-                        ? "bg-blue-50 dark:bg-blue-900/20 border-l-2 border-l-blue-600"
-                        : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                        ? "bg-zinc-50 dark:bg-zinc-900 border-l-2 border-l-[#124540]"
+                        : "hover:bg-zinc-50 dark:hover:bg-zinc-900"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border shadow-sm ${
+                        className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm border ${
                           isSelected
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700"
+                            ? "bg-[#124540] text-white border-[#124540]"
+                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700"
                         }`}
                       >
                         {u.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                           {u.name}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                          <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500">
                             @{u.username}
                           </span>
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 uppercase">
-                            {u.role}
+                          <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em]">
+                            · {u.role}
                           </span>
                         </div>
                       </div>
@@ -745,7 +744,7 @@ export default function SettingsPage({
                           setIsNewUser(false);
                         }
                       }}
-                      className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                      className="p-1.5 text-zinc-300 dark:text-zinc-600 hover:text-red-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -758,20 +757,19 @@ export default function SettingsPage({
           {/* Editor: Info + Permission Table */}
           {showEditor && (
             <div className="lg:col-span-3 space-y-4">
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
-                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide flex items-center gap-2">
-                    <UserPlus className="w-3.5 h-3.5" />
+              <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                <div className="px-4 md:px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                  <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em]">
                     {isNewUser ? "User Baru" : `Edit: ${selectedUser?.name}`}
                   </p>
                   <button
                     onClick={handleCancel}
-                    className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                    className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors duration-150"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className={labelCls}>Nama Lengkap</label>
                     <input
@@ -811,7 +809,7 @@ export default function SettingsPage({
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-[#2589ff] transition-colors duration-150"
                       >
                         {showPassword ? (
                           <EyeOff size={14} />
@@ -843,12 +841,12 @@ export default function SettingsPage({
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide flex items-center gap-2">
-                    <Shield className="w-3.5 h-3.5" /> Hak Akses
+              <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                <div className="px-4 md:px-5 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                  <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em]">
+                    Hak Akses
                   </p>
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                     Klik sel untuk toggle. Hover untuk melihat keterangan.
                   </p>
                 </div>
@@ -861,13 +859,13 @@ export default function SettingsPage({
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={handleCancel}
-                  className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                  className="px-4 py-2 rounded-md border border-zinc-200 dark:border-zinc-800 text-sm font-semibold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150"
                 >
                   Batal
                 </button>
                 <button
                   onClick={handleSubmitUser}
-                  className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 shadow-sm transition"
+                  className="px-5 py-2 rounded-md bg-[#124540] hover:bg-[#0d332f] text-white text-sm font-semibold transition-colors duration-150"
                 >
                   Simpan Perubahan
                 </button>
@@ -880,25 +878,25 @@ export default function SettingsPage({
       {/* ── BAGIAN 4: BACKUP DATA — hanya admin ── */}
       {currentUser.role === "supervisor" && (
         <>
-          <hr className="border-slate-200 dark:border-slate-800" />
+          <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
 
           <div className="space-y-4">
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
-              <h2 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <Shield className="w-4 h-4 text-slate-500" /> Backup Data
+            <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 md:p-6">
+              <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                Backup Data
               </h2>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                 Download semua data aplikasi dalam format JSON. Hanya dapat
                 diakses oleh admin.
               </p>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm p-4 flex items-center justify-between gap-4">
+            <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 md:p-6 flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
                   Export semua data
                 </p>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                   Mencakup semua tabel: pesanan, produksi, pengguna, dan
                   lainnya.
                 </p>
@@ -906,7 +904,7 @@ export default function SettingsPage({
               <button
                 onClick={handleBackup}
                 disabled={backupLoading}
-                className="shrink-0 flex items-center gap-2 bg-slate-800 dark:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-700 dark:hover:bg-slate-600 shadow-sm transition disabled:opacity-50"
+                className="shrink-0 flex items-center gap-2 bg-[#124540] hover:bg-[#0d332f] text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-150 disabled:opacity-50"
               >
                 {backupLoading ? (
                   <>
@@ -914,7 +912,7 @@ export default function SettingsPage({
                     Menyiapkan...
                   </>
                 ) : (
-                  <>⬇ Download Backup</>
+                  <>Download Backup</>
                 )}
               </button>
             </div>
@@ -933,7 +931,7 @@ export default function SettingsPage({
 
           alert(`Result: ${result}`);
         }}
-        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 shadow-sm transition"
+        className="flex items-center gap-2 bg-[#124540] hover:bg-[#0d332f] text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-150"
       >
         <Bell className="w-4 h-4" />
         Aktifkan Notifikasi Push
@@ -942,26 +940,26 @@ export default function SettingsPage({
       {/* ── BAGIAN 3: PENGUMUMAN — hanya management ── */}
       {isManagement && (
         <>
-          <hr className="border-slate-200 dark:border-slate-800" />
+          <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
 
           <div className="space-y-4">
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
-              <h2 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-orange-500" /> Pengumuman
+            <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 md:p-6">
+              <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                Pengumuman
               </h2>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                 Kirim informasi atau update ke semua anggota
               </p>
             </div>
 
             {/* Form buat pengumuman */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+            <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+              <div className="px-4 md:px-5 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em]">
                   Buat Pengumuman Baru
                 </p>
               </div>
-              <div className="p-4 space-y-3">
+              <div className="p-5 md:p-6 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className={labelCls}>Judul</label>
@@ -986,10 +984,10 @@ export default function SettingsPage({
                         })
                       }
                     >
-                      <option value="info">ℹ️ Info</option>
-                      <option value="warning">⚠️ Peringatan</option>
-                      <option value="success">✅ Sukses</option>
-                      <option value="update">📣 Update Aplikasi</option>
+                      <option value="info">Info</option>
+                      <option value="warning">Peringatan</option>
+                      <option value="success">Sukses</option>
+                      <option value="update">Update Aplikasi</option>
                     </select>
                   </div>
                 </div>
@@ -1023,7 +1021,7 @@ export default function SettingsPage({
                       !annForm.message.trim() ||
                       annLoading
                     }
-                    className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-orange-600 shadow-sm transition disabled:opacity-50"
+                    className="bg-[#124540] hover:bg-[#0d332f] text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-150 disabled:opacity-50"
                   >
                     {annLoading ? "Mengirim..." : "Kirim Pengumuman"}
                   </button>
@@ -1033,43 +1031,53 @@ export default function SettingsPage({
 
             {/* Daftar pengumuman */}
             {announcements.length > 0 && (
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide flex items-center gap-2">
-                    <Bell className="w-3.5 h-3.5" /> Riwayat Pengumuman
+              <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                <div className="px-4 md:px-5 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                  <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em]">
+                    Riwayat Pengumuman
                   </p>
                 </div>
-                <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
                   {announcements.map((a) => (
                     <li
                       key={a.id}
                       className="flex items-start justify-between gap-3 px-4 py-3"
                     >
                       <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${typeColors[a.type]}`}
-                          >
-                            {typeLabels[a.type]}
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="flex items-center gap-1.5">
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${typeDotColors[a.type]}`}
+                            />
+                            <span
+                              className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${typeTextColors[a.type]}`}
+                            >
+                              {typeLabels[a.type]}
+                            </span>
                           </span>
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                              a.is_active
-                                ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/40"
-                                : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700"
-                            }`}
-                          >
-                            {a.is_active ? "Aktif" : "Nonaktif"}
+                          <span className="flex items-center gap-1.5">
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${a.is_active ? "bg-emerald-600" : "bg-zinc-400"}`}
+                            />
+                            <span
+                              className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                                a.is_active
+                                  ? "text-emerald-600 dark:text-emerald-500"
+                                  : "text-zinc-400 dark:text-zinc-500"
+                              }`}
+                            >
+                              {a.is_active ? "Aktif" : "Nonaktif"}
+                            </span>
                           </span>
                         </div>
-                        <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">
+                        <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">
                           {a.title}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">
                           {a.message}
                         </p>
                         {a.expires_at && (
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                          <p className="font-mono tabular-nums text-[10px] text-zinc-400 dark:text-zinc-500">
                             Expired:{" "}
                             {new Date(a.expires_at).toLocaleString("id-ID", {
                               timeZone: "Asia/Jakarta",
@@ -1087,17 +1095,17 @@ export default function SettingsPage({
                           onClick={() =>
                             handleToggleAnnouncement(a.id, a.is_active)
                           }
-                          className={`text-xs font-bold px-2 py-1 rounded-lg transition ${
+                          className={`text-xs font-semibold px-2 py-1 rounded-md transition-colors duration-150 ${
                             a.is_active
-                              ? "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                              : "text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              ? "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                              : "text-emerald-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                           }`}
                         >
                           {a.is_active ? "Nonaktifkan" : "Aktifkan"}
                         </button>
                         <button
                           onClick={() => handleDeleteAnnouncement(a.id)}
-                          className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                          className="p-1.5 text-zinc-300 dark:text-zinc-600 hover:text-red-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors duration-150"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -1114,8 +1122,8 @@ export default function SettingsPage({
       {/* ── MODAL EDIT TYPE ── */}
       {isTypeModalOpen && editingType && (
         <div className="fixed inset-0 bg-black/70 z-[99] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl w-full max-w-sm shadow-2xl animate-in zoom-in duration-200 border border-slate-100 dark:border-slate-800">
-            <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-white">
+          <div className="bg-white dark:bg-zinc-950 p-6 rounded-xl w-full max-w-sm border border-zinc-200 dark:border-zinc-800">
+            <h3 className="text-base font-semibold tracking-tight mb-4 text-zinc-900 dark:text-zinc-100">
               {editingType.id ? "Edit" : "Tambah"} Jenis Produksi
             </h3>
             <form onSubmit={handleTypeSubmit} className="space-y-4">
@@ -1146,13 +1154,13 @@ export default function SettingsPage({
                 <button
                   type="button"
                   onClick={() => setIsTypeModalOpen(false)}
-                  className="flex-1 py-2 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-sm"
+                  className="flex-1 py-2 border border-zinc-200 dark:border-zinc-800 rounded-md font-semibold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150 text-sm"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-sm transition text-sm"
+                  className="flex-1 py-2 bg-[#124540] hover:bg-[#0d332f] text-white rounded-md font-semibold transition-colors duration-150 text-sm"
                 >
                   Simpan
                 </button>
