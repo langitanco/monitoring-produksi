@@ -109,7 +109,7 @@ function NotifPanel({
           {hasUnread && (
             <button
               onClick={onMarkAllRead}
-              className="text-[11px] font-semibold text-[#124540] hover:underline transition-colors duration-150 whitespace-nowrap"
+              className="text-[11px] font-semibold text-[#49BFB4] hover:underline transition-colors duration-150 whitespace-nowrap"
             >
               Tandai semua dibaca
             </button>

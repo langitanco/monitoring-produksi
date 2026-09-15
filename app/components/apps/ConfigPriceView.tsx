@@ -19,6 +19,12 @@ export default function ConfigPriceView() {
 
   // State Data
   const [configs, setConfigs] = useState<any[]>([]);
+  // ── TAMBAHAN ── salinan nilai awal (hasil fetch) untuk deteksi baris mana
+  // yang benar-benar berubah saat "Simpan Perubahan" ditekan — supaya kita
+  // tidak insert baris histori baru untuk key yang nilainya tidak diubah.
+  const [originalConfigs, setOriginalConfigs] = useState<
+    Record<number, number>
+  >({});
   const [addons, setAddons] = useState<any[]>([]);
 
   // State UI
@@ -59,21 +65,36 @@ export default function ConfigPriceView() {
   }, []);
 
   const fetchData = async () => {
+    // ── TAMBAHAN ── select semua histori, lalu ambil satu baris "berlaku saat
+    // ini" per key_name (effective_date terbesar yang <= hari ini). Baris
+    // lama tetap ada di DB untuk kalkulasi gaji periode lampau (SalaryView).
     const { data: configData } = await supabase
       .from("pricing_configs")
-      .select("*");
+      .select("*")
+      .order("effective_date", { ascending: true });
     const { data: addonData } = await supabase
       .from("product_addons")
       .select("*")
       .order("id", { ascending: true });
 
     if (configData) {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const latestByKey = new Map<string, any>();
+      for (const row of configData) {
+        // Lewati baris yang berlaku di masa depan (dijadwalkan tapi belum aktif)
+        if (row.effective_date && row.effective_date > todayStr) continue;
+        // configData terurut ascending by effective_date, jadi row terakhir
+        // yang kita lihat untuk key ini otomatis yang paling baru/berlaku.
+        latestByKey.set(row.key_name, row);
+      }
+      const currentConfigs = Array.from(latestByKey.values());
+
       const sortPriority: Record<string, number> = {
         gesut_manual_kecil: 1,
         gesut_manual_sedang: 2,
         gesut_manual_besar: 3,
       };
-      const sortedConfigs = configData.sort((a, b) => {
+      const sortedConfigs = currentConfigs.sort((a, b) => {
         if (a.category !== b.category)
           return a.category.localeCompare(b.category);
         const priorityA = sortPriority[a.key_name] || 99;
@@ -82,6 +103,9 @@ export default function ConfigPriceView() {
         return a.display_name.localeCompare(b.display_name);
       });
       setConfigs(sortedConfigs);
+      setOriginalConfigs(
+        Object.fromEntries(sortedConfigs.map((c) => [c.id, c.value_amount])),
+      ); // ── TAMBAHAN ──
     }
     if (addonData) setAddons(addonData);
     setLoading(false);
@@ -99,24 +123,47 @@ export default function ConfigPriceView() {
   const handleSaveConfigs = async () => {
     setSaving(true);
     try {
-      for (const item of configs) {
-        if (typeof item.value_amount === "number") {
-          await supabase
-            .from("pricing_configs")
-            .update({ value_amount: item.value_amount })
-            .eq("id", item.id);
-        }
+      // ── TAMBAHAN ── histori harga: hanya key yang nilainya benar-benar
+      // berubah yang di-INSERT sebagai baris baru (effective_date = hari
+      // ini). Baris lama TIDAK di-UPDATE, jadi kalkulasi gaji periode lalu
+      // (yang query berdasarkan effective_date <= tanggal order) tidak ikut
+      // berubah saat harga naik hari ini.
+      const todayStr = new Date().toISOString().split("T")[0];
+      const changed = configs.filter(
+        (item) =>
+          typeof item.value_amount === "number" &&
+          item.value_amount !== originalConfigs[item.id],
+      );
+
+      if (changed.length > 0) {
+        const rows = changed.map((item) => ({
+          category: item.category,
+          key_name: item.key_name,
+          display_name: item.display_name,
+          unit: item.unit,
+          value_amount: item.value_amount,
+          effective_date: todayStr,
+        }));
+        const { error } = await supabase.from("pricing_configs").insert(rows);
+        if (error) throw error;
       }
+
+      await fetchData(); // refresh supaya originalConfigs & id ikut baris baru
       // ✅ GUNAKAN CUSTOM ALERT
       showAlert(
         "Berhasil!",
-        "Konfigurasi harga produksi telah diperbarui.",
+        changed.length > 0
+          ? `${changed.length} harga diperbarui (berlaku mulai hari ini, histori lama tetap tersimpan).`
+          : "Tidak ada perubahan harga untuk disimpan.",
         "success",
       );
-    } catch (error) {
-      showAlert("Gagal!", "Terjadi kesalahan saat menyimpan data.", "error");
-    } finally {
-      setSaving(false);
+    } catch (error: any) {
+      console.error("Save config error:", error); // lihat di DevTools console
+      showAlert(
+        "Gagal!",
+        error?.message || "Terjadi kesalahan saat menyimpan data.",
+        "error",
+      );
     }
   };
 
@@ -255,8 +302,15 @@ export default function ConfigPriceView() {
               </div>
               <div className="space-y-5 flex-1">
                 {categoryItems.map((item) => {
+                  // ── PERBAIKAN ── `unit` cuma menjelaskan BASIS hitungnya
+                  // (per pcs, per cm², dst), bukan menentukan apakah nilainya
+                  // uang atau bukan. Sebelumnya unit === "pcs" dikira "bukan
+                  // Rupiah" dan prefix "Rp" disembunyikan — padahal field
+                  // seperti "Finishing (DTF)"/"Packing (DTF)" tetap Rupiah,
+                  // cuma basisnya per pcs. Satu-satunya yang benar-benar
+                  // bukan uang di tabel ini adalah field persen (%).
                   const isPercentage = item.unit === "%";
-                  const isCurrency = !isPercentage && item.unit !== "pcs";
+                  const isCurrency = !isPercentage;
                   return (
                     <div key={item.id}>
                       <div className="flex justify-between items-center mb-1.5">

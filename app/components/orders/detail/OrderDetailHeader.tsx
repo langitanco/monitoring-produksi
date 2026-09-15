@@ -104,7 +104,7 @@ export default function OrderDetailHeader({
             <button
               onClick={onPrintLabel}
               disabled={isPrintingLabel}
-              className="border border-zinc-700 text-zinc-300 px-3 py-1.5 rounded-md text-xs md:text-sm font-semibold flex items-center gap-2 hover:bg-zinc-800 hover:text-white transition-colors duration-150 disabled:opacity-50"
+              className="border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 px-3 py-1.5 rounded-md text-xs md:text-sm font-semibold flex items-center gap-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-colors duration-150 disabled:opacity-50"
             >
               <Printer className="w-3 h-3" />
               {isPrintingLabel ? "Memproses..." : "Label Kirim"}

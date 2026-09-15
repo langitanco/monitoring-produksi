@@ -1,5 +1,11 @@
 // app/types/index.ts
 
+// ── KOREKSI ── awalnya saya menambahkan role baru 'finishing' di sini,
+// tapi ternyata SALAH — role 'qc' yang sudah ada dari awal itu memang
+// sudah dipakai untuk tim yang sama (satu tim mengerjakan QC + finishing +
+// packing DTF sekaligus, gajinya digabung & dihitung per-pcs). Jadi tidak
+// perlu role baru; cukup pakai role === 'qc' (lihat SalaryView.tsx,
+// CreateOrder.tsx, EditOrder.tsx).
 export type UserRole = 'admin' | 'produksi' | 'qc' | 'manager' | 'supervisor';
 
 // ─── Tipe dasar per modul ────────────────────────────────────────────────────
@@ -147,6 +153,21 @@ export interface Order {
   biaya_lengan_panjang?: number;
   // ── TAMBAHAN ──
   bukti_pembayaran?: BuktiPembayaran[];
+
+  // ── TAMBAHAN ── komposisi gesut, hanya relevan untuk jenis_produksi Manual.
+  // Independen dari detail_ukuran/jumlah (boleh beda total — gesut dihitung
+  // per potongan kain, bukan per baju jadi). null/undefined = belum diisi.
+  detail_gesut?: GesutEntry | null;
+}
+
+// ── TAMBAHAN ── Komposisi gesut untuk order Manual. Basis hitung gaji tukang
+// produksi manual (assigned_to + helper_id), berbeda dari DTF yang pakai
+// rate finishing+packing agregat per tim (lihat pricing_configs kategori DTF
+// dan SalaryView.tsx).
+export interface GesutEntry {
+  kecil: number;
+  sedang: number;
+  besar: number;
 }
 
 export interface ProductionStep {
@@ -185,4 +206,23 @@ export interface SizeEntry {
   warna: string;
   lengan: 'pendek' | 'panjang';
   ukuran: Partial<Record<string, number>>;
+}
+
+// ─── Pricing Config (histori harga) ──────────────────────────────────────────
+// ── TAMBAHAN ── effective_date ditambahkan supaya perubahan harga tidak
+// menimpa histori gaji periode lalu. Setiap simpan = INSERT baris baru
+// (bukan UPDATE), lihat ConfigPriceView.tsx → handleSaveConfigs.
+//
+// Key yang dipakai SalaryView.tsx untuk kalkulasi gaji:
+//  - category MANUAL: gesut_manual_kecil, gesut_manual_sedang, gesut_manual_besar
+//  - category DTF:     dtf_finishing, dtf_packing
+//    (⚠️ nama key DTF ini ASUMSI — sesuaikan dengan key_name asli di DB kalau beda)
+export interface PricingConfig {
+  id: number;
+  category: 'GENERAL' | 'DTF' | 'MANUAL' | 'GROSIR' | string;
+  key_name: string;
+  display_name: string;
+  unit: string;
+  value_amount: number;
+  effective_date: string; // ISO date, mis. "2026-09-14"
 }

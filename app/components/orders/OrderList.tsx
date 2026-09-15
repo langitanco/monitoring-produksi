@@ -625,7 +625,7 @@ export default function OrderList({
               onClick={onNewOrder}
               className="ml-auto md:ml-0 bg-[#124540] hover:bg-[#0d332f] text-white px-3 py-2 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors duration-150 whitespace-nowrap"
             >
-              <ClipboardList className="w-3.5 h-3.5" /> Tambah Pesanan
+              <ClipboardList className="w-3.5 h-3.5" /> Pesanan baru
             </button>
           )}
         </div>

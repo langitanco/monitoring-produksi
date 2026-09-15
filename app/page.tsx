@@ -138,6 +138,30 @@ function isValidTab(value: string | null): value is ActiveTab {
   return !!value && (VALID_TABS as string[]).includes(value);
 }
 
+// ── TAMBAHAN ── Fallback ringan saat selectedOrderId ada tapi order-nya
+// tidak ketemu di `orders` (belum ke-load / race condition / sudah dihapus).
+// Dipakai di render "detail" dan "edit" di bawah, MENGGANTIKAN pola lama
+// `orders.find(...)!` yang bisa lolos undefined ke OrderDetail/EditOrder.
+function OrderNotFound({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8 text-center text-zinc-400 dark:text-zinc-600">
+      <p className="text-sm font-semibold mb-2 text-zinc-600 dark:text-zinc-300">
+        Data pesanan tidak ditemukan.
+      </p>
+      <p className="text-xs max-w-xs mx-auto mb-4">
+        Pesanan mungkin belum selesai dimuat, sudah dihapus, atau gagal
+        tersimpan sebelumnya.
+      </p>
+      <button
+        onClick={onBack}
+        className="text-xs font-semibold text-[#124540] dark:text-[#49BFB4] underline underline-offset-2"
+      >
+        Kembali ke daftar pesanan
+      </button>
+    </div>
+  );
+}
+
 export default function ProductionApp() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [previousTab, setPreviousTab] = useState<ActiveTab | null>(null);
@@ -254,6 +278,22 @@ export default function ProductionApp() {
       writeLog,
       showAlert,
     });
+
+  // ── PERBAIKAN ── sebelumnya `orders.find(...)!` dipakai langsung di JSX
+  // dengan non-null assertion — TypeScript percaya hasilnya selalu ada,
+  // padahal saat runtime bisa `undefined` (order belum ke-load, race
+  // condition setelah create/update gagal, atau sudah dihapus). Itu yang
+  // bikin OrderDetail/EditOrder menerima `order=undefined` dan crash.
+  // Sekarang dihitung sekali di sini (tanpa `!`), dan render OrderDetail/
+  // EditOrder DI-GUARD supaya komponen itu sama sekali tidak di-mount kalau
+  // order-nya tidak ketemu — bukan di-guard di dalam komponennya sendiri
+  // (early return di dalam komponen sebelum hook lain jalan melanggar Rules
+  // of Hooks, itu penyebab error "Rendered more hooks than during the
+  // previous render" sebelumnya).
+  const selectedOrder = useMemo(
+    () => orders.find((o: Order) => o.id === selectedOrderId),
+    [orders, selectedOrderId],
+  );
 
   const {
     usersList,
@@ -527,36 +567,58 @@ export default function ProductionApp() {
                     onSubmit={handleCreateOrder}
                   />
                 )}
-                {view === "edit" && selectedOrderId && (
-                  <EditOrder
-                    users={usersList}
-                    order={orders.find((o: Order) => o.id === selectedOrderId)!}
-                    productionTypes={productionTypes}
-                    onCancel={() => setView("detail")}
-                    onSubmit={(d) => handleEditOrder(d, selectedOrderId)}
-                  />
-                )}
-                {view === "detail" && selectedOrderId && (
-                  <OrderDetail
-                    currentUser={currentUser}
-                    order={orders.find((o: Order) => o.id === selectedOrderId)!}
-                    onBack={() => {
-                      setSelectedOrderId(null);
-                      setView("list");
-                      if (previousTab) {
-                        setActiveTab(previousTab);
-                        setPreviousTab(null);
-                      }
-                    }}
-                    onEdit={() => setView("edit")}
-                    onTriggerUpload={triggerUpload}
-                    onUpdateOrder={checkAutoStatus}
-                    onDelete={handleDeleteOrder}
-                    onConfirm={showConfirm}
-                    onUpdatePayment={handleUpdatePayment}
-                    writeLog={writeLog}
-                  />
-                )}
+                {view === "edit" &&
+                  selectedOrderId &&
+                  (selectedOrder ? (
+                    <EditOrder
+                      users={usersList}
+                      order={selectedOrder}
+                      productionTypes={productionTypes}
+                      onCancel={() => setView("detail")}
+                      onSubmit={(d) => handleEditOrder(d, selectedOrderId)}
+                    />
+                  ) : (
+                    <OrderNotFound
+                      onBack={() => {
+                        setSelectedOrderId(null);
+                        setView("list");
+                      }}
+                    />
+                  ))}
+                {view === "detail" &&
+                  selectedOrderId &&
+                  (selectedOrder ? (
+                    <OrderDetail
+                      currentUser={currentUser}
+                      order={selectedOrder}
+                      onBack={() => {
+                        setSelectedOrderId(null);
+                        setView("list");
+                        if (previousTab) {
+                          setActiveTab(previousTab);
+                          setPreviousTab(null);
+                        }
+                      }}
+                      onEdit={() => setView("edit")}
+                      onTriggerUpload={triggerUpload}
+                      onUpdateOrder={checkAutoStatus}
+                      onDelete={handleDeleteOrder}
+                      onConfirm={showConfirm}
+                      onUpdatePayment={handleUpdatePayment}
+                      writeLog={writeLog}
+                    />
+                  ) : (
+                    <OrderNotFound
+                      onBack={() => {
+                        setSelectedOrderId(null);
+                        setView("list");
+                        if (previousTab) {
+                          setActiveTab(previousTab);
+                          setPreviousTab(null);
+                        }
+                      }}
+                    />
+                  ))}
               </>
             )}
 

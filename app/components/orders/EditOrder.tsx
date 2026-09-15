@@ -1,8 +1,9 @@
 // app/components/orders/EditOrder.tsx
 
 import React, { useState } from "react";
-import { Order, ProductionTypeData, UserData } from "@/types";
+import { Order, ProductionTypeData, UserData, GesutEntry } from "@/types";
 import SizeInputForm, { SizeEntry } from "./SizeInputForm";
+import GesutInputForm from "./GesutInputForm"; // ── TAMBAHAN ──
 
 interface EditOrderProps {
   order: Order;
@@ -20,6 +21,7 @@ export default function EditOrder({
   onSubmit,
 }: EditOrderProps) {
   const [showSizeForm, setShowSizeForm] = useState(false);
+  const [showGesutForm, setShowGesutForm] = useState(false); // ── TAMBAHAN ──
 
   const [form, setForm] = useState({
     nama: order.nama_pemesan,
@@ -27,11 +29,20 @@ export default function EditOrder({
     alamat_pemesan: order.alamat_pemesan || "",
     jumlah: order.jumlah || 0,
     detail_ukuran: (order.detail_ukuran as SizeEntry[] | null) ?? null,
+    detail_gesut: (order.detail_gesut as GesutEntry | null) ?? null, // ── TAMBAHAN ──
     deadline: order.deadline,
     type: order.jenis_produksi,
     assigned_to: order.assigned_to || "",
     helper_id: order.helper_id || "",
   });
+
+  // ── KOREKSI ── sama seperti CreateOrder: gesut & PIC hanya untuk Manual;
+  // tim QC (role 'qc' — kerjanya QC + finishing + packing DTF sekaligus)
+  // tidak muncul sebagai pilihan PJ/Helper.
+  const isManualType = ["manual", "sablon"].includes(
+    form.type?.toLowerCase() || "",
+  );
+  const picUsers = users.filter((u) => u.role !== "qc");
 
   // ── Normalisasi nomor HP ke format WA ─────────────────────────────────────
   const normalizePhone = (raw: string): string => {
@@ -51,13 +62,31 @@ export default function EditOrder({
     setShowSizeForm(false);
   };
 
+  // ── TAMBAHAN ──
+  const handleGesutSave = (detail: GesutEntry) => {
+    setForm((f) => ({ ...f, detail_gesut: detail }));
+    setShowGesutForm(false);
+  };
+
+  const handleTypeChange = (value: string) => {
+    const nowManual = ["manual", "sablon"].includes(value.toLowerCase());
+    setForm((f) => ({
+      ...f,
+      type: value,
+      detail_gesut: nowManual ? f.detail_gesut : null,
+      assigned_to: nowManual ? f.assigned_to : "",
+      helper_id: nowManual ? f.helper_id : "",
+    }));
+  };
+
   const isDisabled =
     !form.nama ||
     !form.hp ||
     !form.deadline ||
     !form.jumlah ||
     !form.assigned_to ||
-    !form.detail_ukuran;
+    !form.detail_ukuran ||
+    (isManualType && !form.detail_gesut); // ── TAMBAHAN ──
 
   // ── SizeInputForm ──────────────────────────────────────────────────────────
   if (showSizeForm) {
@@ -66,6 +95,17 @@ export default function EditOrder({
         initialData={form.detail_ukuran ?? undefined}
         onSave={handleSizeSave}
         onCancel={() => setShowSizeForm(false)}
+      />
+    );
+  }
+
+  // ── GesutInputForm ── ── TAMBAHAN ──
+  if (showGesutForm) {
+    return (
+      <GesutInputForm
+        initialData={form.detail_gesut ?? undefined}
+        onSave={handleGesutSave}
+        onCancel={() => setShowGesutForm(false)}
       />
     );
   }
@@ -188,6 +228,53 @@ export default function EditOrder({
                 )}
               </div>
 
+              {/* ── TAMBAHAN ── Detail Gesut, hanya untuk Manual/Sablon */}
+              {isManualType && (
+                <div>
+                  <label className="block text-[10px] md:text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase mb-1 md:mb-2">
+                    Komposisi Gesut{" "}
+                    <span className="text-red-500">(Wajib)</span>
+                  </label>
+                  {!form.detail_gesut ? (
+                    <button
+                      onClick={() => setShowGesutForm(true)}
+                      className="w-full min-h-[64px] border border-dashed border-zinc-300 dark:border-zinc-600 rounded-xl text-sm font-semibold text-zinc-500 dark:text-zinc-400 hover:border-[#124540] hover:text-[#49BFB4] transition-colors duration-150"
+                    >
+                      + Isi Komposisi Gesut
+                    </button>
+                  ) : (
+                    <div className="border border-zinc-200 dark:border-zinc-700 rounded-xl p-3 md:p-4 flex items-center justify-between">
+                      <div className="flex gap-4 text-xs text-zinc-600 dark:text-zinc-300">
+                        <span>
+                          Kecil:{" "}
+                          <span className="font-mono font-semibold">
+                            {form.detail_gesut.kecil}
+                          </span>
+                        </span>
+                        <span>
+                          Sedang:{" "}
+                          <span className="font-mono font-semibold">
+                            {form.detail_gesut.sedang}
+                          </span>
+                        </span>
+                        <span>
+                          Besar:{" "}
+                          <span className="font-mono font-semibold">
+                            {form.detail_gesut.besar}
+                          </span>
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setShowGesutForm(true)}
+                        className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-[#2589ff] transition-colors duration-150 underline underline-offset-2"
+                      >
+                        Ubah
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Alamat */}
               <div>
                 <label className="block text-[10px] md:text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase mb-1 md:mb-2">
@@ -217,7 +304,7 @@ export default function EditOrder({
                 <select
                   className="w-full border border-zinc-200 dark:border-zinc-700 p-2 md:p-3 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none font-medium bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm"
                   value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value })}
+                  onChange={(e) => handleTypeChange(e.target.value)}
                 >
                   {productionTypes.map((pt) => (
                     <option
@@ -246,7 +333,7 @@ export default function EditOrder({
                   <option value="" className="dark:bg-zinc-800">
                     Pilih PIC Produksi
                   </option>
-                  {users.map((user) => (
+                  {picUsers.map((user) => (
                     <option
                       key={user.id}
                       value={user.id}
@@ -273,7 +360,7 @@ export default function EditOrder({
                   <option value="" className="dark:bg-zinc-800">
                     -- Tidak Ada Helper --
                   </option>
-                  {users.map((user) => (
+                  {picUsers.map((user) => (
                     <option
                       key={user.id}
                       value={user.id}

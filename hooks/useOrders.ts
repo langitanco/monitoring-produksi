@@ -169,6 +169,7 @@ export function useOrders({
       alamat_pemesan: formData.alamat_pemesan || null,
       jumlah: formData.jumlah || 0,
       detail_ukuran: formData.detail_ukuran || null,
+      detail_gesut: formData.detail_gesut || null, // ── TAMBAHAN ── sebelumnya tidak ikut terkirim ke DB sama sekali
       tanggal_masuk: new Date().toISOString().split('T')[0],
       deadline: formData.deadline,
       jenis_produksi: formData.type,
@@ -223,6 +224,7 @@ export function useOrders({
       alamat_pemesan: d.alamat_pemesan || null,
       jumlah: d.jumlah || 0,
       detail_ukuran: d.detail_ukuran || null,
+      detail_gesut: d.detail_gesut || null, // ── TAMBAHAN ── ini yang bikin update gesut tidak tersimpan
       deadline: d.deadline,
       jenis_produksi: d.type,
       assigned_to: d.assigned_to || null,

@@ -7,6 +7,7 @@ import { useOrderDetail } from "@/hooks/useOrderDetail";
 import LabelPengiriman from "./detail/LabelPengiriman";
 import OrderDetailHeader from "./detail/OrderDetailHeader";
 import DetailUkuran from "./detail/DetailUkuran";
+import DetailGesut from "./detail/DetailGesut"; // ── TAMBAHAN ──
 import StepApproval from "./detail/StepApproval";
 import StepProduksi from "./detail/StepProduksi";
 import StepFinishing from "./detail/StepFinishing";
@@ -54,6 +55,13 @@ export default function OrderDetail({
 }: OrderDetailProps) {
   const labelRef = useRef<HTMLDivElement>(null);
   const [isPrintingLabel, setIsPrintingLabel] = useState(false);
+
+  // ── PERBAIKAN ── Guard "order tidak ditemukan" TIDAK BOLEH early-return
+  // di sini (sebelum hook lain seperti useOrderDetail dipanggil) — itu
+  // melanggar Rules of Hooks dan menyebabkan error "Rendered more hooks
+  // than during the previous render". Kepastian `order` selalu ada sekarang
+  // dijamin dari pemanggilnya (app/page.tsx tidak lagi me-mount OrderDetail
+  // kalau order tidak ketemu — lihat komponen OrderNotFound di sana).
 
   // ─── Hak Akses (struktur baru) ────────────────────────────────────────────
   const isSupervisor = currentUser.role === "supervisor";
@@ -181,6 +189,10 @@ export default function OrderDetail({
       />
 
       <DetailUkuran data={order.detail_ukuran} />
+
+      {/* ── TAMBAHAN ── Gesut hanya relevan untuk produksi Manual; DTF pakai
+          model finishing+packing agregat per tim, tidak ada input per-order. */}
+      {isManual && <DetailGesut data={order.detail_gesut} />}
 
       <StepApproval
         order={order}
