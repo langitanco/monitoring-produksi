@@ -90,9 +90,11 @@ const MODULES: ModuleDef[] = [
   {
     key: "salary",
     label: "Gaji & Upah",
-    hasCreate: false,
-    hasEdit: false,
+    hasCreate: true,
+    hasEdit: true,
     hasDelete: false,
+    createLabel: "Cetak slip gaji",
+    editLabel: "Edit pesanan dari halaman Gaji",
   },
   {
     key: "keuangan",
@@ -416,7 +418,12 @@ export default function SettingsPage({
         delete: false,
         ...((u.permissions as any)?.finishing || {}),
       },
-      salary: { view: false, ...((u.permissions as any)?.salary || {}) },
+      salary: {
+        view: false,
+        create: false,
+        edit: false,
+        ...((u.permissions as any)?.salary || {}),
+      },
       logs: { view: false, ...((u.permissions as any)?.logs || {}) },
       settings: {
         view: false,

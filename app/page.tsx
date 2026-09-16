@@ -165,6 +165,24 @@ function OrderNotFound({ onBack }: { onBack: () => void }) {
 export default function ProductionApp() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [previousTab, setPreviousTab] = useState<ActiveTab | null>(null);
+  // ── TAMBAHAN ── Khusus utk edit order yg dipicu LANGSUNG dari tab lain
+  // (mis. SalaryView) tanpa mampir ke view "detail" dulu. Dipisah dari
+  // `previousTab` supaya tidak bentrok dgn alur Dashboard/Calendar, yg
+  // juga pakai `previousTab` tapi utk kembali dari "detail" ke tab asal
+  // (bukan dari "edit"). Kalau state ini null, alur edit-dari-Detail yg
+  // lama (Detail → Edit → Batal/Simpan → kembali ke Detail) tetap sama
+  // persis seperti sebelumnya — efek di bawah cuma aktif kalau state ini
+  // terisi.
+  const [editReturnTab, setEditReturnTab] = useState<ActiveTab | null>(null);
+  // ── TAMBAHAN ── SalaryView menyimpan filter/tab aktifnya sendiri via
+  // useState LOKAL di dalam komponen itu. Kalau kita render dia dgn
+  // `{activeTab === "salary" && <SalaryView/>}` seperti tab lain, React
+  // meng-UNMOUNT komponennya tiap pindah tab — semua state lokal (bulan,
+  // tahun, tab Manual/DTF, user terpilih) ikut hilang & reset ke default
+  // saat balik lagi. Makanya dipisah jadi flag "sudah pernah dibuka" +
+  // disembunyikan pakai CSS `display:none` (bukan unmount) di bawah,
+  // supaya state internalnya tetap hidup persis spt terakhir ditinggalkan.
+  const [salaryMounted, setSalaryMounted] = useState(false);
   const [completedOrdersPage, setCompletedOrdersPage] = useState(1);
   const [completedOrdersPerPage, setCompletedOrdersPerPage] = useState(10);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -405,6 +423,31 @@ export default function ProductionApp() {
     mainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }, [view, selectedOrderId, activeTab]);
 
+  // ── TAMBAHAN ── Tandai "pernah dibuka" sekali saja, supaya SalaryView
+  // baru pertama kali di-mount pas user benar2 buka tab Salary (tetap
+  // lazy, tidak ikut ke-load di awal kalau user tidak pernah ke tab ini),
+  // tapi sesudahnya TIDAK pernah di-unmount lagi walau pindah tab.
+  useEffect(() => {
+    if (activeTab === "salary") setSalaryMounted(true);
+  }, [activeTab]);
+
+  // ── TAMBAHAN ── Redirect balik ke tab asal (mis. "salary") begitu form
+  // edit selesai (Batal ATAU Simpan) — keduanya sama-sama berakhir dgn
+  // `setView("detail")` (lihat onCancel EditOrder & handleEditOrder di
+  // useOrders). Efek ini HANYA jalan kalau `editReturnTab` terisi, yaitu
+  // saat edit dipicu langsung dari luar view "detail" (lihat onEditOrder
+  // di SalaryView di bawah). Alur normal Detail → Edit → Batal/Simpan
+  // TIDAK terpengaruh sama sekali karena `editReturnTab` tetap null di
+  // alur itu.
+  useEffect(() => {
+    if (view === "detail" && editReturnTab) {
+      setSelectedOrderId(null);
+      setView("list");
+      setActiveTab(editReturnTab);
+      setEditReturnTab(null);
+    }
+  }, [view, editReturnTab]);
+
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
   const handleLogout = useCallback(async () => {
@@ -477,7 +520,7 @@ export default function ProductionApp() {
       />
 
       {isUploading && (
-        <div className="absolute inset-0 z-[9999] bg-zinc-950/80 flex flex-col items-center justify-center text-white">
+        <div className="absolute inset-0 z-9999 bg-zinc-950/80 flex flex-col items-center justify-center text-white">
           <Loader2 className="w-12 h-12 animate-spin mb-3 text-[#49BFB4]" />
           <p className="text-sm font-semibold">Mengupload File...</p>
           <p className="text-xs text-zinc-400 mt-1">
@@ -650,8 +693,29 @@ export default function ProductionApp() {
               />
             )}
 
-            {activeTab === "salary" && p?.salary?.view && (
-              <SalaryView users={usersList} orders={orders} />
+            {/* ── PERBAIKAN ── Tidak lagi `{activeTab === "salary" && ...}`
+                (unmount tiap ganti tab). Tetap di-mount begitu pernah
+                dibuka (`salaryMounted`), lalu disembunyikan via CSS kalau
+                tab lain aktif — supaya filter/tab internal SalaryView
+                (bulan, kategori, user terpilih) tetap sama persis saat
+                user balik lagi, misal setelah Simpan/Batal dari form
+                edit order. */}
+            {p?.salary?.view && salaryMounted && (
+              <div
+                style={{ display: activeTab === "salary" ? "block" : "none" }}
+              >
+                <SalaryView
+                  users={usersList}
+                  orders={orders}
+                  currentUser={currentUser}
+                  onEditOrder={(order) => {
+                    setEditReturnTab("salary"); // trigger redirect balik setelah edit selesai
+                    setSelectedOrderId(order.id);
+                    setView("edit");
+                    setActiveTab("orders");
+                  }}
+                />
+              </div>
             )}
             {activeTab === "nota" && p?.nota?.view && <NotaView />}
             {activeTab === "logs" && p?.logs?.view && <ActivityLogView />}

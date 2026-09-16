@@ -14,6 +14,10 @@ interface ModuleFull     { view: boolean; create: boolean; edit: boolean; delete
 interface ModuleView     { view: boolean }
 interface ModuleViewEdit { view: boolean; edit: boolean }
 interface ModuleTrash    { view: boolean; delete: boolean }
+// ── TAMBAHAN ── utk modul yg butuh Buat & Edit tapi TIDAK butuh Hapus
+// (mis. salary: "Buat" dipakai utk hak cetak slip, "Edit" utk hak edit
+// order dari halaman Gaji — tidak ada aksi hapus apa pun di modul ini).
+interface ModuleViewCreateEdit { view: boolean; create: boolean; edit: boolean }
 
 
 // ─── Definisi Hak Akses ──────────────────────────────────────────────────────
@@ -23,7 +27,9 @@ export interface UserPermissions {
   orders:        ModuleFull;
   produksi:      ModuleFull;
   finishing:     ModuleFull;
-  salary:        ModuleView;
+  salary:        ModuleViewCreateEdit; // ── UBAH ── dulu ModuleView; sekarang
+                                        // tambah create(=cetak) & edit(=edit
+                                        // order dari halaman Gaji)
   logs:          ModuleView;
   weekly_notes:  ModuleView;
   settings:      ModuleFull;
@@ -52,7 +58,7 @@ export const DEFAULT_PERMISSIONS: UserPermissions = {
   orders:        { view: true,  create: false, edit: false, delete: false },
   produksi:      { view: true,  create: false, edit: false, delete: false },
   finishing:     { view: true,  create: false, edit: false, delete: false },
-  salary:        { view: false },
+  salary:        { view: false, create: false, edit: false },
   logs:          { view: false },
   weekly_notes:  { view: false },
   settings:      { view: false, create: false, edit: false, delete: false },

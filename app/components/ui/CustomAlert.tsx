@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 
-interface AlertState {
+export interface AlertState {
   isOpen: boolean;
   title: string;
   message: string;
@@ -58,7 +58,7 @@ export default function CustomAlert({
   const config = getConfig();
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/70 p-4">
       <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 w-full max-w-sm text-center relative overflow-hidden">
         {/* Tombol Close di Pojok (Opsional) */}
         <button
