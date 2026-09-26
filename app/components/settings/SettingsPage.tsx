@@ -1128,7 +1128,7 @@ export default function SettingsPage({
 
       {/* ── MODAL EDIT TYPE ── */}
       {isTypeModalOpen && editingType && (
-        <div className="fixed inset-0 bg-black/70 z-[99] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/70 z-99 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-950 p-6 rounded-xl w-full max-w-sm border border-zinc-200 dark:border-zinc-800">
             <h3 className="text-base font-semibold tracking-tight mb-4 text-zinc-900 dark:text-zinc-100">
               {editingType.id ? "Edit" : "Tambah"} Jenis Produksi
