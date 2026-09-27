@@ -3,19 +3,52 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import admin from 'firebase-admin';
 
-// Inisialisasi Firebase Admin (Sama seperti route pengirim)
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
+/**
+ * Lazy-initialize Firebase Admin.
+ * PENTING: jangan panggil ini di top-level module — hanya panggil
+ * dari dalam request handler. Kalau dipanggil di top-level, Next.js
+ * akan mengeksekusinya saat "npm run build" (collecting page data),
+ * dan build akan gagal jika env var belum tersedia/valid di tahap itu.
+ */
+function getFirebaseAdmin() {
+  if (!admin.apps.length) {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+    if (!projectId || !clientEmail || !rawPrivateKey) {
+      throw new Error('Firebase Admin env vars tidak lengkap (projectId/clientEmail/privateKey)');
+    }
+
+    // Env var biasanya menyimpan "\n" literal (backslash + n),
+    // harus dikonversi jadi newline asli agar PEM valid.
+    const privateKey = rawPrivateKey.replace(/\\n/g, '\n');
+
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
+    });
+  }
+  return admin;
 }
 
 export async function GET(request: Request) {
   try {
+    // 0. Inisialisasi Firebase Admin (baru dieksekusi saat request masuk, bukan saat build)
+    let fbAdmin: typeof admin;
+    try {
+      fbAdmin = getFirebaseAdmin();
+    } catch (err: any) {
+      console.error('🔥 Firebase Admin init error:', err.message);
+      return NextResponse.json(
+        { error: 'Firebase Admin tidak terkonfigurasi', details: err.message },
+        { status: 500 }
+      );
+    }
+
     // 1. Setup Admin Client Supabase (Bypass RLS)
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -45,9 +78,9 @@ export async function GET(request: Request) {
       .from('users')
       .select('id')
       .in('role', targetRoles);
-      
+
     if (!targetUsers || targetUsers.length === 0) {
-       return NextResponse.json({ message: 'Tidak ada user dengan role target.' });
+      return NextResponse.json({ message: 'Tidak ada user dengan role target.' });
     }
 
     const targetUserIds = targetUsers.map(u => u.id);
@@ -59,27 +92,27 @@ export async function GET(request: Request) {
       .in('user_id', targetUserIds);
 
     if (!tokensData || tokensData.length === 0) {
-       return NextResponse.json({ message: 'User target belum mengaktifkan notifikasi.' });
+      return NextResponse.json({ message: 'User target belum mengaktifkan notifikasi.' });
     }
 
     const uniqueTokens = [...new Set(tokensData.map(t => t.token))];
 
     // 5. Kirim Notifikasi untuk SETIAP pesanan telat
     let sentCount = 0;
-    
-    // Agar tidak spam 100 notif jika ada 100 order telat, 
+
+    // Agar tidak spam 100 notif jika ada 100 order telat,
     // kita rangkum atau kirim satu per satu. Disini kita kirim per order.
     for (const order of overdueOrders) {
-        const message = {
-            notification: {
-                title: "⚠️ ALERT: PESANAN TELAT",
-                body: `Order ${order.kode_produksi} (${order.nama_pemesan}) sudah melewati deadline!`,
-            },
-            tokens: uniqueTokens,
-        };
+      const message = {
+        notification: {
+          title: "⚠️ ALERT: PESANAN TELAT",
+          body: `Order ${order.kode_produksi} (${order.nama_pemesan}) sudah melewati deadline!`,
+        },
+        tokens: uniqueTokens,
+      };
 
-        const res = await admin.messaging().sendEachForMulticast(message);
-        sentCount += res.successCount;
+      const res = await fbAdmin.messaging().sendEachForMulticast(message);
+      sentCount += res.successCount;
     }
 
     return NextResponse.json({ success: true, notif_sent: sentCount, overdue_count: overdueOrders.length });
