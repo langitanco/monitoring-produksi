@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 if (!admin.apps.length) {
   const projectId  = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey  = process.env.FIREBASE_PRIVATE_KEY;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
   if (projectId && clientEmail && privateKey) {
     admin.initializeApp({
@@ -47,7 +47,10 @@ export async function POST(request: Request) {
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { autoRefreshToken: false, persistSession: false } }
+      {
+        auth: { autoRefreshToken: false, persistSession: false },
+        db: { schema: 'monitoring_sablon' },
+      }
     );
 
     const { data: userTokens, error } = await supabaseAdmin

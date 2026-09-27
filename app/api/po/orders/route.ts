@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!, // ← bukan NEXT_PUBLIC
+  { db: { schema: 'monitoring_sablon' } }
 );
 
 // DELETE /api/po/orders?po_number=POR-xxx&reseller_id=xxx

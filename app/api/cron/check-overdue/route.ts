@@ -20,7 +20,10 @@ export async function GET(request: Request) {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { autoRefreshToken: false, persistSession: false } }
+      {
+        auth: { autoRefreshToken: false, persistSession: false },
+        db: { schema: 'monitoring_sablon' },
+      }
     );
 
     // 2. Cari Pesanan yang TELAT (Deadline < Hari ini) & Belum Selesai

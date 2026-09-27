@@ -96,12 +96,25 @@ const FCMManager = () => {
       if (typeof window === "undefined") return;
       if (!("Notification" in window) || !("serviceWorker" in navigator))
         return;
-      if (Notification.permission !== "granted") return;
 
+      // Cek login DULU sebelum minta izin notifikasi — supaya pengunjung
+      // yang belum login (misal buka portal reseller publik) tidak ditanya.
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Kalau belum pernah ditanya sama sekali ("default"), langsung minta izin
+      // otomatis saat pertama kali buka app setelah login — tidak perlu lagi
+      // buka menu Settings dulu.
+      if (Notification.permission === "default") {
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") return;
+      } else if (Notification.permission !== "granted") {
+        // User sudah pernah menolak ("denied") — browser tidak akan
+        // menampilkan popup lagi kalau kita minta ulang, jadi berhenti di sini.
+        return;
+      }
 
       // Auto-refresh token jika berubah
       const token = await registerFCMToken();
