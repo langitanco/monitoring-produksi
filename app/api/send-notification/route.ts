@@ -4,27 +4,43 @@ import { NextResponse } from 'next/server';
 import admin from 'firebase-admin';
 import { createClient } from '@supabase/supabase-js';
 
-if (!admin.apps.length) {
-  const projectId  = process.env.FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-
-  if (projectId && clientEmail && privateKey) {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId,
-        clientEmail,
-        privateKey: privateKey.replace(/\\n/g, '\n'),
-      }),
-    });
-  }
-}
-
 const INVALID_TOKEN_ERRORS = new Set([
   'messaging/registration-token-not-registered',
   'messaging/invalid-registration-token',
   'messaging/mismatched-credential',
 ]);
+
+/**
+ * Lazy-initialize Firebase Admin.
+ * PENTING: jangan panggil ini di top-level module — hanya panggil
+ * dari dalam request handler. Kalau dipanggil di top-level, Next.js
+ * akan mengeksekusinya saat "npm run build" (collecting page data),
+ * dan build akan gagal jika env var belum tersedia/valid di tahap itu.
+ */
+function getFirebaseAdmin() {
+  if (!admin.apps.length) {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+    if (!projectId || !clientEmail || !rawPrivateKey) {
+      throw new Error('Firebase Admin env vars tidak lengkap (projectId/clientEmail/privateKey)');
+    }
+
+    // Env var biasanya menyimpan "\n" literal (backslash + n),
+    // harus dikonversi jadi newline asli agar PEM valid.
+    const privateKey = rawPrivateKey.replace(/\\n/g, '\n');
+
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
+    });
+  }
+  return admin;
+}
 
 export async function POST(request: Request) {
   try {
@@ -37,9 +53,13 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!admin.apps.length) {
+    let fbAdmin: typeof admin;
+    try {
+      fbAdmin = getFirebaseAdmin();
+    } catch (err: any) {
+      console.error('🔥 Firebase Admin init error:', err.message);
       return NextResponse.json(
-        { error: 'Firebase Admin tidak terkonfigurasi' },
+        { error: 'Firebase Admin tidak terkonfigurasi', details: err.message },
         { status: 500 }
       );
     }
@@ -86,9 +106,9 @@ export async function POST(request: Request) {
         notification: {
           title,
           body,
-          icon:  'https://langitanco-superapp.vercel.app/logo.png',
+          icon: 'https://langitanco-superapp.vercel.app/logo.png',
           badge: 'https://langitanco-superapp.vercel.app/icon-bedge.png',
-          tag:   orderId ? `order-${orderId}` : `notif-${userId}`,
+          tag: orderId ? `order-${orderId}` : `notif-${userId}`,
           renotify: true,
           click_action: 'https://langitanco-superapp.vercel.app/',
         },
@@ -100,7 +120,7 @@ export async function POST(request: Request) {
       tokens: uniqueTokens,
     };
 
-    const fcmResponse = await admin.messaging().sendEachForMulticast(message as any);
+    const fcmResponse = await fbAdmin.messaging().sendEachForMulticast(message as any);
 
     // Hapus token yang sudah expired
     const tokensToDelete: string[] = [];
