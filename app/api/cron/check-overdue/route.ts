@@ -1,42 +1,11 @@
 // app/api/cron/check-overdue/route.ts
 import { NextResponse } from 'next/server';
-import admin from 'firebase-admin';
+import type admin from 'firebase-admin';
+import { getFirebaseAdmin } from '@/lib/firebaseAdmin';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireCronSecret } from '@/lib/apiAuth';
 
 export const dynamic = 'force-dynamic';
-
-/**
- * Lazy-initialize Firebase Admin.
- * PENTING: jangan panggil ini di top-level module — hanya panggil
- * dari dalam request handler. Kalau dipanggil di top-level, Next.js
- * akan mengeksekusinya saat "npm run build" (collecting page data),
- * dan build akan gagal jika env var belum tersedia/valid di tahap itu.
- */
-function getFirebaseAdmin() {
-  if (!admin.apps.length) {
-    const projectId = process.env.FIREBASE_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
-
-    if (!projectId || !clientEmail || !rawPrivateKey) {
-      throw new Error('Firebase Admin env vars tidak lengkap (projectId/clientEmail/privateKey)');
-    }
-
-    // Env var biasanya menyimpan "\n" literal (backslash + n),
-    // harus dikonversi jadi newline asli agar PEM valid.
-    const privateKey = rawPrivateKey.replace(/\\n/g, '\n');
-
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId,
-        clientEmail,
-        privateKey,
-      }),
-    });
-  }
-  return admin;
-}
 
 // Wajib header: Authorization: Bearer <CRON_SECRET>
 export async function GET(request: Request) {
