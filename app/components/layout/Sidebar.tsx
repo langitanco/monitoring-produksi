@@ -20,6 +20,7 @@ import {
   BookOpen,
   Wallet,
   ShoppingBag,
+  Tv,
 } from "lucide-react";
 import { UserData } from "@/types";
 import { APP_INFO, CHANGELOG } from "@/lib/changelog";
@@ -71,6 +72,12 @@ export default function Sidebar({
           id: "completed_orders",
           label: "Pesanan Selesai",
           icon: Archive,
+          visible: p?.orders?.view,
+        },
+        {
+          id: "tv",
+          label: "Tampilan TV",
+          icon: Tv,
           visible: p?.orders?.view,
         },
       ],
@@ -219,7 +226,11 @@ export default function Sidebar({
                         key={item.id}
                         item={item}
                         isActive={activeTab === item.id}
-                        onClick={() => handleNav(item.id)}
+                        onClick={() =>
+                          item.id === "tv"
+                            ? window.open("/tv", "_blank")
+                            : handleNav(item.id)
+                        }
                       />
                     ),
                 )}
