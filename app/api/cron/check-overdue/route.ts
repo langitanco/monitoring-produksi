@@ -1,7 +1,10 @@
 // app/api/cron/check-overdue/route.ts
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import admin from 'firebase-admin';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { requireCronSecret } from '@/lib/apiAuth';
+
+export const dynamic = 'force-dynamic';
 
 /**
  * Lazy-initialize Firebase Admin.
@@ -35,7 +38,11 @@ function getFirebaseAdmin() {
   return admin;
 }
 
+// Wajib header: Authorization: Bearer <CRON_SECRET>
 export async function GET(request: Request) {
+  const denied = requireCronSecret(request);
+  if (denied) return denied;
+
   try {
     // 0. Inisialisasi Firebase Admin (baru dieksekusi saat request masuk, bukan saat build)
     let fbAdmin: typeof admin;
@@ -50,14 +57,7 @@ export async function GET(request: Request) {
     }
 
     // 1. Setup Admin Client Supabase (Bypass RLS)
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: { autoRefreshToken: false, persistSession: false },
-        db: { schema: 'monitoring_sablon' },
-      }
-    );
+    const supabase = getSupabaseAdmin();
 
     // 2. Cari Pesanan yang TELAT (Deadline < Hari ini) & Belum Selesai
     const today = new Date().toISOString().split('T')[0];
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: 'Tidak ada user dengan role target.' });
     }
 
-    const targetUserIds = targetUsers.map(u => u.id);
+    const targetUserIds = targetUsers.map((u: any) => u.id);
 
     // 4. Ambil Token FCM mereka
     const { data: tokensData } = await supabase
@@ -95,7 +95,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: 'User target belum mengaktifkan notifikasi.' });
     }
 
-    const uniqueTokens = [...new Set(tokensData.map(t => t.token))];
+    const uniqueTokens: string[] = [...new Set<string>(tokensData.map((t: any) => t.token))];
 
     // 5. Kirim Notifikasi untuk SETIAP pesanan telat
     let sentCount = 0;

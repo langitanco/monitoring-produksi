@@ -1,0 +1,52 @@
+// proxy.ts  (pengganti middleware.ts di Next.js 16)
+// HAPUS file middleware.ts — jangan ada dua-duanya.
+
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+
+export async function proxy(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !anonKey) return response
+
+  const supabase = createServerClient(url, anonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+        response = NextResponse.next({
+          request,
+        })
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options)
+        )
+      },
+    },
+  })
+
+  try {
+    // Refresh session cookie
+    await supabase.auth.getUser()
+  } catch (err) {
+    // Kalau Supabase sedang tidak bisa dijangkau, jangan sampai semua halaman ikut error
+    console.error('[proxy] supabase.auth.getUser gagal:', err)
+  }
+
+  return response
+}
+
+export const config = {
+  matcher: [
+    // api/health & service worker dikecualikan supaya healthcheck Coolify
+    // tidak memicu request ke Supabase tiap beberapa detik
+    '/((?!_next/static|_next/image|favicon.ico|api/health|firebase-messaging-sw\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+}

@@ -23,18 +23,6 @@ export function useOrders({
 }: UseOrdersProps) {
   const [orders, setOrders] = useState<Order[]>([]);
 
-  const syncToGoogleSheets = useCallback(async (orderData: Order) => {
-    try {
-      await fetch('/api/sync-sheets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData),
-      });
-    } catch (error) {
-      console.error('Gagal sync ke Sheets:', error);
-    }
-  }, []);
-
   // ─── Fetch ────────────────────────────────────────────────────────────────
 
   const fetchOrders = useCallback(async () => {
@@ -211,7 +199,6 @@ export function useOrders({
       setView('list');
       showAlert('Sukses', 'Pesanan dibuat');
       triggerOrderNotifications(data);
-      await syncToGoogleSheets(data);
     } else {
       showAlert('Error', error.message, 'error');
     }
@@ -355,15 +342,9 @@ export function useOrders({
       return;
     }
 
-    const existingOrder = orders.find(o => o.id === orderId);
-    if (existingOrder) {
-      const updatedOrder: Order = { ...existingOrder, ...paymentData };
-      await syncToGoogleSheets(updatedOrder);
-    }
-
-    showAlert('Sukses', 'Data keuangan berhasil disimpan & tersinkronisasi ke Buku Besar');
+    showAlert('Sukses', 'Data keuangan berhasil disimpan');
     await fetchOrders();
-  }, [supabase, orders, fetchOrders, showAlert, syncToGoogleSheets]);
+  }, [supabase, fetchOrders, showAlert]);
 
   return {
     orders,

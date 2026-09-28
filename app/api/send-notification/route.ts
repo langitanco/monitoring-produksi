@@ -1,8 +1,12 @@
 // app/api/send-notification/route.ts
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import admin from 'firebase-admin';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { requireUser } from '@/lib/apiAuth';
+
+// URL publik aplikasi (untuk link & ikon notifikasi). Set NEXT_PUBLIC_APP_URL di Coolify.
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://sablon.langitan.co').replace(/\/$/, '');
 
 const INVALID_TOKEN_ERRORS = new Set([
   'messaging/registration-token-not-registered',
@@ -42,7 +46,10 @@ function getFirebaseAdmin() {
   return admin;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const guard = await requireUser(request);
+  if (!guard.ok) return guard.response;
+
   try {
     const { userId, title, body, orderId } = await request.json();
 
@@ -64,14 +71,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: { autoRefreshToken: false, persistSession: false },
-        db: { schema: 'monitoring_sablon' },
-      }
-    );
+    const supabaseAdmin = getSupabaseAdmin();
 
     const { data: userTokens, error } = await supabaseAdmin
       .from('user_fcm_tokens')
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, sent_count: 0, note: 'No token registered' });
     }
 
-    const uniqueTokens = [...new Set(userTokens.map((t) => t.token))];
+    const uniqueTokens: string[] = [...new Set<string>(userTokens.map((t: any) => t.token))];
 
     const message = {
       // notification: dipakai oleh SW saat app di background
@@ -99,22 +99,22 @@ export async function POST(request: Request) {
         body,
         orderId: orderId ?? '',
         userId,
-        url: 'https://langitanco-superapp.vercel.app/',
+        url: `${APP_URL}/`,
       },
 
       webpush: {
         notification: {
           title,
           body,
-          icon: 'https://langitanco-superapp.vercel.app/logo.png',
-          badge: 'https://langitanco-superapp.vercel.app/icon-bedge.png',
+          icon: `${APP_URL}/logo.png`,
+          badge: `${APP_URL}/icon-bedge.png`,
           tag: orderId ? `order-${orderId}` : `notif-${userId}`,
           renotify: true,
-          click_action: 'https://langitanco-superapp.vercel.app/',
+          click_action: `${APP_URL}/`,
         },
         // fcmOptions memastikan foreground message juga di-handle
         fcmOptions: {
-          link: 'https://langitanco-superapp.vercel.app/',
+          link: `${APP_URL}/`,
         },
       },
       tokens: uniqueTokens,

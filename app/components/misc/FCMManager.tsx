@@ -58,8 +58,8 @@ function showForegroundNotification(title: string, body: string, data?: any) {
 
   const notif = new Notification(title, {
     body,
-    icon: "https://langitanco-superapp.vercel.app/logo.png",
-    badge: "https://langitanco-superapp.vercel.app/icon-bedge.png",
+    icon: `${window.location.origin}/logo.png`,
+    badge: `${window.location.origin}/icon-bedge.png`,
     tag: data?.orderId ? `order-${data.orderId}` : "notif-general",
     renotify: true,
   } as any);

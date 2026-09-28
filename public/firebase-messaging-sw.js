@@ -14,6 +14,9 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Origin dinamis — otomatis mengikuti domain tempat app di-deploy
+const APP_ORIGIN = self.location.origin;
+
 // ─── Lifecycle: aktif langsung tanpa tunggu tab lama ditutup ─────────────────
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing...');
@@ -40,12 +43,12 @@ messaging.onBackgroundMessage((payload) => {
 
   return self.registration.showNotification(title, {
     body,
-    icon:     'https://langitanco-superapp.vercel.app/logo.png',
-    badge:    'https://langitanco-superapp.vercel.app/icon-bedge.png',
+    icon:     APP_ORIGIN + '/logo.png',
+    badge:    APP_ORIGIN + '/icon-bedge.png',
     tag,
     renotify: true,
     data: {
-      url:     data.url ?? 'https://langitanco-superapp.vercel.app/',
+      url:     data.url ?? APP_ORIGIN + '/',
       orderId: data.orderId,
     },
   });
@@ -70,8 +73,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
-      icon:     'https://langitanco-superapp.vercel.app/logo.png',
-      badge:    'https://langitanco-superapp.vercel.app/icon-bedge.png',
+      icon:     APP_ORIGIN + '/logo.png',
+      badge:    APP_ORIGIN + '/icon-bedge.png',
       tag,
       renotify: true,
       data: { url: data.url ?? '/', orderId: data.orderId },

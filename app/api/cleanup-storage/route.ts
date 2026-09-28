@@ -1,13 +1,17 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { requireCronSecret } from '@/lib/apiAuth';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { db: { schema: 'monitoring_sablon' } }
-);
+export const dynamic = 'force-dynamic';
 
-export async function GET() {
+// PERINGATAN: endpoint ini MENGHAPUS file di storage secara permanen.
+// Wajib header: Authorization: Bearer <CRON_SECRET>
+export async function GET(request: Request) {
+  const denied = requireCronSecret(request);
+  if (denied) return denied;
+
+  const supabase = getSupabaseAdmin();
+
   const BUCKET_NAME = 'production-proofs'; 
   const TABLE_NAME = 'orders';
   
@@ -53,7 +57,7 @@ export async function GET() {
 
     if (dbError) throw dbError;
 
-    dbRecords.forEach(row => {
+    dbRecords.forEach((row: any) => {
       COLUMNS_TO_CHECK.forEach(colName => {
         const cellData = (row as any)[colName]; 
         extractPaths(cellData);
