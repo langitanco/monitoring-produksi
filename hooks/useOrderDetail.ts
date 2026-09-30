@@ -18,7 +18,7 @@ type WriteLogFn = (params: {
 interface UseOrderDetailProps {
   order: Order;
   currentUser: UserData;
-  onUpdateOrder: (updatedOrder: Order) => void;
+  onUpdateOrder: (updatedOrder: Order) => void | Promise<void>; // ── UBAH ── boleh async supaya bisa ditunggu
   onConfirm: (title: string, msg: string, action: () => void) => void;
   writeLog: WriteLogFn; // 🟢 TAMBAHAN — sebelumnya tidak ada, makanya log
                         // KENDALA/QC/REVISI tidak pernah tercatat.
@@ -31,12 +31,17 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm, w
   const [proofingRevisiNote, setProofingRevisiNote] = useState('');
   const [proofingStepId, setProofingStepId] = useState<string | null>(null);
 
+  // ── TAMBAHAN ── penanda aksi yang sedang diproses, dipakai untuk loading di tombol.
+  // Nilai: `step:<stepId>` | 'proofing-revisi' | 'qc-pass' | 'qc-revisi' | null
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+
   const jenisProd = order.jenis_produksi?.toLowerCase() || '';
   const isManual = jenisProd === 'manual' || jenisProd === 'sablon';
 
   // ─── Step Handlers ────────────────────────────────────────────────────────
 
-  const handleStatusStep = useCallback((stepId: string) => {
+  const handleStatusStep = useCallback(async (stepId: string) => {
+    if (loadingAction) return;
     const updated = JSON.parse(JSON.stringify(order));
     const steps = (isManual ? updated.steps_manual : updated.steps_dtf) as any[];
     const idx = steps.findIndex((s: any) => s.id === stepId);
@@ -49,17 +54,24 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm, w
     }
     const allDone = steps.every((s: any) => s.isCompleted);
     if (allDone && updated.status === 'On Process') updated.status = 'Finishing';
-    onUpdateOrder(updated);
-    writeLog({
-      order: updated,
-      category: 'STATUS',
-      event: 'Step Produksi Selesai',
-      ket: `Step "${stepName}" ditandai selesai`,
-    });
-  }, [order, isManual, currentUser.name, onUpdateOrder, writeLog]);
+    setLoadingAction(`step:${stepId}`);
+    try {
+      await Promise.all([
+        onUpdateOrder(updated),
+        writeLog({
+          order: updated,
+          category: 'STATUS',
+          event: 'Step Produksi Selesai',
+          ket: `Step "${stepName}" ditandai selesai`,
+        }),
+      ]);
+    } finally {
+      setLoadingAction(null);
+    }
+  }, [order, isManual, currentUser.name, onUpdateOrder, writeLog, loadingAction]);
 
-  const handleSaveProofingRevisi = useCallback(() => {
-    if (!proofingRevisiNote.trim() || !proofingStepId) return;
+  const handleSaveProofingRevisi = useCallback(async () => {
+    if (!proofingRevisiNote.trim() || !proofingStepId || loadingAction) return;
     const updated = JSON.parse(JSON.stringify(order));
     const steps = (isManual ? updated.steps_manual : updated.steps_dtf) as any[];
     const idx = steps.findIndex((s: any) => s.id === proofingStepId);
@@ -68,20 +80,28 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm, w
       steps[idx].proofing_note = proofingRevisiNote;
       steps[idx].isCompleted = false;
     }
-    onUpdateOrder(updated);
-    writeLog({
-      order: updated,
-      category: 'REVISI',
-      event: 'Revisi Proofing Diminta',
-      ket: `Step "${stepName}": ${proofingRevisiNote}`,
-    });
-    setProofingRevisiNote('');
-    setProofingStepId(null);
-  }, [order, isManual, proofingRevisiNote, proofingStepId, onUpdateOrder, writeLog]);
+    setLoadingAction('proofing-revisi');
+    try {
+      await Promise.all([
+        onUpdateOrder(updated),
+        writeLog({
+          order: updated,
+          category: 'REVISI',
+          event: 'Revisi Proofing Diminta',
+          ket: `Step "${stepName}": ${proofingRevisiNote}`,
+        }),
+      ]);
+      setProofingRevisiNote('');
+      setProofingStepId(null);
+    } finally {
+      setLoadingAction(null);
+    }
+  }, [order, isManual, proofingRevisiNote, proofingStepId, onUpdateOrder, writeLog, loadingAction]);
 
   // ─── QC Handlers ─────────────────────────────────────────────────────────
 
-  const handleQC = useCallback((pass: boolean) => {
+  const handleQC = useCallback(async (pass: boolean) => {
+    if (loadingAction) return;
     const updated = JSON.parse(JSON.stringify(order));
     updated.finishing_qc = {
       isPassed: pass,
@@ -90,25 +110,30 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm, w
       timestamp: new Date().toLocaleString(),
     };
     if (!pass) updated.status = 'Revisi';
-    onUpdateOrder(updated);
-    if (pass) {
-      writeLog({
-        order: updated,
-        category: 'QC',
-        event: 'Lolos QC',
-        ket: 'Pesanan lolos pemeriksaan kualitas',
-        newVal: updated.status,
-      });
-    } else {
-      writeLog({
-        order: updated,
-        category: 'REVISI',
-        event: 'QC Gagal — Revisi',
-        ket: qcNote,
-        newVal: 'Revisi',
-      });
+    setLoadingAction(pass ? 'qc-pass' : 'qc-revisi');
+    try {
+      await Promise.all([
+        onUpdateOrder(updated),
+        pass
+          ? writeLog({
+              order: updated,
+              category: 'QC',
+              event: 'Lolos QC',
+              ket: 'Pesanan lolos pemeriksaan kualitas',
+              newVal: updated.status,
+            })
+          : writeLog({
+              order: updated,
+              category: 'REVISI',
+              event: 'QC Gagal — Revisi',
+              ket: qcNote,
+              newVal: 'Revisi',
+            }),
+      ]);
+    } finally {
+      setLoadingAction(null);
     }
-  }, [order, qcNote, currentUser.name, onUpdateOrder, writeLog]);
+  }, [order, qcNote, currentUser.name, onUpdateOrder, writeLog, loadingAction]);
 
   const handleDeleteQC = useCallback(() => {
     onConfirm('Reset Status QC?', 'Status QC akan dikembalikan ke belum dicek.', () => {
@@ -269,6 +294,7 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm, w
     showKendalaForm, setShowKendalaForm,
     proofingRevisiNote, setProofingRevisiNote,
     proofingStepId, setProofingStepId,
+    loadingAction, // ── TAMBAHAN ──
     // Handlers
     handleStatusStep,
     handleSaveProofingRevisi,

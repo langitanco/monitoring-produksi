@@ -1,6 +1,7 @@
 // app/components/orders/CreateOrder.tsx
 
 import React, { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import { ProductionTypeData, UserData, GesutEntry } from "@/types";
 import SizeInputForm, { SizeEntry } from "./SizeInputForm";
 import GesutInputForm from "./GesutInputForm"; // ── TAMBAHAN ──
@@ -9,7 +10,8 @@ interface CreateOrderProps {
   productionTypes: ProductionTypeData[];
   users: UserData[];
   onCancel: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any) => void | Promise<void>;
+  isSubmitting?: boolean; // ── TAMBAHAN ── loading di tombol Simpan
 }
 
 export default function CreateOrder({
@@ -17,6 +19,7 @@ export default function CreateOrder({
   users,
   onCancel,
   onSubmit,
+  isSubmitting = false,
 }: CreateOrderProps) {
   const [showSizeForm, setShowSizeForm] = useState(false);
   const [showGesutForm, setShowGesutForm] = useState(false); // ── TAMBAHAN ──
@@ -409,16 +412,23 @@ export default function CreateOrder({
               <div className="flex gap-3">
                 <button
                   onClick={onCancel}
-                  className="flex-1 border border-zinc-200 dark:border-zinc-700 py-2 md:py-3 rounded-md font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-150 text-sm"
+                  disabled={isSubmitting}
+                  className="flex-1 border border-zinc-200 dark:border-zinc-700 py-2 md:py-3 rounded-md font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 text-sm"
                 >
                   Batal
                 </button>
                 <button
                   onClick={() => onSubmit(form)}
-                  disabled={isDisabled}
-                  className="flex-1 bg-[#124540] text-white py-2 md:py-3 rounded-md font-semibold hover:bg-[#0d332f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 text-sm"
+                  disabled={isDisabled || isSubmitting}
+                  className="flex-1 bg-[#124540] text-white py-2 md:py-3 rounded-md font-semibold hover:bg-[#0d332f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 text-sm flex items-center justify-center gap-2"
                 >
-                  Simpan
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...
+                    </>
+                  ) : (
+                    "Simpan"
+                  )}
                 </button>
               </div>
             </div>

@@ -6,6 +6,7 @@ import {
   Camera,
   CheckCircle,
   Eye,
+  Loader2,
   Package,
   Trash2,
 } from "lucide-react";
@@ -22,7 +23,8 @@ interface StepFinishingProps {
   canDeleteFinishingFile: boolean;
   qcNote: string;
   setQcNote: (v: string) => void;
-  onQC: (pass: boolean) => void;
+  loadingAction: string | null; // ── TAMBAHAN ──
+  onQC: (pass: boolean) => void | Promise<void>;
   onDeleteQC: () => void;
   onRevisiSelesai: () => void;
   onTriggerUpload: (type: string) => void;
@@ -40,6 +42,7 @@ export default function StepFinishing({
   canDeleteFinishingFile,
   qcNote,
   setQcNote,
+  loadingAction,
   onQC,
   onDeleteQC,
   onRevisiSelesai,
@@ -113,16 +116,31 @@ export default function StepFinishing({
                 <div className="grid grid-cols-2 gap-3 mt-auto">
                   <button
                     onClick={() => onQC(false)}
-                    disabled={!qcNote.trim()}
-                    className="bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 py-2.5 rounded-md font-semibold text-xs hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors duration-150"
+                    disabled={!qcNote.trim() || loadingAction !== null}
+                    className="bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 py-2.5 rounded-md font-semibold text-xs hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 flex items-center justify-center gap-2"
                   >
-                    Revisi
+                    {loadingAction === "qc-revisi" ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />{" "}
+                        Memproses...
+                      </>
+                    ) : (
+                      "Revisi"
+                    )}
                   </button>
                   <button
                     onClick={() => onQC(true)}
-                    className="bg-[#124540] text-white py-2.5 rounded-md font-semibold text-xs hover:bg-[#0d332f] transition-colors duration-150"
+                    disabled={loadingAction !== null}
+                    className="bg-[#124540] text-white py-2.5 rounded-md font-semibold text-xs hover:bg-[#0d332f] disabled:opacity-70 disabled:cursor-not-allowed transition-colors duration-150 flex items-center justify-center gap-2"
                   >
-                    Lolos QC
+                    {loadingAction === "qc-pass" ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />{" "}
+                        Memproses...
+                      </>
+                    ) : (
+                      "Lolos QC"
+                    )}
                   </button>
                 </div>
               </div>

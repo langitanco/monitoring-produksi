@@ -23,6 +23,10 @@ export function useOrders({
 }: UseOrdersProps) {
   const [orders, setOrders] = useState<Order[]>([]);
 
+  // ── TAMBAHAN ── state loading untuk indikator di tombol
+  const [isCreating, setIsCreating] = useState(false);
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
+
   // ─── Fetch ────────────────────────────────────────────────────────────────
 
   const fetchOrders = useCallback(async () => {
@@ -150,6 +154,9 @@ export function useOrders({
   // ─── CRUD ─────────────────────────────────────────────────────────────────
 
   const handleCreateOrder = useCallback(async (formData: any) => {
+    if (isCreating) return; // ── TAMBAHAN ── cegah klik ganda saat sedang menyimpan
+    setIsCreating(true);
+    try {
     const payload: any = {
       kode_produksi: generateProductionCode(),
       nama_pemesan: formData.nama,
@@ -202,7 +209,10 @@ export function useOrders({
     } else {
       showAlert('Error', error.message, 'error');
     }
-  }, [generateProductionCode, supabase, fetchOrders, showAlert, writeLog, setView]);
+    } finally {
+      setIsCreating(false);
+    }
+  }, [generateProductionCode, supabase, fetchOrders, showAlert, writeLog, setView, isCreating]);
 
   const handleEditOrder = useCallback(async (d: any, selectedOrderId: string) => {
     const updates = {
@@ -230,20 +240,27 @@ export function useOrders({
   const handleDeleteOrder = useCallback(async (id: string) => {
     const orderToDelete = orders.find(o => o.id === id);
     showConfirm('Hapus?', 'Pindah ke sampah.', async () => {
-      const { error } = await supabase.from('orders').update({ deleted_at: new Date().toISOString() }).eq('id', id);
-      if (!error) {
-        if (orderToDelete) {
-          await writeLog({
-            order: orderToDelete,
-            category: 'STATUS',
-            event: 'Pesanan Dihapus',
-            ket: 'Pesanan dipindahkan ke sampah',
-            newVal: 'Sampah',
-          });
+      setDeletingOrderId(id); // ── TAMBAHAN ── tombol Hapus menampilkan loading
+      try {
+        const { error } = await supabase.from('orders').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+        if (!error) {
+          if (orderToDelete) {
+            await writeLog({
+              order: orderToDelete,
+              category: 'STATUS',
+              event: 'Pesanan Dihapus',
+              ket: 'Pesanan dipindahkan ke sampah',
+              newVal: 'Sampah',
+            });
+          }
+          await fetchOrders();
+          setView('list');
+          showAlert('Sukses', 'Dihapus');
+        } else {
+          showAlert('Gagal Hapus', error.message, 'error'); // ── TAMBAHAN ── sebelumnya gagal diam-diam
         }
-        await fetchOrders();
-        setView('list');
-        showAlert('Sukses', 'Dihapus');
+      } finally {
+        setDeletingOrderId(null);
       }
     });
   }, [showConfirm, supabase, fetchOrders, showAlert, orders, writeLog, setView]);
@@ -349,6 +366,8 @@ export function useOrders({
   return {
     orders,
     activeOrders,
+    isCreating, // ── TAMBAHAN ──
+    deletingOrderId, // ── TAMBAHAN ──
     fetchOrders,
     writeLog,
     checkAutoStatus,

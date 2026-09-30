@@ -287,6 +287,8 @@ export default function ProductionApp() {
     fetchOrders,
     writeLog,
     checkAutoStatus,
+    isCreating,
+    deletingOrderId,
     handleCreateOrder,
     handleEditOrder,
     handleDeleteOrder,
@@ -624,6 +626,7 @@ export default function ProductionApp() {
                     productionTypes={productionTypes}
                     onCancel={() => setView("list")}
                     onSubmit={handleCreateOrder}
+                    isSubmitting={isCreating}
                   />
                 )}
                 {view === "edit" &&
@@ -662,6 +665,7 @@ export default function ProductionApp() {
                       onTriggerUpload={triggerUpload}
                       onUpdateOrder={checkAutoStatus}
                       onDelete={handleDeleteOrder}
+                      isDeleting={deletingOrderId === selectedOrderId}
                       onConfirm={showConfirm}
                       onUpdatePayment={handleUpdatePayment}
                       writeLog={writeLog}

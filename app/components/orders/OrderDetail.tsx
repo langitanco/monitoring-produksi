@@ -25,8 +25,9 @@ interface OrderDetailProps {
     kendalaId?: string,
     label?: string,
   ) => void; // ── UBAH ── + label
-  onUpdateOrder: (updatedOrder: Order) => void;
+  onUpdateOrder: (updatedOrder: Order) => void | Promise<void>; // ── UBAH ── boleh async
   onDelete: (id: string) => void;
+  isDeleting?: boolean; // ── TAMBAHAN ──
   onConfirm: (title: string, msg: string, action: () => void) => void;
   onUpdatePayment: (orderId: string, data: PaymentData) => Promise<void>; // ── TAMBAHAN ──
   writeLog: (params: {
@@ -49,6 +50,7 @@ export default function OrderDetail({
   onTriggerUpload,
   onUpdateOrder,
   onDelete,
+  isDeleting = false, // ── TAMBAHAN ──
   onConfirm,
   onUpdatePayment, // ── TAMBAHAN ──
   writeLog, // 🟢 TAMBAHAN
@@ -126,6 +128,7 @@ export default function OrderDetail({
     setProofingRevisiNote,
     proofingStepId,
     setProofingStepId,
+    loadingAction, // ── TAMBAHAN ──
     handleStatusStep,
     handleSaveProofingRevisi,
     handleQC,
@@ -182,6 +185,7 @@ export default function OrderDetail({
         isPrintingLabel={isPrintingLabel}
         canEditOrderInfo={!!canEditOrderInfo}
         canDeleteOrder={!!canDeleteOrder}
+        isDeleting={isDeleting}
         onBack={onBack}
         onEdit={onEdit}
         onDelete={onDelete}
@@ -217,6 +221,7 @@ export default function OrderDetail({
         setProofingRevisiNote={setProofingRevisiNote}
         proofingStepId={proofingStepId}
         setProofingStepId={setProofingStepId}
+        loadingAction={loadingAction}
         onTriggerUpload={onTriggerUpload}
         onStatusStep={handleStatusStep}
         onSaveProofingRevisi={handleSaveProofingRevisi}
@@ -237,6 +242,7 @@ export default function OrderDetail({
         canDeleteFinishingFile={!!canDeleteFinishingFile}
         qcNote={qcNote}
         setQcNote={setQcNote}
+        loadingAction={loadingAction}
         onQC={handleQC}
         onDeleteQC={handleDeleteQC}
         onRevisiSelesai={handleRevisiSelesai}

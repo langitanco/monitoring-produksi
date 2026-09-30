@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   Camera,
   Eye,
+  Loader2,
   MessageSquare,
   Send,
   ThumbsDown,
@@ -32,9 +33,10 @@ interface StepProduksiProps {
   setProofingRevisiNote: (v: string) => void;
   proofingStepId: string | null;
   setProofingStepId: (v: string | null) => void;
+  loadingAction: string | null; // ── TAMBAHAN ──
   onTriggerUpload: (type: string, stepId?: string) => void;
-  onStatusStep: (stepId: string) => void;
-  onSaveProofingRevisi: () => void;
+  onStatusStep: (stepId: string) => void | Promise<void>;
+  onSaveProofingRevisi: () => void | Promise<void>;
   onAddKendala: () => void;
   onResolveKendala: (id: string) => void;
   onDeleteKendala: (id: string) => void;
@@ -56,6 +58,7 @@ export default function StepProduksi({
   setProofingRevisiNote,
   proofingStepId,
   setProofingStepId,
+  loadingAction,
   onTriggerUpload,
   onStatusStep,
   onSaveProofingRevisi,
@@ -176,6 +179,8 @@ export default function StepProduksi({
             isManagement &&
             !isInRevisionMode;
           const isEditingRevisi = proofingStepId === step.id;
+          const isBusy = loadingAction !== null;
+          const isSavingStep = loadingAction === `step:${step.id}`;
 
           return (
             <div
@@ -252,15 +257,27 @@ export default function StepProduksi({
                                 isEditingRevisi ? null : step.id,
                               )
                             }
-                            className="flex-1 sm:flex-none bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 px-3 py-2 rounded-md text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150 flex items-center justify-center gap-1.5"
+                            disabled={isBusy}
+                            className="flex-1 sm:flex-none bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 px-3 py-2 rounded-md text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 flex items-center justify-center gap-1.5"
                           >
                             <ThumbsDown className="w-3.5 h-3.5" /> Revisi
                           </button>
                           <button
                             onClick={() => onStatusStep(step.id)}
-                            className="flex-1 sm:flex-none bg-[#124540] text-white px-3 py-2 rounded-md text-xs font-semibold hover:bg-[#0d332f] transition-colors duration-150 flex items-center justify-center gap-1.5"
+                            disabled={isBusy}
+                            className="flex-1 sm:flex-none bg-[#124540] text-white px-3 py-2 rounded-md text-xs font-semibold hover:bg-[#0d332f] disabled:opacity-70 disabled:cursor-not-allowed transition-colors duration-150 flex items-center justify-center gap-1.5"
                           >
-                            <ThumbsUp className="w-3.5 h-3.5" /> Siap Produksi
+                            {isSavingStep ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />{" "}
+                                Memproses...
+                              </>
+                            ) : (
+                              <>
+                                <ThumbsUp className="w-3.5 h-3.5" /> Siap
+                                Produksi
+                              </>
+                            )}
                           </button>
                         </div>
                       ) : step.type === "status_update" ? (
@@ -301,10 +318,17 @@ export default function StepProduksi({
                     />
                     <button
                       onClick={onSaveProofingRevisi}
-                      disabled={!proofingRevisiNote.trim()}
-                      className="bg-red-600 text-white px-4 py-2 rounded-md font-semibold text-xs hover:bg-red-700 disabled:opacity-50 transition-colors duration-150"
+                      disabled={!proofingRevisiNote.trim() || isBusy}
+                      className="bg-red-600 text-white px-4 py-2 rounded-md font-semibold text-xs hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 flex items-center justify-center gap-2"
                     >
-                      Kirim
+                      {loadingAction === "proofing-revisi" ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />{" "}
+                          Mengirim...
+                        </>
+                      ) : (
+                        "Kirim"
+                      )}
                     </button>
                   </div>
                 </div>

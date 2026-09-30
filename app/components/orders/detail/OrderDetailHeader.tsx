@@ -14,6 +14,7 @@ import {
   Pencil,
   Phone,
   Printer,
+  Loader2,
   Trash2,
   User,
   Users,
@@ -25,6 +26,7 @@ interface OrderDetailHeaderProps {
   isPrintingLabel: boolean;
   canEditOrderInfo: boolean;
   canDeleteOrder: boolean;
+  isDeleting?: boolean; // ── TAMBAHAN ── loading di tombol Hapus
   onBack: () => void;
   onEdit: () => void;
   onDelete: (id: string) => void;
@@ -41,6 +43,7 @@ export default function OrderDetailHeader({
   isPrintingLabel,
   canEditOrderInfo,
   canDeleteOrder,
+  isDeleting = false,
   onBack,
   onEdit,
   onDelete,
@@ -121,9 +124,18 @@ export default function OrderDetailHeader({
           {canDeleteOrder && (
             <button
               onClick={() => onDelete(order.id)}
-              className="bg-red-600 text-white px-3 py-1.5 rounded-md text-xs md:text-sm font-semibold flex items-center gap-2 hover:bg-red-700 transition-colors duration-150"
+              disabled={isDeleting}
+              className="bg-red-600 text-white px-3 py-1.5 rounded-md text-xs md:text-sm font-semibold flex items-center gap-2 hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed transition-colors duration-150"
             >
-              <Trash2 className="w-3 h-3" /> Hapus
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin" /> Menghapus...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-3 h-3" /> Hapus
+                </>
+              )}
             </button>
           )}
         </div>
