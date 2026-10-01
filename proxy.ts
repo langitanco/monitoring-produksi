@@ -4,6 +4,20 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Batas waktu panggilan ke Supabase dari proxy. Tanpa ini, kalau Supabase
+// lambat/tidak merespons, SEMUA request ikut menggantung sampai ~5 menit
+// (default undici) lalu muncul "fetch failed / HeadersTimeoutError".
+const SUPABASE_TIMEOUT_MS = 8000
+
+function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> {
+  const timeout = AbortSignal.timeout(SUPABASE_TIMEOUT_MS)
+  const signal = init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout
+  return fetch(input, { ...init, signal })
+}
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
@@ -16,6 +30,9 @@ export async function proxy(request: NextRequest) {
   if (!url || !anonKey) return response
 
   const supabase = createServerClient(url, anonKey, {
+    global: {
+      fetch: fetchWithTimeout,
+    },
     cookies: {
       getAll() {
         return request.cookies.getAll()
@@ -46,7 +63,9 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // api/health & service worker dikecualikan supaya healthcheck Coolify
-    // tidak memicu request ke Supabase tiap beberapa detik
-    '/((?!_next/static|_next/image|favicon.ico|api/health|firebase-messaging-sw\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // tidak memicu request ke Supabase tiap beberapa detik.
+    // api/version juga dikecualikan: endpoint publik yang di-polling Dashboard
+    // tiap 5 menit dan tidak butuh sesi login.
+    '/((?!_next/static|_next/image|favicon.ico|api/health|api/version|firebase-messaging-sw\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

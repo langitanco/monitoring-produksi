@@ -21,6 +21,9 @@ interface UseNotificationsProps {
 export function useNotifications({ currentUserId, supabase }: UseNotificationsProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const channelRef = useRef<RealtimeChannel | null>(null);
+  // Waktu terakhir fallback fetch dijalankan karena Realtime error.
+  // Dipakai supaya retry otomatis Supabase tidak memicu fetch berulang-ulang.
+  const lastFallbackFetchRef = useRef(0);
 
   const mapNotification = (n: any): Notification => ({
     id: n.id,
@@ -103,13 +106,22 @@ export function useNotifications({ currentUserId, supabase }: UseNotificationsPr
           );
         }
       )
-      .subscribe((status) => {
+      .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
           console.log('✅ Realtime notifications aktif');
         }
         if (status === 'CHANNEL_ERROR') {
-          console.warn('⚠️ Realtime error, fallback ke fetch manual');
-          fetchNotifications();
+          // Sertakan `err` supaya kelihatan penyebab aslinya
+          // (tabel belum di-enable untuk Realtime, atau koneksi WebSocket gagal).
+          console.warn('⚠️ Realtime error, fallback ke fetch manual', err);
+
+          // Supabase otomatis retry dan callback ini terpanggil tiap retry gagal.
+          // Batasi fallback fetch maksimal sekali per 30 detik.
+          const now = Date.now();
+          if (now - lastFallbackFetchRef.current > 30_000) {
+            lastFallbackFetchRef.current = now;
+            fetchNotifications();
+          }
         }
       });
 
