@@ -8,14 +8,11 @@ import { Save, Plus, Trash2, Edit2, X, Check, Package } from "lucide-react";
 // IMPORT CUSTOM ALERT
 import CustomAlert from "@/app/components/ui/CustomAlert";
 
-// Key yang disembunyikan dari UI Pengaturan Harga:
-//  - manual_finishing: sudah tidak dibaca di mana pun (digantikan
-//    gaji_press_packing di Kalkulator). Barisnya tetap ada di DB.
-//  - flag sistem gaji: diatur lewat Pengaturan → Sistem Gaji Gesut.
-// Upah gesut sistem LAMA (gesut_manual_kecil/sedang/besar) sengaja TETAP
-// tampil, karena masih dipakai SalaryView selama Hitungan Lama diaktifkan.
+// Key yang disembunyikan dari UI Pengaturan Harga: flag sistem gaji (diatur
+// lewat Pengaturan → Sistem Gaji Gesut). Upah gesut lama (gesut_manual_*) dan
+// manual_finishing TETAP tampil karena dipakai Kalkulator & Gaji selama
+// Hitungan Lama diaktifkan.
 const HIDDEN_CONFIG_KEYS = new Set([
-  "manual_finishing",
   "gesut_sistem_lama_aktif",
   "gesut_sistem_baru_aktif",
 ]);
@@ -113,6 +110,10 @@ export default function ConfigPriceView() {
         gesut_manual_kecil: 6,
         gesut_manual_sedang: 7,
         gesut_manual_besar: 8,
+        manual_finishing: 9,
+        bonus_admin_closing: 10,
+        batas_pcs_bonus_admin: 11,
+        bonus_admin_per_pcs: 12,
       };
       const sortedConfigs = currentConfigs.sort((a, b) => {
         if (a.category !== b.category)
@@ -331,8 +332,11 @@ export default function ConfigPriceView() {
                   // bukan uang di tabel ini adalah field persen (%).
                   const isPercentage =
                     item.unit === "%" || item.unit?.toLowerCase() === "persen";
-                  // batas_warna_normal berunit "warna" (jumlah, bukan Rupiah)
-                  const isCurrency = !isPercentage && item.unit !== "warna";
+                  // satuan "warna" & "batas pcs" = jumlah, bukan Rupiah
+                  const isCurrency =
+                    !isPercentage &&
+                    item.unit !== "warna" &&
+                    item.unit !== "batas pcs";
                   return (
                     <div key={item.id}>
                       <div className="flex justify-between items-center mb-1.5">

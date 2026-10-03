@@ -22,6 +22,12 @@ import {
 import { requestAndRegisterFCM } from "@/app/components/misc/FCMManager";
 import { createBrowserClient } from "@supabase/ssr";
 import {
+  ROLE_OPTIONS,
+  getUserRoles,
+  primaryRole,
+  roleLabel,
+} from "@/lib/roles";
+import {
   KEY_GESUT_LAMA_AKTIF,
   KEY_GESUT_BARU_AKTIF,
   resolveGesutFlag,
@@ -486,6 +492,7 @@ export default function SettingsPage({
       name: u.name,
       username: u.username,
       role: u.role,
+      roles: getUserRoles(u),
       password: "",
     });
     const merged: UserPermissions = {
@@ -576,6 +583,7 @@ export default function SettingsPage({
       name: "",
       username: "",
       role: "produksi",
+      roles: ["produksi"],
       password: "",
     });
     setPermissions(DEFAULT_PERMISSIONS);
@@ -830,7 +838,7 @@ export default function SettingsPage({
                             @{u.username}
                           </span>
                           <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em]">
-                            · {u.role}
+                            · {getUserRoles(u).map(roleLabel).join(" + ")}
                           </span>
                         </div>
                       </div>
@@ -920,23 +928,39 @@ export default function SettingsPage({
                     </div>
                   </div>
                   <div>
-                    <label className={labelCls}>Role</label>
-                    <select
-                      className={inputCls}
-                      value={formData.role || "produksi"}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          role: e.target.value as any,
-                        })
-                      }
-                    >
-                      <option value="supervisor">Supervisor</option>
-                      <option value="admin">Admin</option>
-                      <option value="manager">Manager</option>
-                      <option value="produksi">Produksi</option>
-                      <option value="qc">QC</option>
-                    </select>
+                    <label className={labelCls}>
+                      Role (boleh pilih lebih dari satu)
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {ROLE_OPTIONS.map((opt) => {
+                        const current = formData.roles || [];
+                        const selected = current.includes(opt.value);
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => {
+                              const next = selected
+                                ? current.filter((r) => r !== opt.value)
+                                : [...current, opt.value];
+                              if (next.length === 0) return; // minimal satu role
+                              setFormData({
+                                ...formData,
+                                roles: next,
+                                role: primaryRole(next) as any,
+                              });
+                            }}
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors duration-150 ${
+                              selected
+                                ? "bg-[#124540] border-[#124540] text-white"
+                                : "border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>

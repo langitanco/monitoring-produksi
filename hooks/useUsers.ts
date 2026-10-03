@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { UserData, ProductionTypeData } from '@/types';
 import { DEFAULT_PRODUCTION_TYPES } from '@/lib/utils';
+import { primaryRole } from '@/lib/roles';
 
 interface UseUsersProps {
   supabase: SupabaseClient;
@@ -30,13 +31,24 @@ export function useUsers({ supabase, showAlert, showConfirm }: UseUsersProps) {
   // ─── User CRUD ────────────────────────────────────────────────────────────
 
   const handleSaveUser = useCallback(async (u: any) => {
-    const p: any = { name: u.name, role: u.role, username: u.username };
+    // Role ganda: `roles` = semua pilihan, `role` = role utama (lihat lib/roles.ts).
+    const roles: string[] =
+      Array.isArray(u.roles) && u.roles.length > 0
+        ? u.roles
+        : [u.role || 'produksi'];
+    const p: any = {
+      name: u.name,
+      role: primaryRole(roles),
+      roles,
+      username: u.username,
+    };
     if (u.permissions) p.permissions = u.permissions;
     if (u.password?.trim()) p.password = u.password;
     const { error } = u.id
       ? await supabase.from('users').update(p).eq('id', u.id)
       : await supabase.from('users').insert([p]);
     if (!error) { fetchUsers(); showAlert('Sukses', 'User tersimpan'); }
+    else showAlert('Gagal', `${error.message} (pastikan migration kolom "roles" sudah dijalankan)`, 'error');
   }, [supabase, fetchUsers, showAlert]);
 
   const handleDeleteUser = useCallback(async (id: string) => {

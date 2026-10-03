@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { ProductionTypeData, UserData, GesutEntry } from "@/types";
+import { hasRole, getUserRoles } from "@/lib/roles";
 import SizeInputForm, { SizeEntry } from "./SizeInputForm";
 import GesutInputForm from "./GesutInputForm"; // ── TAMBAHAN ──
 
@@ -44,7 +45,11 @@ export default function CreateOrder({
   const isManualType = ["manual", "sablon"].includes(
     form.type?.toLowerCase() || "",
   );
-  const picUsers = users.filter((u) => u.role !== "qc");
+  // Hanya user yang SEMATA-MATA QC yang dikecualikan; user ber-role ganda
+  // (mis. QC + Produksi) tetap boleh dipilih.
+  const picUsers = users.filter(
+    (u) => !(hasRole(u, "qc") && getUserRoles(u).length === 1),
+  );
 
   useEffect(() => {
     const d = new Date();

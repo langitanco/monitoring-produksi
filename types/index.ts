@@ -6,7 +6,7 @@
 // packing DTF sekaligus, gajinya digabung & dihitung per-pcs). Jadi tidak
 // perlu role baru; cukup pakai role === 'qc' (lihat SalaryView.tsx,
 // CreateOrder.tsx, EditOrder.tsx).
-export type UserRole = 'admin' | 'produksi' | 'qc' | 'manager' | 'supervisor';
+export type UserRole = 'admin' | 'produksi' | 'qc' | 'manager' | 'supervisor' | 'designer';
 
 // ─── Tipe dasar per modul ────────────────────────────────────────────────────
 
@@ -79,7 +79,10 @@ export interface UserData {
   username: string;
   password?: string;
   name: string;
-  role: UserRole;
+  role: UserRole; // role utama (kompatibilitas pengecekan akses lama)
+  // ── TAMBAHAN ── semua role yang dipilih (boleh lebih dari satu). Kosong/
+  // null = user lama → dianggap [role]. Lihat lib/roles.ts.
+  roles?: string[] | null;
   permissions: UserPermissions;
   address?: string;
   dob?: string;

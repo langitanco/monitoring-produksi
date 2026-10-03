@@ -26,6 +26,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createBrowserClient } from "@supabase/ssr";
 import { UserData, Order, PricingConfig, GesutEntry } from "@/types";
+import FixedSalaryView, { FixedSlip } from "./FixedSalaryView";
+import { hasRole } from "@/lib/roles";
 import {
   ChevronRight,
   Calculator,
@@ -109,7 +111,9 @@ export default function SalaryView({
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 
-  const [activeTab, setActiveTab] = useState<"manual" | "dtf">("manual");
+  const [activeTab, setActiveTab] = useState<"manual" | "dtf" | "tetap">(
+    "manual",
+  );
 
   // State untuk filter bulan/tahun
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -471,7 +475,7 @@ export default function SalaryView({
   // MODEL 2 — TIM FINISHING / DTF (agregat, dibagi rata)
   // ═══════════════════════════════════════════════════════════════════════
   // Anggota tim = user role 'qc', tim tetap (tidak pakai assigned_to/helper_id).
-  const dtfTeam = useMemo(() => users.filter((u) => u.role === "qc"), [users]);
+  const dtfTeam = useMemo(() => users.filter((u) => hasRole(u, "qc")), [users]);
 
   const dtfSummary = useMemo(() => {
     let totalQty = 0;
@@ -515,9 +519,11 @@ export default function SalaryView({
   interface SlipToPrint {
     userId: string;
     name: string;
-    kategori: "manual" | "qc";
+    kategori: "manual" | "qc" | "tetap";
     rows: SalarySlipRow[];
     total: number;
+    roleLabel?: string; // hanya kategori "tetap"
+    paidAt?: string | null; // hanya kategori "tetap"
   }
 
   const printSlips = (slips: SlipToPrint[]) => {
@@ -558,17 +564,27 @@ export default function SalaryView({
               logoUrl={logoUrl}
               recipientName={slip.name}
               recipientRoleLabel={
-                slip.kategori === "qc" ? "Tim QC & Finishing" : undefined
+                slip.kategori === "qc"
+                  ? "Tim QC & Finishing"
+                  : slip.kategori === "tetap"
+                    ? slip.roleLabel
+                    : undefined
               }
               kategoriLabel={
                 slip.kategori === "manual"
                   ? "Produksi Manual"
-                  : "Tim QC & Finishing"
+                  : slip.kategori === "tetap"
+                    ? "Gaji Tetap & Bonus"
+                    : "Tim QC & Finishing"
               }
               periodLabel={periodLabel}
               rows={slip.rows}
               totalAmount={slip.total}
-              paidAt={payments[paymentKey(slip.userId, slip.kategori)]?.paid_at}
+              paidAt={
+                slip.kategori === "tetap"
+                  ? slip.paidAt
+                  : payments[paymentKey(slip.userId, slip.kategori)]?.paid_at
+              }
             />
           </div>,
         ),
@@ -694,6 +710,30 @@ export default function SalaryView({
         amount: item.earnings,
       };
     });
+
+  const printFixedSlip = (slip: FixedSlip) =>
+    printSlips([
+      {
+        userId: slip.userId,
+        name: slip.name,
+        kategori: "tetap",
+        rows: slip.rows,
+        total: slip.total,
+        roleLabel: slip.roleLabel,
+        paidAt: slip.paidAt,
+      },
+    ]);
+
+  const productionTotals = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(userProductionStats).map(([id, st]) => [
+          id,
+          st.totalEarnings,
+        ]),
+      ) as Record<string, number>,
+    [userProductionStats],
+  );
 
   const printSingleManualSlip = (userId: string) => {
     const stat = userProductionStats[userId];
@@ -880,12 +920,37 @@ export default function SalaryView({
           >
             Tim QC & Finishing
           </button>
+          <button
+            onClick={() => setActiveTab("tetap")}
+            className={`flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-150 ${
+              activeTab === "tetap"
+                ? "bg-white dark:bg-zinc-950 text-[#124540] dark:text-[#49BFB4] shadow-sm"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+            }`}
+          >
+            Admin & Designer
+          </button>
         </div>
 
         {loadingConfigs ? (
           <div className="flex-1 flex items-center justify-center text-zinc-400 text-sm">
             Memuat konfigurasi harga...
           </div>
+        ) : activeTab === "tetap" ? (
+          // ═══════════════════════════════ TAB: ADMIN & DESIGNER ═══════════════════════════════
+          <FixedSalaryView
+            users={users}
+            periodOrders={filteredOrders}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            productionTotals={productionTotals}
+            canManage={isSupervisor || !!perms?.salary?.edit}
+            canPrint={canPrint}
+            printing={printing}
+            onPrintSlip={printFixedSlip}
+            showConfirm={showConfirm}
+            showError={showError}
+          />
         ) : activeTab === "manual" ? (
           // ═══════════════════════════════ TAB: PRODUKSI MANUAL ═══════════════════════════════
           <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4 overflow-hidden">
