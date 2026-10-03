@@ -15,7 +15,8 @@ import type { CSSProperties } from "react";
 
 export interface SalarySlipRow {
   label: string; // mis. kode_produksi, atau "Total Qty Order Selesai"
-  detail?: string; // keterangan tambahan (mis. peran PJ/Helper, tanggal)
+  detail?: string; // keterangan tambahan (mis. komposisi gesut, tanggal)
+  role?: "PJ" | "Helper"; // peran di order ini (hanya slip Produksi Manual)
   qty?: number;
   rate?: number;
   amount: number;
@@ -61,6 +62,8 @@ export default function SalaryPrintSlip({
   slipNumber,
 }: SalaryPrintSlipProps) {
   const paidLabel = formatDate(paidAt);
+
+  const hasRole = rows.some((r) => !!r.role);
 
   return (
     <div
@@ -184,6 +187,9 @@ export default function SalaryPrintSlip({
         <thead>
           <tr style={{ background: "#f4f4f5" }}>
             <th style={thStyle}>Keterangan</th>
+            {hasRole && (
+              <th style={{ ...thStyle, textAlign: "center" }}>Peran</th>
+            )}
             <th style={{ ...thStyle, textAlign: "right" }}>Qty</th>
             <th style={{ ...thStyle, textAlign: "right" }}>Rate</th>
             <th style={{ ...thStyle, textAlign: "right" }}>Jumlah</th>
@@ -200,6 +206,28 @@ export default function SalaryPrintSlip({
                   </div>
                 ) : null}
               </td>
+              {hasRole && (
+                <td style={{ ...tdStyle, textAlign: "center" }}>
+                  {row.role ? (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "1px 8px",
+                        border: "1px solid #a1a1aa",
+                        borderRadius: "999px",
+                        fontSize: "9px",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        color: row.role === "PJ" ? "#124540" : "#52525b",
+                      }}
+                    >
+                      {row.role}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+              )}
               <td style={{ ...tdStyle, textAlign: "right" }}>
                 {row.qty !== undefined ? row.qty.toLocaleString("id-ID") : "—"}
               </td>

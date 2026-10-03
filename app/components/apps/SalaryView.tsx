@@ -687,7 +687,8 @@ export default function SalaryView({
       const g = item.data.detail_gesut as GesutEntry | null | undefined;
       return {
         label: item.data.kode_produksi,
-        detail: `${item.role} · Gesut ${g ? `${g.kecil}/${g.sedang}/${g.besar}` : "—"} · ${new Date(item.data.created_at || "").toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}`,
+        detail: `Gesut ${g ? `${g.kecil}/${g.sedang}/${g.besar}` : "—"} · ${new Date(item.data.created_at || "").toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}`,
+        role: item.role,
         qty: item.data.jumlah || 0,
         rate: item.ratePerPcs,
         amount: item.earnings,
@@ -1162,12 +1163,17 @@ export default function SalaryView({
                                     : "border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500"
                                 }`}
                               >
-                                {item.role}{" "}
-                                {item.role === "PJ" && !item.data.helper_id
-                                  ? "(100%)"
-                                  : item.role === "PJ"
-                                    ? "(70%)"
-                                    : "(30%)"}
+                                {item.role}
+                                {item.sistem === "lama" && (
+                                  <>
+                                    {" "}
+                                    {item.role === "PJ" && !item.data.helper_id
+                                      ? "(100%)"
+                                      : item.role === "PJ"
+                                        ? "(70%)"
+                                        : "(30%)"}
+                                  </>
+                                )}
                               </span>
                               <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
                                 Gesut (K/S/B):{" "}
@@ -1273,12 +1279,18 @@ export default function SalaryView({
                                       : "border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500"
                                   }`}
                                 >
-                                  {item.role}{" "}
-                                  {item.role === "PJ" && !item.data.helper_id
-                                    ? "(100%)"
-                                    : item.role === "PJ"
-                                      ? "(70%)"
-                                      : "(30%)"}
+                                  {item.role}
+                                  {item.sistem === "lama" && (
+                                    <>
+                                      {" "}
+                                      {item.role === "PJ" &&
+                                      !item.data.helper_id
+                                        ? "(100%)"
+                                        : item.role === "PJ"
+                                          ? "(70%)"
+                                          : "(30%)"}
+                                    </>
+                                  )}
                                 </span>
                               </td>
                               <td className="p-3 text-xs font-mono tabular-nums text-zinc-600 dark:text-zinc-300">
