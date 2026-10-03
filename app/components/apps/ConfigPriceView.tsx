@@ -8,6 +8,18 @@ import { Save, Plus, Trash2, Edit2, X, Check, Package } from "lucide-react";
 // IMPORT CUSTOM ALERT
 import CustomAlert from "@/app/components/ui/CustomAlert";
 
+// Key yang disembunyikan dari UI Pengaturan Harga:
+//  - manual_finishing: sudah tidak dibaca di mana pun (digantikan
+//    gaji_press_packing di Kalkulator). Barisnya tetap ada di DB.
+//  - flag sistem gaji: diatur lewat Pengaturan → Sistem Gaji Gesut.
+// Upah gesut sistem LAMA (gesut_manual_kecil/sedang/besar) sengaja TETAP
+// tampil, karena masih dipakai SalaryView selama Hitungan Lama diaktifkan.
+const HIDDEN_CONFIG_KEYS = new Set([
+  "manual_finishing",
+  "gesut_sistem_lama_aktif",
+  "gesut_sistem_baru_aktif",
+]);
+
 export default function ConfigPriceView() {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -71,7 +83,8 @@ export default function ConfigPriceView() {
     const { data: configData } = await supabase
       .from("pricing_configs")
       .select("*")
-      .order("effective_date", { ascending: true });
+      .order("effective_date", { ascending: true })
+      .order("id", { ascending: true }); // seri tanggal sama → id terbesar menang
     const { data: addonData } = await supabase
       .from("product_addons")
       .select("*")
@@ -87,12 +100,19 @@ export default function ConfigPriceView() {
         // yang kita lihat untuk key ini otomatis yang paling baru/berlaku.
         latestByKey.set(row.key_name, row);
       }
-      const currentConfigs = Array.from(latestByKey.values());
+      const currentConfigs = Array.from(latestByKey.values()).filter(
+        (c) => !HIDDEN_CONFIG_KEYS.has(c.key_name),
+      );
 
       const sortPriority: Record<string, number> = {
-        gesut_manual_kecil: 1,
-        gesut_manual_sedang: 2,
-        gesut_manual_besar: 3,
+        gaji_pj_gesut: 1,
+        gaji_helper_gesut: 2,
+        gaji_press_packing: 3,
+        batas_warna_normal: 4,
+        bonus_ekstra_warna: 5,
+        gesut_manual_kecil: 6,
+        gesut_manual_sedang: 7,
+        gesut_manual_besar: 8,
       };
       const sortedConfigs = currentConfigs.sort((a, b) => {
         if (a.category !== b.category)
@@ -309,8 +329,10 @@ export default function ConfigPriceView() {
                   // seperti "Finishing (DTF)"/"Packing (DTF)" tetap Rupiah,
                   // cuma basisnya per pcs. Satu-satunya yang benar-benar
                   // bukan uang di tabel ini adalah field persen (%).
-                  const isPercentage = item.unit === "%";
-                  const isCurrency = !isPercentage;
+                  const isPercentage =
+                    item.unit === "%" || item.unit?.toLowerCase() === "persen";
+                  // batas_warna_normal berunit "warna" (jumlah, bukan Rupiah)
+                  const isCurrency = !isPercentage && item.unit !== "warna";
                   return (
                     <div key={item.id}>
                       <div className="flex justify-between items-center mb-1.5">
@@ -334,7 +356,7 @@ export default function ConfigPriceView() {
                             .toString()
                             .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                           onChange={(e) => handleConfigChange(e, item.id)}
-                          className={`block w-full py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#124540] focus:border-[#124540] text-zinc-900 dark:text-zinc-100 font-mono tabular-nums font-semibold text-lg transition-colors duration-150 ${isCurrency ? "pl-9 pr-3" : "pl-4 pr-8"}`}
+                          className={`block w-full py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#124540] focus:border-[#124540] text-zinc-900 dark:text-zinc-100 font-mono tabular-nums font-semibold text-lg transition-colors duration-150 ${isCurrency ? "pl-9 pr-3" : isPercentage ? "pl-4 pr-8" : "pl-4 pr-3"}`}
                         />
                         {isPercentage && (
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400 text-sm font-semibold">

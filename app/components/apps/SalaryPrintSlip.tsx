@@ -87,7 +87,11 @@ export default function SalaryPrintSlip({
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt={companyName} style={{ height: "40px" }} />
+            <img
+              src={logoUrl}
+              alt={companyName}
+              style={{ height: "48px", width: "48px", objectFit: "contain" }}
+            />
           ) : null}
           <div>
             <div

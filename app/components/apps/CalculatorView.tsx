@@ -5,6 +5,13 @@
 import React, { useState, useEffect } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { Info, ChevronDown, ChevronUp, X } from "lucide-react";
+import {
+  KEY_GESUT_LAMA_AKTIF,
+  KEY_GESUT_BARU_AKTIF,
+  resolveGesutFlag,
+} from "@/lib/gesutSystem";
+
+type SistemGesut = "lama" | "baru";
 
 // Margin bertingkat berdasarkan qty.
 // Kalau margin_tier2_percentage / margin_tier3_percentage belum diisi di
@@ -34,6 +41,10 @@ export default function CalculatorView() {
   const [addons, setAddons] = useState<any[]>([]);
 
   const [mode, setMode] = useState("DTF");
+  // Flag sistem gaji gesut dari Pengaturan (sama seperti di menu Gaji).
+  const [gesutFlags, setGesutFlags] = useState({ lama: true, baru: false });
+  // Pilihan sistem di halaman ini (hanya relevan kalau keduanya aktif).
+  const [sistemGesut, setSistemGesut] = useState<SistemGesut>("baru");
   const [finalPrice, setFinalPrice] = useState(0);
   const [laborDetails, setLaborDetails] = useState({ gesut: 0, packing: 0 });
   const [appliedMargin, setAppliedMargin] = useState(0);
@@ -42,9 +53,11 @@ export default function CalculatorView() {
     qty: 0,
     width: 0,
     length: 0,
-    colorsSmall: 0,
-    colorsMedium: 0,
-    colorsLarge: 0,
+    totalColors: 0, // total screen/warna (sistem baru: tidak lagi dibagi area kecil/sedang/besar)
+    // Sistem lama: komposisi warna per ukuran area
+    colorsKecil: 0,
+    colorsSedang: 0,
+    colorsBesar: 0,
     kaosPrice: 0,
   });
 
@@ -57,11 +70,22 @@ export default function CalculatorView() {
   // 1. FETCH DATA
   useEffect(() => {
     const fetchData = async () => {
+      // pricing_configs menyimpan histori (tiap simpan = INSERT baris baru).
+      // Urutkan ascending by effective_date, lewati yang dijadwalkan di masa
+      // depan, lalu baris terakhir per key_name otomatis jadi nilai yang berlaku.
       const { data: configData } = await supabase
         .from("pricing_configs")
-        .select("key_name, value_amount");
+        .select("key_name, value_amount, effective_date")
+        .order("effective_date", { ascending: true })
+        .order("id", { ascending: true });
       if (configData) {
+        setGesutFlags({
+          lama: resolveGesutFlag(configData as any[], KEY_GESUT_LAMA_AKTIF),
+          baru: resolveGesutFlag(configData as any[], KEY_GESUT_BARU_AKTIF),
+        });
+        const todayStr = new Date().toISOString().split("T")[0];
         const configMap = configData.reduce((acc: any, item: any) => {
+          if (item.effective_date && item.effective_date > todayStr) return acc;
           acc[item.key_name] = Number(item.value_amount);
           return acc;
         }, {});
@@ -84,16 +108,26 @@ export default function CalculatorView() {
     );
   };
 
+  // Sistem efektif: kalau hanya satu aktif di Pengaturan, langsung dipakai.
+  // Kalau keduanya aktif, ikut pilihan user. Kalau (keliru) keduanya nonaktif,
+  // jatuh ke sistem lama (sama seperti SalaryView).
+  const bisaPilihSistem = gesutFlags.lama && gesutFlags.baru;
+  const sistemEfektif: SistemGesut = !gesutFlags.baru
+    ? "lama"
+    : !gesutFlags.lama
+      ? "baru"
+      : sistemGesut;
+
   // 3. KALKULASI UTAMA
   useEffect(() => {
     if (loading) return;
     const hasQty = inputs.qty > 0;
     const hasDtfDim = mode === "DTF" && inputs.width > 0 && inputs.length > 0;
-    const hasManualColor =
-      mode === "MANUAL" &&
-      (inputs.colorsSmall > 0 ||
-        inputs.colorsMedium > 0 ||
-        inputs.colorsLarge > 0);
+    const totalColorsEfektif =
+      sistemEfektif === "lama"
+        ? inputs.colorsKecil + inputs.colorsSedang + inputs.colorsBesar
+        : inputs.totalColors;
+    const hasManualColor = mode === "MANUAL" && totalColorsEfektif > 0;
 
     if (
       !hasQty ||
@@ -126,7 +160,7 @@ export default function CalculatorView() {
       const area = inputs.width * inputs.length;
       const dtfPricePerCm = config.dtf_price_per_cm ?? 0;
       const pressCost = config.dtf_press_cost ?? 0;
-      const dtfTintaCostPerCm = config.dtf_tinta_cost ?? 0;
+      const dtfTintaCostPerCm = config.cost_dtf_ink ?? 0;
       const dtfPrintFilmCostPerPcs = config.cost_print_film ?? 0;
 
       hppSablon =
@@ -136,30 +170,49 @@ export default function CalculatorView() {
         dtfPrintFilmCostPerPcs;
       currentGesutCost = pressCost;
     } else {
-      const paySmall = inputs.colorsSmall * (config.gesut_manual_kecil ?? 0);
-      const payMedium = inputs.colorsMedium * (config.gesut_manual_sedang ?? 0);
-      const payLarge = inputs.colorsLarge * (config.gesut_manual_besar ?? 0);
-      const totalGesutPay = paySmall + payMedium + payLarge;
-
-      const totalColors =
-        inputs.colorsSmall + inputs.colorsMedium + inputs.colorsLarge;
       const screenCost = config.manual_screen_cost ?? 0;
-      const totalSetupCost = screenCost * totalColors;
-      const setupCostPerPcs = totalSetupCost / safeQty;
-
-      const finishCost = config.manual_finishing ?? 0;
       const plastisolCostPerPcs = config.cost_plastisol_ink ?? 0;
+      const setupCostPerPcs = (screenCost * totalColorsEfektif) / safeQty;
 
-      currentGesutCost = totalGesutPay;
-      currentPackingCost = finishCost;
-      hppSablon =
-        setupCostPerPcs + totalGesutPay + finishCost + plastisolCostPerPcs;
+      if (sistemEfektif === "lama") {
+        // ── SISTEM LAMA: komposisi warna kecil/sedang/besar × rate gesut_manual_* ──
+        const gesutPerPcs =
+          inputs.colorsKecil * (config.gesut_manual_kecil ?? 0) +
+          inputs.colorsSedang * (config.gesut_manual_sedang ?? 0) +
+          inputs.colorsBesar * (config.gesut_manual_besar ?? 0);
+        // Packing lama: manual_finishing (tanpa fallback, sama seperti rumus lama)
+        const packingLama = config.manual_finishing ?? 0;
+
+        currentGesutCost = gesutPerPcs;
+        currentPackingCost = packingLama;
+        hppSablon =
+          setupCostPerPcs + gesutPerPcs + packingLama + plastisolCostPerPcs;
+      } else {
+        // ── SISTEM BARU: upah global berbasis profesi + bonus kompleksitas ──
+        const basePj = config.gaji_pj_gesut ?? 3000;
+        const baseHelper = config.gaji_helper_gesut ?? 2000;
+        const basePacking = config.gaji_press_packing ?? 1500;
+        const normalLimit = config.batas_warna_normal ?? 4;
+        const extraColorBonus = config.bonus_ekstra_warna ?? 500;
+
+        // Bonus kompleksitas: hanya untuk warna di atas batas normal
+        const extraColors = Math.max(0, inputs.totalColors - normalLimit);
+        const bonusWarna = extraColors * extraColorBonus;
+
+        // Upah tukang gesut per pcs (PJ + Helper + bonus warna)
+        const gesutPerPcs = basePj + baseHelper + bonusWarna;
+
+        currentGesutCost = gesutPerPcs;
+        currentPackingCost = basePacking;
+        hppSablon =
+          setupCostPerPcs + gesutPerPcs + basePacking + plastisolCostPerPcs;
+      }
     }
 
     setLaborDetails({ gesut: currentGesutCost, packing: currentPackingCost });
     const totalHPP = inputs.kaosPrice + hppSablon + hppOperasionalTotal;
     setFinalPrice(totalHPP + totalHPP * margin);
-  }, [inputs, mode, config, loading, selectedAddonIds, addons]);
+  }, [inputs, mode, config, loading, selectedAddonIds, addons, sistemEfektif]);
 
   const formatRupiahDisplay = (num: number) =>
     !num ? "" : "Rp " + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -188,7 +241,17 @@ export default function CalculatorView() {
     return total + (item ? Number(item.cost) : 0);
   }, 0);
   const totalManualColors =
-    inputs.colorsSmall + inputs.colorsMedium + inputs.colorsLarge;
+    sistemEfektif === "lama"
+      ? inputs.colorsKecil + inputs.colorsSedang + inputs.colorsBesar
+      : inputs.totalColors;
+  const manualNormalLimit = config.batas_warna_normal ?? 4;
+  // Bonus warna ekstra hanya ada di sistem baru
+  const manualExtraColors =
+    sistemEfektif === "baru"
+      ? Math.max(0, totalManualColors - manualNormalLimit)
+      : 0;
+  const manualBonusWarna =
+    manualExtraColors * (config.bonus_ekstra_warna ?? 500);
 
   // Rincian hasil, dipakai bersama oleh panel desktop & bottom sheet mobile
   const resultDetails = (
@@ -238,38 +301,62 @@ export default function CalculatorView() {
         <>
           <div className="flex justify-between text-sm">
             <span className="text-zinc-500 dark:text-zinc-400">
-              Total Warna ({totalManualColors})
+              {sistemEfektif === "lama"
+                ? "Upah Gesut (komposisi warna)"
+                : "Upah Tukang (PJ+Helper)"}
             </span>
             <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
-              {formatResult(laborDetails.gesut)}{" "}
+              {formatResult(laborDetails.gesut - manualBonusWarna)}{" "}
               <span className="text-[10px] font-normal text-zinc-400 dark:text-zinc-500">
                 /pcs
               </span>
             </span>
           </div>
-
+          {manualBonusWarna > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-zinc-500 dark:text-zinc-400">
+                Bonus Warna Ekstra (+{manualExtraColors})
+              </span>
+              <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
+                {"+" + formatResult(manualBonusWarna)}{" "}
+                <span className="text-[10px] font-normal text-zinc-400 dark:text-zinc-500">
+                  /pcs
+                </span>
+              </span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-zinc-500 dark:text-zinc-400">
-              Beban Screen/kaos
+              Packing / Press
+            </span>
+            <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
+              {formatResult(laborDetails.packing)}{" "}
+              <span className="text-[10px] font-normal text-zinc-400 dark:text-zinc-500">
+                /pcs
+              </span>
+            </span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-zinc-500 dark:text-zinc-400">
+              Beban Screen ({totalManualColors} warna)
             </span>
             <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
               {formatResult(
                 ((config.manual_screen_cost ?? 0) * totalManualColors) /
                   (inputs.qty || 1),
-              )}
+              )}{" "}
+              <span className="text-[10px] font-normal text-zinc-400 dark:text-zinc-500">
+                /pcs
+              </span>
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-500 dark:text-zinc-400">
-              Cost Tinta & SDM
-            </span>
+            <span className="text-zinc-500 dark:text-zinc-400">Cost Tinta</span>
             <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
-              {formatResult(
-                (config.cost_plastisol_ink ?? 0) +
-                  laborDetails.gesut +
-                  laborDetails.packing,
-              )}{" "}
-              /pcs
+              {formatResult(config.cost_plastisol_ink ?? 0)}{" "}
+              <span className="text-[10px] font-normal text-zinc-400 dark:text-zinc-500">
+                /pcs
+              </span>
             </span>
           </div>
         </>
@@ -281,7 +368,7 @@ export default function CalculatorView() {
             </span>
             <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
               {formatResult(
-                inputs.width * inputs.length * (config.dtf_tinta_cost ?? 0) +
+                inputs.width * inputs.length * (config.cost_dtf_ink ?? 0) +
                   (config.cost_print_film ?? 0),
               )}
             </span>
@@ -333,6 +420,41 @@ export default function CalculatorView() {
               Sablon Manual
             </button>
           </div>
+
+          {mode === "MANUAL" && bisaPilihSistem && (
+            <div className="bg-white dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
+                  Sistem Gesut
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                  {sistemEfektif === "baru"
+                    ? "Upah global per profesi + bonus warna ekstra."
+                    : "Upah dari komposisi warna kecil/sedang/besar."}
+                </p>
+              </div>
+              <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-lg w-full md:w-auto">
+                {(
+                  [
+                    ["lama", "Lama"],
+                    ["baru", "Baru"],
+                  ] as [SistemGesut, string][]
+                ).map(([val, label]) => (
+                  <button
+                    key={val}
+                    onClick={() => setSistemGesut(val)}
+                    className={`flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-150 ${
+                      sistemGesut === val
+                        ? "bg-white dark:bg-zinc-950 text-[#124540] dark:text-[#49BFB4] shadow-sm"
+                        : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="bg-white dark:bg-zinc-950 p-4 md:p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-5 md:space-y-6">
             {/* Qty & Harga Kaos digabung 2 kolom di semua ukuran layar */}
@@ -400,58 +522,58 @@ export default function CalculatorView() {
                   <div className="flex items-center gap-2 mb-3">
                     <Info className="w-4 h-4 text-[#124540]" />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-700 dark:text-zinc-300">
-                      Detail Warna & Area
+                      Detail Warna
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400 mb-1 text-left truncate">
-                        <span className="md:hidden">KECIL</span>
-                        <span className="hidden md:inline">
-                          KECIL (Logo/Label)
-                        </span>
+                  {sistemEfektif === "lama" ? (
+                    <>
+                      <div className="grid grid-cols-3 gap-3">
+                        {(
+                          [
+                            ["colorsKecil", "KECIL", "KECIL (Logo/Label)"],
+                            ["colorsSedang", "SEDANG", "SEDANG (A4)"],
+                            ["colorsBesar", "BESAR", "BESAR (A3/Blok)"],
+                          ] as [string, string, string][]
+                        ).map(([field, short, long]) => (
+                          <div key={field}>
+                            <label className="block text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400 mb-1 text-left truncate">
+                              <span className="md:hidden">{short}</span>
+                              <span className="hidden md:inline">{long}</span>
+                            </label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={formatNumberDisplay(
+                                (inputs as any)[field],
+                              )}
+                              onChange={(e) => handleInputChange(e, field)}
+                              className="w-full font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#124540] outline-none text-center transition-colors duration-150"
+                              placeholder="0"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <label className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 mb-2">
+                        Total Warna (Screen)
                       </label>
                       <input
                         type="text"
                         inputMode="numeric"
-                        value={formatNumberDisplay(inputs.colorsSmall)}
-                        onChange={(e) => handleInputChange(e, "colorsSmall")}
-                        className="w-full font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#124540] outline-none text-center transition-colors duration-150"
+                        value={formatNumberDisplay(inputs.totalColors)}
+                        onChange={(e) => handleInputChange(e, "totalColors")}
+                        className="w-full text-lg md:text-xl font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-3 focus:ring-2 focus:ring-[#124540] outline-none placeholder-zinc-300 dark:placeholder-zinc-600 transition-colors duration-150"
                         placeholder="0"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400 mb-1 text-left truncate">
-                        <span className="md:hidden">SEDANG</span>
-                        <span className="hidden md:inline">SEDANG (A4)</span>
-                      </label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        value={formatNumberDisplay(inputs.colorsMedium)}
-                        onChange={(e) => handleInputChange(e, "colorsMedium")}
-                        className="w-full font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#124540] outline-none text-center transition-colors duration-150"
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400 mb-1 text-left truncate">
-                        <span className="md:hidden">BESAR</span>
-                        <span className="hidden md:inline">
-                          BESAR (A3/Blok)
-                        </span>
-                      </label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        value={formatNumberDisplay(inputs.colorsLarge)}
-                        onChange={(e) => handleInputChange(e, "colorsLarge")}
-                        className="w-full font-mono tabular-nums font-semibold text-zinc-900 dark:text-white bg-transparent border-zinc-300 dark:border-zinc-700 border rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#124540] outline-none text-center transition-colors duration-150"
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
+                      <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+                        Normal sampai {config.batas_warna_normal ?? 4} warna.
+                        Lebih dari itu kena bonus kompleksitas.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             )}

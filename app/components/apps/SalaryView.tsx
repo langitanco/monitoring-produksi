@@ -1,8 +1,15 @@
 // app/components/apps/SalaryView.tsx
 //
 // Dua model gaji berbeda:
-//   1) Produksi Manual (assigned_to/helper_id, per-order, basis komposisi
-//      gesut kecil/sedang/besar × rate pricing_configs kategori MANUAL)
+//   1) Produksi Manual (assigned_to/helper_id, per-order). Ada DUA sistem
+//      upah gesut. Sistem mana yang tersedia diatur di Pengaturan → "Sistem
+//      Gaji Gesut" (lib/gesutSystem.ts): kalau keduanya aktif muncul toggle
+//      "Sistem Gesut" di halaman ini, kalau satu saja aktif langsung dipakai.
+//        - LAMA : komposisi gesut kecil/sedang/besar × rate gesut_manual_*
+//        - BARU : upah global per profesi (gaji_pj_gesut / gaji_helper_gesut)
+//                 + bonus kompleksitas untuk warna di atas batas_warna_normal
+//      Mode "Otomatis": order dengan tanggal >= GESUT_BARU_MULAI pakai BARU,
+//      sebelumnya pakai LAMA.
 //   2) Tim QC/Finishing/Packing (role 'qc', tim tetap — bukan per-order.
 //      Basis: total qty SEMUA order selesai Manual+DTF × rate pricing_configs
 //      kategori DTF, dibagi rata ke semua user role 'qc')
@@ -33,6 +40,11 @@ import {
 } from "lucide-react";
 import SalaryPrintSlip, { SalarySlipRow } from "./SalaryPrintSlip";
 import CustomAlert, { AlertState } from "../ui/CustomAlert";
+import {
+  KEY_GESUT_LAMA_AKTIF,
+  KEY_GESUT_BARU_AKTIF,
+  resolveGesutFlag,
+} from "@/lib/gesutSystem";
 
 // Satu baris status pembayaran dari tabel salary_payments.
 interface SalaryPayment {
@@ -58,6 +70,13 @@ interface SalaryViewProps {
 
 // Sama seperti pengecekan di OrderDetail.tsx / CreateOrder.tsx / EditOrder.tsx
 // — disatukan di sini supaya konsisten.
+// Tanggal mulai berlakunya sistem gesut BARU pada mode "Otomatis" (berdasarkan
+// tanggal order dibuat, sama seperti pemilihan rate histori di getRateAt).
+// Ubah nilai ini kalau tanggal mulai berlakunya bergeser.
+const GESUT_BARU_MULAI = "2026-09-01";
+
+type SistemGesut = "otomatis" | "lama" | "baru";
+
 const isManualJenis = (jenisProduksi?: string) =>
   ["manual", "sablon"].includes((jenisProduksi || "").toLowerCase());
 
@@ -96,6 +115,9 @@ export default function SalaryView({
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  // Pilihan sistem upah gesut untuk tab Produksi Manual (tidak disimpan ke DB).
+  const [sistemGesut, setSistemGesut] = useState<SistemGesut>("otomatis");
 
   // Centang user untuk dicetak massal (tab Produksi Manual).
   const [printSelectedIds, setPrintSelectedIds] = useState<Set<string>>(
@@ -253,7 +275,15 @@ export default function SalaryView({
       (c) => c.key_name === keyName && c.effective_date <= dateStr,
     );
     if (candidates.length === 0) return 0;
-    candidates.sort((a, b) => (a.effective_date > b.effective_date ? -1 : 1));
+    // Tanggal sama (mis. harga diubah dua kali di hari yang sama) → baris
+    // dengan id terbesar (paling baru dibuat) yang menang.
+    candidates.sort((a, b) =>
+      a.effective_date > b.effective_date
+        ? -1
+        : a.effective_date < b.effective_date
+          ? 1
+          : b.id - a.id,
+    );
     return candidates[0].value_amount;
   };
 
@@ -270,6 +300,52 @@ export default function SalaryView({
     const rateSedang = getRateAt("gesut_manual_sedang", d);
     const rateBesar = getRateAt("gesut_manual_besar", d);
     return g.kecil * rateKecil + g.sedang * rateSedang + g.besar * rateBesar;
+  };
+
+  // Sistem yang diaktifkan di Pengaturan. Kalau hanya satu yang aktif, pilihan
+  // di halaman ini diabaikan dan sistem itu langsung dipakai. Kalau (keliru)
+  // keduanya nonaktif, jatuh ke sistem lama.
+  const lamaAktif = resolveGesutFlag(pricingConfigs, KEY_GESUT_LAMA_AKTIF);
+  const baruAktif = resolveGesutFlag(pricingConfigs, KEY_GESUT_BARU_AKTIF);
+  const bisaPilihSistem = lamaAktif && baruAktif;
+  const pilihanEfektif: SistemGesut = !baruAktif
+    ? "lama"
+    : !lamaAktif
+      ? "baru"
+      : sistemGesut;
+
+  // Sistem upah yang berlaku untuk satu order.
+  const sistemUntuk = (order: Order): "lama" | "baru" => {
+    if (pilihanEfektif === "lama") return "lama";
+    if (pilihanEfektif === "baru") return "baru";
+    return dateOf(order) >= GESUT_BARU_MULAI ? "baru" : "lama";
+  };
+
+  // SISTEM BARU — upah per pcs untuk PJ & Helper (rate histori-aware).
+  // Total warna = kecil + sedang + besar dari detail_gesut order.
+  // Bonus warna ekstra dibagi PJ:Helper sebanding upah dasarnya; tanpa
+  // Helper, PJ menerima seluruh bonus dan upah Helper tidak dibayarkan.
+  const gesutBaruPerPcs = (
+    order: Order,
+    hasHelper: boolean,
+  ): { pj: number; helper: number } => {
+    const d = dateOf(order);
+    const basePj = Number(getRateAt("gaji_pj_gesut", d));
+    const baseHelper = Number(getRateAt("gaji_helper_gesut", d));
+    const batas = Number(getRateAt("batas_warna_normal", d));
+    const bonusPerWarna = Number(getRateAt("bonus_ekstra_warna", d));
+
+    const g = order.detail_gesut as GesutEntry | null | undefined;
+    const totalWarna = g ? g.kecil + g.sedang + g.besar : 0;
+    const bonus = Math.max(0, totalWarna - batas) * bonusPerWarna;
+
+    if (!hasHelper) return { pj: basePj + bonus, helper: 0 };
+    const baseTotal = basePj + baseHelper;
+    const sharePj = baseTotal > 0 ? basePj / baseTotal : 0.5;
+    return {
+      pj: basePj + bonus * sharePj,
+      helper: baseHelper + bonus * (1 - sharePj),
+    };
   };
 
   // Filter Order berdasarkan Status Selesai & Periode
@@ -307,6 +383,7 @@ export default function SalaryView({
           role: "PJ" | "Helper";
           ratePerPcs: number;
           earnings: number;
+          sistem: "lama" | "baru";
         }[];
       }
     > = {};
@@ -316,20 +393,27 @@ export default function SalaryView({
     const HELPER_SHARE = 0.3;
 
     manualOrders.forEach((order) => {
-      // gesutEarnings() = rate per pcs, dikali jumlah baju = total gaji order.
-      const ratePerPcs = gesutEarnings(order);
-      const totalEarnings = ratePerPcs * (order.jumlah || 0);
       const hasHelper = !!order.helper_id;
+      const qty = order.jumlah || 0;
+      const sistem = sistemUntuk(order);
 
-      const pjRatePerPcs = hasHelper
-        ? ratePerPcs * PJ_SHARE_WITH_HELPER
-        : ratePerPcs;
-      const helperRatePerPcs = hasHelper ? ratePerPcs * HELPER_SHARE : 0;
+      let pjRatePerPcs: number;
+      let helperRatePerPcs: number;
+      if (sistem === "baru") {
+        const r = gesutBaruPerPcs(order, hasHelper);
+        pjRatePerPcs = r.pj;
+        helperRatePerPcs = r.helper;
+      } else {
+        // Sistem lama: gesutEarnings() = rate per pcs, dibagi 70/30 bila ada Helper.
+        const ratePerPcs = gesutEarnings(order);
+        pjRatePerPcs = hasHelper
+          ? ratePerPcs * PJ_SHARE_WITH_HELPER
+          : ratePerPcs;
+        helperRatePerPcs = hasHelper ? ratePerPcs * HELPER_SHARE : 0;
+      }
 
-      const pjEarnings = hasHelper
-        ? totalEarnings * PJ_SHARE_WITH_HELPER
-        : totalEarnings;
-      const helperEarnings = hasHelper ? totalEarnings * HELPER_SHARE : 0;
+      const pjEarnings = pjRatePerPcs * qty;
+      const helperEarnings = helperRatePerPcs * qty;
 
       if (order.assigned_to) {
         if (!stats[order.assigned_to]) {
@@ -348,6 +432,7 @@ export default function SalaryView({
           role: "PJ",
           ratePerPcs: pjRatePerPcs,
           earnings: pjEarnings,
+          sistem,
         });
       }
 
@@ -368,13 +453,14 @@ export default function SalaryView({
           role: "Helper",
           ratePerPcs: helperRatePerPcs,
           earnings: helperEarnings,
+          sistem,
         });
       }
     });
 
     return stats;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [manualOrders, pricingConfigs]);
+  }, [manualOrders, pricingConfigs, pilihanEfektif]);
 
   const activeUserStats = selectedUserId
     ? userProductionStats[selectedUserId]
@@ -410,6 +496,14 @@ export default function SalaryView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finishingOrders, dtfTeam, pricingConfigs]);
 
+  const jumlahOrderBaru = manualOrders.filter(
+    (o) => sistemUntuk(o) === "baru",
+  ).length;
+  const jumlahOrderLama = manualOrders.length - jumlahOrderBaru;
+  const configGesutBaruAda = pricingConfigs.some(
+    (c) => c.key_name === "gaji_pj_gesut",
+  );
+
   const currency = (n: number) => `Rp ${Math.round(n).toLocaleString("id-ID")}`;
 
   const periodLabel = `${new Date(0, selectedMonth).toLocaleString("id-ID", {
@@ -436,6 +530,24 @@ export default function SalaryView({
     }
     setPrinting(true);
 
+    // Nama file PDF default (dialog cetak → "Simpan sebagai PDF" memakai judul
+    // dokumen): SLIP-GAJI-BULAN-<BULAN>-<NAMA>. Cetak banyak slip sekaligus
+    // jadi satu file, namanya memakai jumlah orang.
+    const slugify = (text: string) =>
+      text
+        .toUpperCase()
+        .replace(/[^\p{L}\p{N}]+/gu, "-")
+        .replace(/^-+|-+$/g, "");
+    const bulanAktif = slugify(
+      new Date(0, selectedMonth).toLocaleString("id-ID", { month: "long" }),
+    );
+    const namaBagian =
+      slips.length === 1 ? slugify(slips[0].name) : `${slips.length}-ORANG`;
+    const fileTitle = `SLIP-GAJI-BULAN-${bulanAktif}-${namaBagian}`;
+
+    // Logo: URL absolut supaya terbaca di dalam iframe cetak.
+    const logoUrl = `${window.location.origin}/logo.png`;
+
     const pagesHtml = slips
       .map((slip) =>
         renderToStaticMarkup(
@@ -443,6 +555,7 @@ export default function SalaryView({
             <SalaryPrintSlip
               companyName="Langitan.co"
               companyAddress="Mandungan, Widang, Tuban, Jawa Timur"
+              logoUrl={logoUrl}
               recipientName={slip.name}
               recipientRoleLabel={
                 slip.kategori === "qc" ? "Tim QC & Finishing" : undefined
@@ -466,9 +579,11 @@ export default function SalaryView({
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Cetak Slip Gaji</title>
+    <title>${fileTitle}</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
+      /* Paksa warna latar ikut tercetak (kotak TOTAL GAJI, header tabel, dll) */
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       body { font-family: Arial, Helvetica, sans-serif; }
       .salary-print-page {
         page-break-after: always;
@@ -499,7 +614,14 @@ export default function SalaryView({
     iframe.setAttribute("aria-hidden", "true");
     document.body.appendChild(iframe);
 
+    // Sebagian browser (Chrome) memakai judul halaman utama sebagai nama file
+    // PDF saat mencetak dari iframe, jadi judulnya diganti sementara.
+    const originalTitle = document.title;
+    let cleaned = false;
     const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      document.title = originalTitle;
       setPrinting(false);
       setTimeout(() => {
         if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
@@ -521,21 +643,39 @@ export default function SalaryView({
     iframeDoc.write(printDocument);
     iframeDoc.close();
 
+    // Tunggu semua gambar (logo) selesai dimuat sebelum dialog cetak dibuka,
+    // dengan batas waktu 3 detik supaya cetak tidak macet kalau gambar gagal.
+    const waitForImages = () =>
+      Promise.race([
+        Promise.all(
+          Array.from(iframeDoc.images).map((img) =>
+            img.complete
+              ? Promise.resolve()
+              : new Promise<void>((resolve) => {
+                  img.onload = () => resolve();
+                  img.onerror = () => resolve();
+                }),
+          ),
+        ),
+        new Promise<void>((resolve) => setTimeout(resolve, 3000)),
+      ]);
+
     let hasPrinted = false;
-    const triggerPrint = () => {
+    const triggerPrint = async () => {
       if (hasPrinted) return;
       hasPrinted = true;
+      await waitForImages();
+      document.title = fileTitle;
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
+      // Cadangan kalau onafterprint tidak terpanggil (mis. browser tertentu).
+      setTimeout(cleanup, 30000);
     };
-
-    iframe.onload = triggerPrint;
-    setTimeout(triggerPrint, 400);
 
     if (iframe.contentWindow) {
       iframe.contentWindow.onafterprint = cleanup;
     }
-    setTimeout(cleanup, 5000);
+    setTimeout(triggerPrint, 100);
   };
 
   // Susun baris rincian slip untuk SATU user di tab Produksi Manual, dari
@@ -666,6 +806,57 @@ export default function SalaryView({
             </select>
           </div>
         </div>
+
+        {activeTab === "manual" && (
+          <div className="bg-white dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
+                Sistem Gesut
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                {!bisaPilihSistem
+                  ? `Memakai sistem ${pilihanEfektif} (diatur di Pengaturan).`
+                  : pilihanEfektif === "otomatis"
+                    ? `Otomatis: order sejak ${new Date(GESUT_BARU_MULAI).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })} memakai sistem baru, sebelumnya sistem lama.`
+                    : pilihanEfektif === "baru"
+                      ? "Semua order periode ini dihitung dengan sistem baru."
+                      : "Semua order periode ini dihitung dengan sistem lama."}{" "}
+                <span className="font-mono tabular-nums">
+                  ({jumlahOrderBaru} baru · {jumlahOrderLama} lama)
+                </span>
+              </p>
+              {pilihanEfektif !== "lama" && !configGesutBaruAda && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  Konfigurasi sistem baru (gaji_pj_gesut, dll) belum ada di
+                  Pengaturan Harga — upah order sistem baru akan terhitung Rp0.
+                </p>
+              )}
+            </div>
+            {bisaPilihSistem && (
+              <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-lg w-full md:w-auto">
+                {(
+                  [
+                    ["otomatis", "Otomatis"],
+                    ["lama", "Lama"],
+                    ["baru", "Baru"],
+                  ] as [SistemGesut, string][]
+                ).map(([val, label]) => (
+                  <button
+                    key={val}
+                    onClick={() => setSistemGesut(val)}
+                    className={`flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-150 ${
+                      sistemGesut === val
+                        ? "bg-white dark:bg-zinc-950 text-[#124540] dark:text-[#49BFB4] shadow-sm"
+                        : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="flex gap-2 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-lg w-full md:w-fit">
           <button
