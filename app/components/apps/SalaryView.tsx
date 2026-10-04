@@ -8,10 +8,10 @@
 //        - LAMA : komposisi gesut kecil/sedang/besar × rate gesut_manual_*
 //        - BARU : upah global per profesi (gaji_pj_gesut / gaji_helper_gesut)
 //                 + bonus kompleksitas untuk warna di atas batas_warna_normal
-//      Mode "Otomatis": order dengan tanggal >= GESUT_BARU_MULAI pakai BARU,
-//      sebelumnya pakai LAMA.
+//      Mode "Otomatis": order yang step produksinya selesai pada tanggal
+//      >= GESUT_BARU_MULAI pakai BARU, sebelumnya pakai LAMA.
 //   2) Tim QC/Finishing/Packing (role 'qc', tim tetap — bukan per-order.
-//      Basis: total qty SEMUA order selesai Manual+DTF × rate pricing_configs
+//      Basis: total qty SEMUA order tuntas QC (Manual+DTF) × rate pricing_configs
 //      kategori DTF, dibagi rata ke semua user role 'qc')
 //
 // Rate DTF pakai key_name 'dtf_finishing' & 'dtf_packing', dipilih
@@ -73,7 +73,7 @@ interface SalaryViewProps {
 // Sama seperti pengecekan di OrderDetail.tsx / CreateOrder.tsx / EditOrder.tsx
 // — disatukan di sini supaya konsisten.
 // Tanggal mulai berlakunya sistem gesut BARU pada mode "Otomatis" (berdasarkan
-// tanggal order dibuat, sama seperti pemilihan rate histori di getRateAt).
+// tanggal step produksi selesai, sama seperti penentuan bulan gaji).
 // Ubah nilai ini kalau tanggal mulai berlakunya bergeser.
 const GESUT_BARU_MULAI = "2026-09-01";
 
@@ -81,6 +81,159 @@ type SistemGesut = "otomatis" | "lama" | "baru";
 
 const isManualJenis = (jenisProduksi?: string) =>
   ["manual", "sablon"].includes((jenisProduksi || "").toLowerCase());
+
+// ── ATURAN HAK GAJI (berbasis STEP, bukan status "Selesai") ──────────────
+// Status "Selesai" baru muncul setelah barang diterima pemesan
+// (shipping.bukti_terima). Kalau pesanan telat diambil hingga ganti bulan,
+// gaji tim jadi ikut bulan berikutnya. Karena itu hak gaji dihitung dari
+// step yang sudah dilewati (logika sama dengan checkAutoStatus/getStage):
+//   - Produksi (PJ/Helper) : semua step produksi order sudah selesai.
+//   - Tim QC & Finishing   : produksi tuntas + QC lulus + packing selesai.
+// BULAN GAJI mengikuti TANGGAL step terakhir diselesaikan (bukan tanggal
+// order dibuat). Tanggal dibaca dari field ISO `completedAt`; data lama yang
+// belum punya field itu dibaca dari teks `timestamp` (format id-ID/en-US),
+// dan kalau gagal dibaca jatuh ke tanggal order dibuat.
+// Order berstatus "Selesai" tetap dihitung (data lama tidak ada yang hilang).
+const isProduksiTuntas = (o: Order): boolean => {
+  const steps = isManualJenis(o.jenis_produksi) ? o.steps_manual : o.steps_dtf;
+  return (
+    Array.isArray(steps) &&
+    steps.length > 0 &&
+    steps.every((s) => s.isCompleted)
+  );
+};
+
+const isQcTuntas = (o: Order): boolean =>
+  isProduksiTuntas(o) &&
+  !!o.finishing_qc?.isPassed &&
+  !!o.finishing_packing?.isPacked;
+
+// Baca teks toLocaleString() lama. Format bergantung pada browser/HP yang
+// dipakai saat step diselesaikan, jadi aturannya dibuat konservatif:
+//   - ada AM/PM            → en-US  : bulan/tanggal  ("10/4/2026, 3:31:00 PM")
+//   - tanpa AM/PM (24 jam) → id-ID / en-GB : tanggal/bulan
+//                            ("4/10/2026, 15.31.00" atau "04/10/2026, 15:31:00")
+// Hari/bulan di luar rentang valid → null (tidak ditebak).
+const parseLegacyTimestamp = (ts?: string | null): Date | null => {
+  if (!ts) return null;
+  const m = ts
+    .trim()
+    .match(
+      /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2})[.:](\d{2})(?:[.:](\d{2}))?\s*(AM|PM)?$/i,
+    );
+  if (!m) return null;
+  const isEnUS = !!m[7];
+  const day = Number(isEnUS ? m[2] : m[1]);
+  const month = Number(isEnUS ? m[1] : m[2]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  let hour = Number(m[4]);
+  if (m[7]) {
+    const pm = m[7].toUpperCase() === "PM";
+    if (pm && hour < 12) hour += 12;
+    if (!pm && hour === 12) hour = 0;
+  }
+  const d = new Date(
+    Number(m[3]),
+    month - 1,
+    day,
+    hour,
+    Number(m[5]),
+    Number(m[6] || 0),
+  );
+  return isNaN(d.getTime()) ? null : d;
+};
+
+// `fallback` = tanggal order dibuat. Tanggal hasil baca teks lama dianggap
+// TIDAK masuk akal (→ pakai fallback) kalau lebih awal dari tanggal order
+// dibuat atau di masa depan, karena step tidak mungkin selesai sebelum order ada.
+const waktuSelesai = (
+  iso: string | null | undefined,
+  legacy: string | null | undefined,
+  fallback: Date,
+): Date => {
+  if (iso) {
+    const d = new Date(iso);
+    if (!isNaN(d.getTime())) return d;
+  }
+  const d = parseLegacyTimestamp(legacy);
+  if (!d) return fallback;
+  const DAY = 86_400_000;
+  if (d.getTime() < fallback.getTime() - DAY) return fallback;
+  if (d.getTime() > Date.now() + DAY) return fallback;
+  return d;
+};
+
+const tglOrder = (o: Order): Date => {
+  const d = new Date(o.created_at || Date.now());
+  return isNaN(d.getTime()) ? new Date() : d;
+};
+
+const maxDate = (dates: Date[], fallback: Date): Date =>
+  dates.length
+    ? new Date(Math.max(...dates.map((d) => d.getTime())))
+    : fallback;
+
+// Kapan step produksi terakhir diselesaikan.
+const tglProduksiTuntas = (o: Order): Date => {
+  const fb = tglOrder(o);
+  const steps =
+    (isManualJenis(o.jenis_produksi) ? o.steps_manual : o.steps_dtf) || [];
+  return maxDate(
+    steps
+      .filter((s) => s.isCompleted)
+      .map((s) => waktuSelesai(s.completedAt, s.timestamp, fb)),
+    fb,
+  );
+};
+
+// "YYYY-MM-DD" menurut waktu lokal, untuk dibandingkan dengan effective_date
+// dan GESUT_BARU_MULAI.
+const tglKey = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+// Kapan step terakhir pekerjaan tim QC (produksi → QC lulus → packing) selesai.
+const tglQcTuntas = (o: Order): Date => {
+  const fb = tglOrder(o);
+  return maxDate(
+    [
+      tglProduksiTuntas(o),
+      waktuSelesai(o.finishing_qc?.completedAt, o.finishing_qc?.timestamp, fb),
+      waktuSelesai(
+        o.finishing_packing?.completedAt,
+        o.finishing_packing?.timestamp,
+        fb,
+      ),
+    ],
+    fb,
+  );
+};
+
+const layakGajiProduksi = (o: Order): boolean =>
+  isManualJenis(o.jenis_produksi) &&
+  (o.status === "Selesai" || isProduksiTuntas(o));
+
+const layakGajiQc = (o: Order): boolean =>
+  o.status === "Selesai" || isQcTuntas(o);
+
+// Penanda cara kerja di satu order: dikerjakan PJ + Helper ("Berdua") atau PJ
+// saja ("Sendiri"), supaya admin tahu dari mana angka gajinya berasal selain
+// dari nominalnya. Dipakai untuk kedua sistem gesut.
+const TimTag = ({ hasHelper }: { hasHelper: boolean }) => (
+  <span
+    className={`inline-flex px-2 py-0.5 rounded-full border text-[10px] font-semibold tracking-wide ${
+      hasHelper
+        ? "border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400"
+        : "border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400"
+    }`}
+    title={
+      hasHelper
+        ? "Dikerjakan PJ dan Helper"
+        : "Dikerjakan PJ sendiri (tanpa Helper)"
+    }
+  >
+    {hasHelper ? "Berdua" : "Sendiri"}
+  </span>
+);
 
 export default function SalaryView({
   users,
@@ -322,18 +475,24 @@ export default function SalaryView({
   const sistemUntuk = (order: Order): "lama" | "baru" => {
     if (pilihanEfektif === "lama") return "lama";
     if (pilihanEfektif === "baru") return "baru";
-    return dateOf(order) >= GESUT_BARU_MULAI ? "baru" : "lama";
+    // Mengikuti tanggal step produksi selesai (sama dengan penentuan bulan
+    // gaji), bukan tanggal order dibuat.
+    return tglKey(tglProduksiTuntas(order)) >= GESUT_BARU_MULAI
+      ? "baru"
+      : "lama";
   };
 
   // SISTEM BARU — upah per pcs untuk PJ & Helper (rate histori-aware).
   // Total warna = kecil + sedang + besar dari detail_gesut order.
-  // Bonus warna ekstra dibagi PJ:Helper sebanding upah dasarnya; tanpa
-  // Helper, PJ menerima seluruh bonus dan upah Helper tidak dibayarkan.
+  // Bonus warna ekstra dibagi PJ:Helper sebanding upah dasarnya. Tanpa
+  // Helper, PJ menerima SELURUH nominal: upah PJ + upah Helper + bonus.
+  // Tarif dipilih menurut tanggal step produksi selesai (konsisten dengan
+  // bulan gaji dan penentuan sistem), bukan tanggal order dibuat.
   const gesutBaruPerPcs = (
     order: Order,
     hasHelper: boolean,
   ): { pj: number; helper: number } => {
-    const d = dateOf(order);
+    const d = tglKey(tglProduksiTuntas(order));
     const basePj = Number(getRateAt("gaji_pj_gesut", d));
     const baseHelper = Number(getRateAt("gaji_helper_gesut", d));
     const batas = Number(getRateAt("batas_warna_normal", d));
@@ -343,7 +502,7 @@ export default function SalaryView({
     const totalWarna = g ? g.kecil + g.sedang + g.besar : 0;
     const bonus = Math.max(0, totalWarna - batas) * bonusPerWarna;
 
-    if (!hasHelper) return { pj: basePj + bonus, helper: 0 };
+    if (!hasHelper) return { pj: basePj + baseHelper + bonus, helper: 0 };
     const baseTotal = basePj + baseHelper;
     const sharePj = baseTotal > 0 ? basePj / baseTotal : 0.5;
     return {
@@ -352,25 +511,34 @@ export default function SalaryView({
     };
   };
 
-  // Filter Order berdasarkan Status Selesai & Periode
-  const filteredOrders = useMemo(() => {
-    return orders.filter((o) => {
-      const date = new Date(o.created_at || new Date());
-      const isPeriodMatch =
-        date.getMonth() === selectedMonth &&
-        date.getFullYear() === selectedYear;
-      const isCompleted = o.status === "Selesai";
-      return isPeriodMatch && isCompleted;
-    });
-  }, [orders, selectedMonth, selectedYear]);
+  const inPeriod = (d: Date) =>
+    d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
 
-  const manualOrders = useMemo(
-    () => filteredOrders.filter((o) => isManualJenis(o.jenis_produksi)),
-    [filteredOrders],
+  // Dipakai tab Admin & Designer (bonus per order) — tidak berubah: status
+  // "Selesai" + bulan order dibuat. Aturan step hanya untuk Produksi & QC.
+  const filteredOrders = useMemo(
+    () => orders.filter((o) => o.status === "Selesai" && inPeriod(tglOrder(o))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [orders, selectedMonth, selectedYear],
   );
-  // Basis pool gaji tim QC = SEMUA order selesai (Manual + DTF), karena
-  // tim yang sama mengerjakan QC/finishing/packing untuk keduanya.
-  const finishingOrders = filteredOrders;
+
+  // Produksi Manual: gaji PJ/Helper masuk di BULAN step produksi terakhir
+  // diselesaikan.
+  const manualOrders = useMemo(
+    () =>
+      orders.filter(
+        (o) => layakGajiProduksi(o) && inPeriod(tglProduksiTuntas(o)),
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [orders, selectedMonth, selectedYear],
+  );
+  // Basis pool gaji tim QC = SEMUA order (Manual + DTF) yang step QC &
+  // packing-nya terpenuhi, di BULAN step terakhir itu selesai.
+  const finishingOrders = useMemo(
+    () => orders.filter((o) => layakGajiQc(o) && inPeriod(tglQcTuntas(o))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [orders, selectedMonth, selectedYear],
+  );
 
   // ═══════════════════════════════════════════════════════════════════════
   // MODEL 1 — PRODUKSI MANUAL (per user, assigned_to + helper_id)
@@ -604,16 +772,17 @@ export default function SalaryView({
       .salary-print-page {
         page-break-after: always;
         break-after: page;
-        page-break-inside: avoid;
-        break-inside: avoid;
       }
       .salary-print-page:last-child {
         page-break-after: auto;
         break-after: auto;
       }
+      /* Margin diatur di sini (bukan padding slip) supaya halaman lanjutan
+         dari slip yang panjang juga punya margin atas yang sama; header slip
+         diulang otomatis lewat <thead>. */
       @page {
         size: 210mm 297mm portrait;
-        margin: 0;
+        margin: 14mm 16mm;
       }
     </style>
   </head>
@@ -702,8 +871,9 @@ export default function SalaryView({
     stat.orders.map((item) => {
       const g = item.data.detail_gesut as GesutEntry | null | undefined;
       return {
-        label: item.data.kode_produksi,
-        detail: `Gesut ${g ? `${g.kecil}/${g.sedang}/${g.besar}` : "—"} · ${new Date(item.data.created_at || "").toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}`,
+        // Slip memakai nama pemesan (tim produksi tidak hafal kode order).
+        label: item.data.nama_pemesan || item.data.kode_produksi,
+        detail: `Gesut ${g ? `${g.kecil} kecil · ${g.sedang} sedang · ${g.besar} besar` : "—"} · ${new Date(item.data.created_at || "").toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}`,
         role: item.role,
         qty: item.data.jumlah || 0,
         rate: item.ratePerPcs,
@@ -773,7 +943,7 @@ export default function SalaryView({
   const buildDtfSlipRows = (): SalarySlipRow[] => [
     {
       label: "Total Pool Gaji Tim (Manual + DTF)",
-      detail: `${dtfSummary.totalOrders} order selesai`,
+      detail: `${dtfSummary.totalOrders} order tuntas QC`,
       qty: dtfSummary.totalQty,
       amount: dtfSummary.totalEarnings,
     },
@@ -818,7 +988,7 @@ export default function SalaryView({
               Manajemen Gaji Produksi
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Rekap gaji berdasarkan pesanan status "Selesai".
+              Rekap gaji berdasarkan step produksi / QC yang sudah terlewati.
             </p>
           </div>
 
@@ -858,7 +1028,7 @@ export default function SalaryView({
                 {!bisaPilihSistem
                   ? `Memakai sistem ${pilihanEfektif} (diatur di Pengaturan).`
                   : pilihanEfektif === "otomatis"
-                    ? `Otomatis: order sejak ${new Date(GESUT_BARU_MULAI).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })} memakai sistem baru, sebelumnya sistem lama.`
+                    ? `Otomatis: order yang produksinya selesai sejak ${new Date(GESUT_BARU_MULAI).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })} memakai sistem baru, sebelumnya sistem lama.`
                     : pilihanEfektif === "baru"
                       ? "Semua order periode ini dihitung dengan sistem baru."
                       : "Semua order periode ini dihitung dengan sistem lama."}{" "}
@@ -980,7 +1150,8 @@ export default function SalaryView({
               <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
                 {users.filter((u) => userProductionStats[u.id]).length === 0 ? (
                   <div className="text-center p-8 text-zinc-400 dark:text-zinc-600 text-xs">
-                    Tidak ada data produksi manual selesai pada periode ini.
+                    Tidak ada order manual dengan step produksi tuntas pada
+                    periode ini.
                   </div>
                 ) : (
                   users.map((user) => {
@@ -1221,25 +1392,29 @@ export default function SalaryView({
                             </div>
 
                             <div className="flex items-center justify-between">
-                              <span
-                                className={`inline-flex px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wide ${
-                                  item.role === "PJ"
-                                    ? "border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-200"
-                                    : "border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500"
-                                }`}
-                              >
-                                {item.role}
-                                {item.sistem === "lama" && (
-                                  <>
-                                    {" "}
-                                    {item.role === "PJ" && !item.data.helper_id
-                                      ? "(100%)"
-                                      : item.role === "PJ"
-                                        ? "(70%)"
-                                        : "(30%)"}
-                                  </>
-                                )}
-                              </span>
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span
+                                  className={`inline-flex px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wide ${
+                                    item.role === "PJ"
+                                      ? "border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-200"
+                                      : "border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500"
+                                  }`}
+                                >
+                                  {item.role}
+                                  {item.sistem === "lama" && (
+                                    <>
+                                      {" "}
+                                      {item.role === "PJ" &&
+                                      !item.data.helper_id
+                                        ? "(100%)"
+                                        : item.role === "PJ"
+                                          ? "(70%)"
+                                          : "(30%)"}
+                                    </>
+                                  )}
+                                </span>
+                                <TimTag hasHelper={!!item.data.helper_id} />
+                              </div>
                               <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
                                 Gesut (K/S/B):{" "}
                                 <span className="font-mono tabular-nums text-zinc-700 dark:text-zinc-300">
@@ -1337,26 +1512,29 @@ export default function SalaryView({
                                 {item.data.kode_produksi}
                               </td>
                               <td className="p-3">
-                                <span
-                                  className={`inline-flex px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wide ${
-                                    item.role === "PJ"
-                                      ? "border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-200"
-                                      : "border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500"
-                                  }`}
-                                >
-                                  {item.role}
-                                  {item.sistem === "lama" && (
-                                    <>
-                                      {" "}
-                                      {item.role === "PJ" &&
-                                      !item.data.helper_id
-                                        ? "(100%)"
-                                        : item.role === "PJ"
-                                          ? "(70%)"
-                                          : "(30%)"}
-                                    </>
-                                  )}
-                                </span>
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  <span
+                                    className={`inline-flex px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wide ${
+                                      item.role === "PJ"
+                                        ? "border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-200"
+                                        : "border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500"
+                                    }`}
+                                  >
+                                    {item.role}
+                                    {item.sistem === "lama" && (
+                                      <>
+                                        {" "}
+                                        {item.role === "PJ" &&
+                                        !item.data.helper_id
+                                          ? "(100%)"
+                                          : item.role === "PJ"
+                                            ? "(70%)"
+                                            : "(30%)"}
+                                      </>
+                                    )}
+                                  </span>
+                                  <TimTag hasHelper={!!item.data.helper_id} />
+                                </div>
                               </td>
                               <td className="p-3 text-xs font-mono tabular-nums text-zinc-600 dark:text-zinc-300">
                                 {g ? `${g.kecil}/${g.sedang}/${g.besar}` : "—"}
@@ -1416,7 +1594,7 @@ export default function SalaryView({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-1">
-                  Order Selesai (Semua Jenis)
+                  Order Tuntas QC (Semua Jenis)
                 </div>
                 <div className="font-mono tabular-nums text-xl font-semibold text-zinc-900 dark:text-zinc-100">
                   {dtfSummary.totalOrders}
@@ -1564,12 +1742,12 @@ export default function SalaryView({
 
             <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
               <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                Daftar Order Selesai Periode Ini (Manual + DTF)
+                Daftar Order Tuntas QC Periode Ini (Manual + DTF)
               </div>
               <div className="md:hidden divide-y divide-zinc-200 dark:divide-zinc-800">
                 {finishingOrders.length === 0 ? (
                   <div className="p-8 text-center text-zinc-400 dark:text-zinc-600 text-xs">
-                    Tidak ada order selesai pada periode ini.
+                    Tidak ada order dengan step QC tuntas pada periode ini.
                   </div>
                 ) : (
                   finishingOrders.map((order) => (
@@ -1656,7 +1834,7 @@ export default function SalaryView({
                         colSpan={6}
                         className="p-8 text-center text-zinc-400 dark:text-zinc-600 text-xs"
                       >
-                        Tidak ada order selesai pada periode ini.
+                        Tidak ada order dengan step QC tuntas pada periode ini.
                       </td>
                     </tr>
                   ) : (

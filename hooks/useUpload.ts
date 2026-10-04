@@ -159,11 +159,12 @@ export function useUpload({
           timestamp: common.timestamp,
           uploadedBy: currentUser?.name,
           isCompleted: !isProofing,
+          completedAt: isProofing ? null : new Date().toISOString(),
           proofing_note: isProofing ? undefined : steps[idx].proofing_note,
         };
       }
     } else if (uploadContext.type === 'packing') {
-      updatedOrder.finishing_packing = { isPacked: true, ...common };
+      updatedOrder.finishing_packing = { isPacked: true, ...common, completedAt: new Date().toISOString() };
     } else if (uploadContext.type === 'shipping_kirim') {
       updatedOrder.shipping.bukti_kirim = urlData.publicUrl;
     } else if (uploadContext.type === 'shipping_terima') {

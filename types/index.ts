@@ -146,8 +146,8 @@ export interface Order {
   link_approval: { link: string | null; by: string | null; timestamp: string | null } | null;
   steps_manual: ProductionStep[];
   steps_dtf: ProductionStep[];
-  finishing_qc: { isPassed: boolean; notes: string; checkedBy?: string; timestamp?: string };
-  finishing_packing: { isPacked: boolean; fileUrl?: string | null; packedBy?: string | null; timestamp?: string | null };
+  finishing_qc: { isPassed: boolean; notes: string; checkedBy?: string; timestamp?: string; completedAt?: string | null };
+  finishing_packing: { isPacked: boolean; fileUrl?: string | null; packedBy?: string | null; timestamp?: string | null; completedAt?: string | null };
   shipping: {
     bukti_kirim?: string | null; uploaded_by_kirim?: string | null; timestamp_kirim?: string | null;
     bukti_terima?: string | null; uploaded_by_terima?: string | null; timestamp_terima?: string | null;
@@ -187,6 +187,8 @@ export interface ProductionStep {
   fileUrl?: string | null;
   uploadedBy?: string;
   timestamp?: string;
+  // ISO 8601 — waktu step diselesaikan, dipakai menentukan bulan gaji (SalaryView).
+  completedAt?: string | null;
 }
 
 export interface KendalaNote {

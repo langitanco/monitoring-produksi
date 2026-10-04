@@ -50,6 +50,7 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm, w
       steps[idx].isCompleted = true;
       steps[idx].uploadedBy = currentUser.name;
       steps[idx].timestamp = new Date().toLocaleString();
+      steps[idx].completedAt = new Date().toISOString();
       if (steps[idx].proofing_note) delete steps[idx].proofing_note;
     }
     const allDone = steps.every((s: any) => s.isCompleted);
@@ -108,6 +109,7 @@ export function useOrderDetail({ order, currentUser, onUpdateOrder, onConfirm, w
       notes: pass ? 'Lolos QC' : qcNote,
       checkedBy: currentUser.name,
       timestamp: new Date().toLocaleString(),
+      completedAt: pass ? new Date().toISOString() : null,
     };
     if (!pass) updated.status = 'Revisi';
     setLoadingAction(pass ? 'qc-pass' : 'qc-revisi');
