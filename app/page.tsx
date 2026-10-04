@@ -590,7 +590,9 @@ export default function ProductionApp() {
           ref={mainRef}
           className="flex-1 overflow-y-auto px-4 md:px-6 py-2 md:py-3 pb-32 relative bg-zinc-50 dark:bg-zinc-950 no-scrollbar"
         >
-          <div className="max-w-7xl mx-auto h-full">
+          <div
+            className={`${activeTab === "salary" ? "" : "max-w-7xl"} mx-auto h-full`}
+          >
             {activeTab === "dashboard" && p?.dashboard?.view && (
               <Dashboard
                 role={currentUser.role}

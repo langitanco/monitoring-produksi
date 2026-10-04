@@ -215,6 +215,43 @@ const layakGajiProduksi = (o: Order): boolean =>
 const layakGajiQc = (o: Order): boolean =>
   o.status === "Selesai" || isQcTuntas(o);
 
+// Kartu ringkasan di bagian atas menu Gaji.
+const StatCard = ({
+  label,
+  value,
+  sub,
+  accent,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  accent?: boolean;
+  className?: string;
+}) => (
+  <div
+    className={`bg-white dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 min-w-0 ${className}`}
+  >
+    <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 mb-1">
+      {label}
+    </div>
+    <div
+      className={`font-mono tabular-nums text-lg md:text-xl font-semibold truncate ${
+        accent
+          ? "text-[#124540] dark:text-[#49BFB4]"
+          : "text-zinc-900 dark:text-zinc-100"
+      }`}
+    >
+      {value}
+    </div>
+    {sub ? (
+      <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">
+        {sub}
+      </div>
+    ) : null}
+  </div>
+);
+
 // Penanda cara kerja di satu order: dikerjakan PJ + Helper ("Berdua") atau PJ
 // saja ("Sendiri"), supaya admin tahu dari mana angka gajinya berasal selain
 // dari nominalnya. Dipakai untuk kedua sistem gesut.
@@ -272,6 +309,17 @@ export default function SalaryView({
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  // Total Admin & Designer, dilaporkan FixedSalaryView (yang memuat datanya
+  // sendiri). null = belum selesai dimuat / gagal dimuat.
+  const [fixedSummary, setFixedSummary] = useState<{
+    total: number;
+    belum: number;
+    people: number;
+  } | null>(null);
+  useEffect(() => {
+    setFixedSummary(null);
+  }, [selectedMonth, selectedYear]);
 
   // Pilihan sistem upah gesut untuk tab Produksi Manual (tidak disimpan ke DB).
   const [sistemGesut, setSistemGesut] = useState<SistemGesut>("otomatis");
@@ -668,6 +716,48 @@ export default function SalaryView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finishingOrders, dtfTeam, pricingConfigs]);
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // RINGKASAN PENGELUARAN GAJI (card di atas) — semua kategori, periode ini
+  // ═══════════════════════════════════════════════════════════════════════
+  const ringkasan = useMemo(() => {
+    const manualEntries = Object.entries(userProductionStats);
+    const manualTotal = manualEntries.reduce(
+      (t, [, st]) => t + st.totalEarnings,
+      0,
+    );
+    const manualBelum = manualEntries.reduce(
+      (t, [id, st]) => t + (isPaid(id, "manual") ? 0 : st.totalEarnings),
+      0,
+    );
+    const manualQty = manualEntries.reduce((t, [, st]) => t + st.totalQty, 0);
+
+    // Pool QC hanya benar-benar keluar kalau ada anggota tim yang menerima.
+    const qcTotal = dtfTeam.length > 0 ? dtfSummary.totalEarnings : 0;
+    const qcBelum = dtfTeam.reduce(
+      (t, u) => t + (isPaid(u.id, "qc") ? 0 : dtfSummary.perMember),
+      0,
+    );
+
+    const tetapTotal = fixedSummary?.total ?? 0;
+    const tetapBelum = fixedSummary?.belum ?? 0;
+
+    const total = manualTotal + qcTotal + tetapTotal;
+    const belum = manualBelum + qcBelum + tetapBelum;
+    const sudah = Math.max(0, total - belum);
+    return {
+      manualTotal,
+      manualOrang: manualEntries.length,
+      manualQty,
+      qcTotal,
+      tetapTotal,
+      total,
+      belum,
+      sudah,
+      persen: total > 0 ? Math.round((sudah / total) * 100) : 0,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProductionStats, dtfTeam, dtfSummary, payments, fixedSummary]);
+
   const jumlahOrderBaru = manualOrders.filter(
     (o) => sistemUntuk(o) === "baru",
   ).length;
@@ -1018,6 +1108,63 @@ export default function SalaryView({
           </div>
         </div>
 
+        {/* RINGKASAN PENGELUARAN GAJI — semua kategori, periode terpilih */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          <StatCard
+            className="col-span-2 lg:col-span-1"
+            label="Total Gaji Dikeluarkan"
+            value={currency(ringkasan.total)}
+            sub={
+              fixedSummary
+                ? periodLabel
+                : `${periodLabel} · belum termasuk Admin & Designer`
+            }
+            accent
+          />
+          <StatCard
+            label="Produksi Manual"
+            value={currency(ringkasan.manualTotal)}
+            sub={`${ringkasan.manualOrang} orang · ${ringkasan.manualQty.toLocaleString("id-ID")} pcs`}
+          />
+          <StatCard
+            label="Tim QC & Finishing"
+            value={currency(ringkasan.qcTotal)}
+            sub={`${dtfTeam.length} orang · ${finishingOrders.length} order`}
+          />
+          <StatCard
+            label="Admin & Designer"
+            value={fixedSummary ? currency(ringkasan.tetapTotal) : "—"}
+            sub={
+              fixedSummary
+                ? `${fixedSummary.people} orang · gaji tetap + bonus`
+                : "Memuat…"
+            }
+          />
+          <div className="bg-white dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 min-w-0">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 mb-1">
+              Status Pembayaran
+            </div>
+            <div className="font-mono tabular-nums text-lg md:text-xl font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+              {ringkasan.persen}%{" "}
+              <span className="text-[11px] font-sans font-medium text-zinc-500 dark:text-zinc-400">
+                lunas
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden my-1.5">
+              <div
+                className="h-full bg-[#124540] dark:bg-[#49BFB4]"
+                style={{ width: `${ringkasan.persen}%` }}
+              />
+            </div>
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+              Belum dibayar{" "}
+              <span className="font-mono tabular-nums text-zinc-700 dark:text-zinc-300">
+                {currency(ringkasan.belum)}
+              </span>
+            </div>
+          </div>
+        </div>
+
         {activeTab === "manual" && (
           <div className="bg-white dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
@@ -1102,26 +1249,36 @@ export default function SalaryView({
           </button>
         </div>
 
+        {/* ADMIN & DESIGNER — selalu terpasang (disembunyikan kalau bukan tab
+            ini) supaya totalnya ikut masuk card ringkasan di atas. */}
+        {!loadingConfigs && (
+          <div
+            className={
+              activeTab === "tetap" ? "flex-1 min-h-0 flex flex-col" : "hidden"
+            }
+          >
+            <FixedSalaryView
+              users={users}
+              periodOrders={filteredOrders}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              productionTotals={productionTotals}
+              canManage={isSupervisor || !!perms?.salary?.edit}
+              canPrint={canPrint}
+              printing={printing}
+              onPrintSlip={printFixedSlip}
+              showConfirm={showConfirm}
+              showError={showError}
+              onSummary={setFixedSummary}
+            />
+          </div>
+        )}
+
         {loadingConfigs ? (
           <div className="flex-1 flex items-center justify-center text-zinc-400 text-sm">
             Memuat konfigurasi harga...
           </div>
-        ) : activeTab === "tetap" ? (
-          // ═══════════════════════════════ TAB: ADMIN & DESIGNER ═══════════════════════════════
-          <FixedSalaryView
-            users={users}
-            periodOrders={filteredOrders}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-            productionTotals={productionTotals}
-            canManage={isSupervisor || !!perms?.salary?.edit}
-            canPrint={canPrint}
-            printing={printing}
-            onPrintSlip={printFixedSlip}
-            showConfirm={showConfirm}
-            showError={showError}
-          />
-        ) : activeTab === "manual" ? (
+        ) : activeTab === "tetap" ? null : activeTab === "manual" ? (
           // ═══════════════════════════════ TAB: PRODUKSI MANUAL ═══════════════════════════════
           <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4 overflow-hidden">
             {/* LIST USER (KIRI) */}

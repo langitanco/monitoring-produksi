@@ -48,6 +48,12 @@ interface FixedSalaryViewProps {
   onPrintSlip: (slip: FixedSlip) => void;
   showConfirm: (title: string, message: string, onConfirm: () => void) => void;
   showError: (title: string, message: string) => void;
+  // Dilaporkan ke SalaryView untuk card ringkasan di bagian atas menu Gaji.
+  // total = seluruh gaji tetap + bonus; belum = yang belum ditandai lunas.
+  // null = data gagal dimuat.
+  onSummary?: (
+    s: { total: number; belum: number; people: number } | null,
+  ) => void;
 }
 
 const currency = (n: number) =>
@@ -74,6 +80,7 @@ export default function FixedSalaryView({
   onPrintSlip,
   showConfirm,
   showError,
+  onSummary,
 }: FixedSalaryViewProps) {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -213,6 +220,36 @@ export default function FixedSalaryView({
 
   const selectedUser = people.find((u) => u.id === selectedUserId) || null;
   const sel = selectedUser ? summary(selectedUser) : null;
+
+  // Laporkan total semua Admin & Designer ke induk (untuk card ringkasan).
+  useEffect(() => {
+    if (!onSummary || loading) return;
+    if (loadError) {
+      onSummary(null);
+      return;
+    }
+    let total = 0;
+    let belum = 0;
+    people.forEach((u) => {
+      const t = summary(u).total;
+      total += t;
+      if (!paymentRows.find((p) => p.user_id === u.id)) belum += t;
+    });
+    onSummary({ total, belum, people: people.length });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    loading,
+    loadError,
+    users,
+    fixedRows,
+    bonusRows,
+    closingRows,
+    paymentRows,
+    paramRows,
+    periodOrders,
+    selectedMonth,
+    selectedYear,
+  ]);
 
   useEffect(() => {
     if (selectedUser) setFixedInput(fixedFor(selectedUser.id));
