@@ -9,6 +9,7 @@ import {
   getPOSettingBySlug,
 } from "@/lib/po/admin";
 import { formatRupiah, calculateItemPrice } from "@/lib/po/pricing";
+import { thumbUrl, fallbackToOriginal } from "@/lib/po/images";
 import { POSetting, POProduct } from "@/types/po";
 import {
   Package,
@@ -62,6 +63,18 @@ function loadCart(): CartItemSession[] {
 
 function saveCart(items: CartItemSession[]) {
   sessionStorage.setItem(CART_KEY, JSON.stringify(items));
+}
+
+// Unduh + decode gambar di latar belakang supaya siap tampil seketika
+const preloaded = new Set<string>();
+function preloadImages(urls: string[]) {
+  urls.forEach((u) => {
+    if (!u || preloaded.has(u)) return;
+    preloaded.add(u);
+    const im = new window.Image();
+    im.src = u;
+    im.decode?.().catch(() => {});
+  });
 }
 
 export default function CatalogPage() {
@@ -133,8 +146,19 @@ export default function CatalogPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedProduct, imageIndex]);
 
+  // Preload SEMUA foto produk begitu modal dibuka → geser foto tanpa loading
+  useEffect(() => {
+    if (!selectedProduct) return;
+    preloadImages(selectedProduct.image_urls);
+  }, [selectedProduct]);
+
   const isActive = setting?.is_active ?? false;
   const brandName = setting?.title || "Katalog PO";
+
+  // Judul tab: "(Nama PO) | Langitan.co" (cadangan bila judul dari server belum sesuai)
+  useEffect(() => {
+    document.title = `${brandName} | Langitan.co`;
+  }, [brandName]);
   const periode = `${setting?.periode_mulai || "-"} — ${setting?.periode_selesai || "-"}`;
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
@@ -451,19 +475,28 @@ export default function CatalogPage() {
               </p>
             </div>
           ) : (
-            filteredProducts.map((p) => (
+            filteredProducts.map((p, idx) => (
               <div
                 key={p.id}
                 onClick={() => openModal(p)}
+                // Mulai unduh foto produk sebelum diklik (hover desktop / sentuh di HP)
+                onMouseEnter={() => preloadImages(p.image_urls)}
+                onTouchStart={() => preloadImages(p.image_urls)}
                 className="bg-white border border-gray-200 rounded-xl md:rounded-2xl overflow-hidden cursor-pointer flex flex-col transition-all duration-200 hover:border-gray-300 hover:-translate-y-1 group"
               >
                 {/* ✅ Aspect ratio diubah dari 4/3 → 4/5 agar sesuai rasio asli foto produk (portrait), supaya object-cover tidak memotong bagian penting gambar di semua ukuran layar */}
-                <div className="w-full aspect-[4/5 bg-slate-100 relative overflow-hidden shrink-0">
+                <div className="w-full aspect-[4/5] bg-slate-100 relative overflow-hidden shrink-0">
                   {p.image_urls[0] ? (
                     <img
-                      src={p.image_urls[0]}
+                      src={thumbUrl(p.image_urls[0])}
+                      onError={fallbackToOriginal(p.image_urls[0])}
                       alt={p.name}
-                      loading="lazy"
+                      width={480}
+                      height={600}
+                      // 4 kartu pertama (terlihat tanpa scroll) dimuat langsung, sisanya lazy
+                      loading={idx < 4 ? "eager" : "lazy"}
+                      fetchPriority={idx < 2 ? "high" : "auto"}
+                      decoding="async"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
@@ -575,6 +608,14 @@ export default function CatalogPage() {
                 <img
                   src={selectedProduct.image_urls[imageIndex]}
                   alt={selectedProduct.name}
+                  decoding="async"
+                  // Thumbnail (sudah ter-cache dari kartu) tampil dulu selagi foto besar dimuat
+                  style={{
+                    backgroundImage: `url("${thumbUrl(selectedProduct.image_urls[imageIndex])}")`,
+                    backgroundSize: "contain",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                  }}
                   className="w-full h-full object-contain animate-in fade-in duration-300"
                   key={imageIndex}
                 />

@@ -4,11 +4,16 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface DetailUkuranProps {
   data?: SizeEntry[] | null;
+  // ── TAMBAHAN ── null/undefined = T-Shirt (data lama)
+  jenisPakaian?: "kaos" | "sweater_hoodie" | null;
 }
 
 const UKURAN_STANDAR = ["S", "M", "L", "XL", "XXL", "XXXL"];
 
-export default function DetailUkuran({ data }: DetailUkuranProps) {
+export default function DetailUkuran({
+  data,
+  jenisPakaian,
+}: DetailUkuranProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   if (!data || data.length === 0) return null;
@@ -36,6 +41,10 @@ export default function DetailUkuran({ data }: DetailUkuranProps) {
           </span>
           <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
             {data.length} varian
+          </span>
+          <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+            ·{" "}
+            {jenisPakaian === "sweater_hoodie" ? "Sweater / Hoodie" : "T-Shirt"}
           </span>
         </div>
         {isOpen ? (

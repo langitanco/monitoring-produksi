@@ -54,7 +54,10 @@ interface ColorGroup {
   panjang: SizeMap;
 }
 
-function buildTable(detail: SizeEntry[] | null | undefined) {
+function buildTable(
+  detail: SizeEntry[] | null | undefined,
+  isSweater: boolean,
+) {
   const groups = new Map<string, ColorGroup>();
   const extra: string[] = [];
 
@@ -68,7 +71,9 @@ function buildTable(detail: SizeEntry[] | null | undefined) {
       });
     }
     const g = groups.get(key)!;
-    const target = entry.lengan === "panjang" ? g.panjang : g.pendek;
+    // Sweater/Hoodie: lengan selalu panjang → satu baris per warna
+    const target =
+      isSweater || entry.lengan === "panjang" ? g.panjang : g.pendek;
     Object.entries(entry.ukuran || {}).forEach(([k, v]) => {
       const qty = Number(v) || 0;
       if (qty <= 0) return;
@@ -229,7 +234,9 @@ function SignBox({ title, dotted }: { title: string; dotted?: boolean }) {
 export default function ApprovalForm({ order }: { order: Order }) {
   const mockup = order.link_approval?.link || null;
   const isPdf = !!mockup && /\.pdf(\?|$)/i.test(mockup);
-  const { groups, cols } = buildTable(order.detail_ukuran);
+  const isSweater = order.jenis_pakaian === "sweater_hoodie";
+  const { groups, cols } = buildTable(order.detail_ukuran, isSweater);
+  const rowsPerGroup = isSweater ? 1 : 2;
 
   let grandTotal = 0;
 
@@ -270,7 +277,7 @@ export default function ApprovalForm({ order }: { order: Order }) {
 
   // Baris = 2 per warna (+ header + total). Makin banyak warna, baris makin
   // rapat; kalau masih kurang, kotak TTD dipendekkan (tetap menempel di bawah).
-  const totalRows = groups.length * 2 + 2;
+  const totalRows = groups.length * rowsPerGroup + 2;
   const rowH = Math.max(
     ROW_MIN,
     Math.min(ROW_MAX, Math.floor(TABLE_SPACE / totalRows)),
@@ -522,18 +529,25 @@ export default function ApprovalForm({ order }: { order: Order }) {
             </thead>
             <tbody>
               {groups.map((g, gi) =>
-                (["pendek", "panjang"] as const).map((len, li) => {
+                (isSweater
+                  ? (["panjang"] as const)
+                  : (["pendek", "panjang"] as const)
+                ).map((len, li) => {
                   const row = g[len];
                   const total = sum(row);
                   grandTotal += total;
                   return (
                     <tr key={`${gi}-${len}`}>
                       <td style={cell}>
-                        {len === "pendek" ? "Kaos Pendek" : "Kaos Panjang"}
+                        {isSweater
+                          ? "Sweater/Hoodie"
+                          : len === "pendek"
+                            ? "Kaos Pendek"
+                            : "Kaos Panjang"}
                       </td>
                       {li === 0 && (
                         <td
-                          rowSpan={2}
+                          rowSpan={rowsPerGroup}
                           style={{
                             ...cell,
                             fontSize: 10,

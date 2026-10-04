@@ -23,6 +23,8 @@ interface SizeInputFormProps {
   onSave: (detail: SizeEntry[], totalJumlah: number) => void;
   onCancel: () => void;
   initialData?: SizeEntry[];
+  // ── TAMBAHAN ── 'sweater_hoodie' → lengan otomatis panjang (pilihan lengan disembunyikan)
+  jenisPakaian?: "kaos" | "sweater_hoodie";
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -35,8 +37,8 @@ function generateId() {
   return Math.random().toString(36).slice(2, 9);
 }
 
-function createEmptyEntry(): SizeEntry {
-  return { id: generateId(), warna: "", lengan: "pendek", ukuran: {} };
+function createEmptyEntry(lengan: "pendek" | "panjang" = "pendek"): SizeEntry {
+  return { id: generateId(), warna: "", lengan, ukuran: {} };
 }
 
 function totalPerEntry(entry: SizeEntry): number {
@@ -53,6 +55,7 @@ interface EntryCardProps {
   entry: SizeEntry;
   index: number;
   canDelete: boolean;
+  isSweater: boolean; // ── TAMBAHAN ──
   onChange: (updated: SizeEntry) => void;
   onDelete: () => void;
 }
@@ -61,6 +64,7 @@ function EntryCard({
   entry,
   index,
   canDelete,
+  isSweater,
   onChange,
   onDelete,
 }: EntryCardProps) {
@@ -161,11 +165,15 @@ function EntryCard({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-5">
         <div>
           <label className="block text-[10px] md:text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase tracking-[0.12em] mb-1 md:mb-2">
-            Warna Kaos
+            {isSweater ? "Warna Sweater / Hoodie" : "Warna Kaos"}
           </label>
           <input
             className="w-full border border-zinc-200 dark:border-zinc-700 p-2 md:p-3 rounded-md focus:ring-2 focus:ring-[#124540] outline-none font-medium bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 transition-colors duration-150"
-            placeholder="Masukkan warna kaos"
+            placeholder={
+              isSweater
+                ? "Masukkan warna sweater / hoodie"
+                : "Masukkan warna kaos"
+            }
             value={entry.warna}
             onChange={(e) => setField("warna", e.target.value)}
           />
@@ -174,20 +182,26 @@ function EntryCard({
           <label className="block text-[10px] md:text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase tracking-[0.12em] mb-1 md:mb-2">
             Jenis Lengan
           </label>
-          <select
-            className="w-full border border-zinc-200 dark:border-zinc-700 p-2 md:p-3 rounded-md focus:ring-2 focus:ring-[#124540] outline-none font-medium bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-sm transition-colors duration-150"
-            value={entry.lengan}
-            onChange={(e) =>
-              setField("lengan", e.target.value as "pendek" | "panjang")
-            }
-          >
-            <option value="pendek" className="dark:bg-zinc-800">
-              Pendek
-            </option>
-            <option value="panjang" className="dark:bg-zinc-800">
-              Panjang
-            </option>
-          </select>
+          {isSweater ? (
+            <div className="w-full border border-zinc-200 dark:border-zinc-700 p-2 md:p-3 rounded-md bg-zinc-100 dark:bg-zinc-800/60 text-zinc-500 dark:text-zinc-400 font-medium text-sm">
+              Panjang (otomatis)
+            </div>
+          ) : (
+            <select
+              className="w-full border border-zinc-200 dark:border-zinc-700 p-2 md:p-3 rounded-md focus:ring-2 focus:ring-[#124540] outline-none font-medium bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-sm transition-colors duration-150"
+              value={entry.lengan}
+              onChange={(e) =>
+                setField("lengan", e.target.value as "pendek" | "panjang")
+              }
+            >
+              <option value="pendek" className="dark:bg-zinc-800">
+                Pendek
+              </option>
+              <option value="panjang" className="dark:bg-zinc-800">
+                Panjang
+              </option>
+            </select>
+          )}
         </div>
       </div>
 
@@ -267,10 +281,19 @@ export default function SizeInputForm({
   onSave,
   onCancel,
   initialData,
+  jenisPakaian = "kaos",
 }: SizeInputFormProps) {
-  const [entries, setEntries] = useState<SizeEntry[]>(
-    initialData && initialData.length > 0 ? initialData : [createEmptyEntry()],
-  );
+  const isSweater = jenisPakaian === "sweater_hoodie";
+  // Sweater/Hoodie: lengan selalu panjang (data awal pun dipaksa panjang)
+  const [entries, setEntries] = useState<SizeEntry[]>(() => {
+    const base =
+      initialData && initialData.length > 0
+        ? initialData
+        : [createEmptyEntry(isSweater ? "panjang" : "pendek")];
+    return isSweater
+      ? base.map((e) => ({ ...e, lengan: "panjang" as const }))
+      : base;
+  });
 
   const updateEntry = useCallback((id: string, updated: SizeEntry) => {
     setEntries((prev) => prev.map((e) => (e.id === id ? updated : e)));
@@ -280,7 +303,11 @@ export default function SizeInputForm({
     setEntries((prev) => prev.filter((e) => e.id !== id));
   }, []);
 
-  const addEntry = () => setEntries((prev) => [...prev, createEmptyEntry()]);
+  const addEntry = () =>
+    setEntries((prev) => [
+      ...prev,
+      createEmptyEntry(isSweater ? "panjang" : "pendek"),
+    ]);
 
   const total = grandTotal(entries);
 
@@ -290,7 +317,11 @@ export default function SizeInputForm({
 
   const handleSave = () => {
     if (!isValid) return;
-    onSave(entries, total);
+    // Pengaman: sweater/hoodie selalu tersimpan sebagai lengan panjang
+    const finalEntries = isSweater
+      ? entries.map((e) => ({ ...e, lengan: "panjang" as const }))
+      : entries;
+    onSave(finalEntries, total);
   };
 
   return (
@@ -306,6 +337,7 @@ export default function SizeInputForm({
             entry={entry}
             index={i}
             canDelete={entries.length > 1}
+            isSweater={isSweater}
             onChange={(updated) => updateEntry(entry.id, updated)}
             onDelete={() => deleteEntry(entry.id)}
           />

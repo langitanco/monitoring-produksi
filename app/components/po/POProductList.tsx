@@ -13,6 +13,9 @@ import { formatRupiah } from "@/lib/po/pricing";
 import { POProduct } from "@/types/po";
 import { ArrowLeft, ImageOff, Plus, UploadCloud, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { thumbUrl, fallbackToOriginal } from "@/lib/po/images";
+import { uploadOptimized } from "@/lib/po/optimizeImage";
+import { countOldImages, optimizeExistingImages } from "@/lib/po/optimizeOld";
 
 const EMPTY_PRODUCT: Omit<POProduct, "id"> = {
   product_code: "",
@@ -82,6 +85,10 @@ export default function POProductList({ poId }: POProductListProps) {
   const [form, setForm] = useState<Omit<POProduct, "id">>(EMPTY_PRODUCT);
   const [saving, setSaving] = useState(false);
 
+  // ── OPTIMASI FOTO LAMA ──
+  const [optimizing, setOptimizing] = useState(false);
+  const [optProgress, setOptProgress] = useState({ done: 0, total: 0 });
+
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [pendingDeleteUrls, setPendingDeleteUrls] = useState<string[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -110,6 +117,39 @@ export default function POProductList({ poId }: POProductListProps) {
     const data = await getAllPOProducts(poId);
     setProducts(data);
     setLoading(false);
+  }
+
+  async function handleOptimizeOld() {
+    const total = countOldImages(products);
+    if (total === 0) return;
+    if (
+      !confirm(
+        `Ada ${total} foto lama yang belum dioptimasi.\n\nFoto akan dikecilkan otomatis dan file lama diganti. Proses bisa beberapa menit — jangan tutup halaman ini sampai selesai.\n\nLanjutkan?`,
+      )
+    )
+      return;
+    setOptimizing(true);
+    setOptProgress({ done: 0, total });
+    try {
+      const r = await optimizeExistingImages(products, (done, tot) =>
+        setOptProgress({ done, total: tot }),
+      );
+      const mb = (r.savedBytes / 1024 / 1024).toFixed(1);
+      alert(
+        `Selesai.\n${r.done} foto berhasil dioptimasi (hemat ± ${mb} MB)` +
+          (r.failed > 0
+            ? `\n${r.failed} foto dilewati/gagal (tetap memakai file lama).`
+            : ""),
+      );
+    } catch (err) {
+      console.error(err);
+      alert(
+        "Terjadi kesalahan saat optimasi. Foto yang belum diproses tetap aman.",
+      );
+    } finally {
+      setOptimizing(false);
+      load();
+    }
   }
 
   function openCreate() {
@@ -186,14 +226,20 @@ export default function POProductList({ poId }: POProductListProps) {
       const uploadedUrls: string[] = [];
 
       for (const file of newFiles) {
+        // ── OPTIMASI ── kompres (utama 1200px + thumbnail 480px) lalu upload
+        const up = await uploadOptimized(supabase, file);
+        if (up) {
+          uploadedUrls.push(up.url);
+          continue;
+        }
+
+        // Fallback: kompresi/upload gagal → upload file asli seperti dulu
         const fileExt = file.name.split(".").pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `products/${fileName}`;
-
         const { data, error } = await supabase.storage
           .from("po_assets")
-          .upload(filePath, file);
-
+          .upload(filePath, file, { cacheControl: "31536000" });
         if (error) {
           console.error("Gagal upload gambar:", error);
           alert(`Gagal upload ${file.name}. Lanjut menyimpan data lainnya.`);
@@ -578,12 +624,25 @@ export default function POProductList({ poId }: POProductListProps) {
             produk terdaftar dalam katalog
           </p>
         </div>
-        <button
-          onClick={openCreate}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#124540] hover:bg-[#0d332f] text-white px-5 py-2.5 rounded-md text-sm font-semibold transition-colors duration-150"
-        >
-          <Plus size={16} /> Tambah Produk
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          {countOldImages(products) > 0 && (
+            <button
+              onClick={handleOptimizeOld}
+              disabled={optimizing}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-wait px-4 py-2.5 rounded-md text-sm font-semibold transition-colors duration-150"
+            >
+              {optimizing
+                ? `Mengoptimasi ${optProgress.done}/${optProgress.total}...`
+                : `Optimasi ${countOldImages(products)} Foto Lama`}
+            </button>
+          )}
+          <button
+            onClick={openCreate}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#124540] hover:bg-[#0d332f] text-white px-5 py-2.5 rounded-md text-sm font-semibold transition-colors duration-150"
+          >
+            <Plus size={16} /> Tambah Produk
+          </button>
+        </div>
       </div>
 
       {products.length === 0 ? (
@@ -615,8 +674,11 @@ export default function POProductList({ poId }: POProductListProps) {
               <div className="w-full sm:w-28 h-48 sm:h-28 rounded-xl bg-zinc-100 dark:bg-zinc-800 shrink-0 overflow-hidden relative">
                 {p.image_urls && p.image_urls.length > 0 ? (
                   <img
-                    src={p.image_urls[0]}
+                    src={thumbUrl(p.image_urls[0])}
+                    onError={fallbackToOriginal(p.image_urls[0])}
                     alt={p.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 ) : (

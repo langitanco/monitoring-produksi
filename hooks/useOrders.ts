@@ -185,6 +185,7 @@ export function useOrders({
       ukuran_desain_belakang: formData.ukuran_desain_belakang?.trim() || null,
       catatan_pesanan: formData.catatan_pesanan?.trim() || null,
       jenis_aplikasi_art: cleanArt(formData.jenis_aplikasi_art),
+      jenis_pakaian: formData.jenis_pakaian || 'kaos',
       status: 'Pesanan Masuk',
       steps_manual: [
         { id: 'm1', name: 'Pecah Gambar (PDF)', type: 'upload_pdf', isCompleted: false },
@@ -246,6 +247,7 @@ export function useOrders({
       ukuran_desain_belakang: d.ukuran_desain_belakang?.trim() || null,
       catatan_pesanan: d.catatan_pesanan?.trim() || null,
       jenis_aplikasi_art: cleanArt(d.jenis_aplikasi_art),
+      jenis_pakaian: d.jenis_pakaian || 'kaos',
     };
     const { error } = await supabase.from('orders').update(updates).eq('id', selectedOrderId);
     if (!error) {

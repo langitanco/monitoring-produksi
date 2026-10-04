@@ -1,6 +1,7 @@
 // lib/po/admin.ts
 // Fungsi Supabase khusus untuk admin PO — semua perlu auth
 
+import { thumbPath } from './images';
 import { createClient } from '@/lib/supabase/client';
 import { POSetting, POProduct, POOrder, POResellerFull,POOrderItem } from '@/types/po';
 
@@ -486,7 +487,13 @@ export async function deleteProductImages(imageUrls: string[]): Promise<void> {
  
   if (paths.length === 0) return;
  
-  const { error } = await supabase.storage.from('po_assets').remove(paths);
+  // Foto yang sudah dioptimasi punya thumbnail terpisah → ikut dihapus
+  const thumbPaths = paths
+    .map((p) => thumbPath(p))
+    .filter((p): p is string => Boolean(p));
+  const allPaths = [...paths, ...thumbPaths];
+ 
+  const { error } = await supabase.storage.from('po_assets').remove(allPaths);
   if (error) {
     // Sengaja hanya log, tidak throw — supaya hapus produk tetap berhasil
     // walau file di storage gagal terhapus (misal sudah terhapus manual sebelumnya).

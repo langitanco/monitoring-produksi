@@ -192,7 +192,10 @@ export default function OrderDetail({
         onPrintLabel={handlePrintLabel}
       />
 
-      <DetailUkuran data={order.detail_ukuran} />
+      <DetailUkuran
+        data={order.detail_ukuran}
+        jenisPakaian={order.jenis_pakaian}
+      />
 
       {/* ── TAMBAHAN ── Gesut hanya relevan untuk produksi Manual; DTF pakai
           model finishing+packing agregat per tim, tidak ada input per-order. */}

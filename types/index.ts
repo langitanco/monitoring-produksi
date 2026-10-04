@@ -174,7 +174,16 @@ export interface Order {
   catatan_pesanan?: string | null;
   // ── TAMBAHAN ── jenis aplikasi per posisi art, boleh lebih dari satu
   jenis_aplikasi_art?: JenisAplikasiArt | null;
+  // ── TAMBAHAN ── jenis pakaian. null/undefined = 'kaos' (data lama)
+  jenis_pakaian?: JenisPakaian | null;
 }
+
+// ── TAMBAHAN ── T-Shirt: lengan bisa dipilih. Sweater/Hoodie: lengan otomatis panjang.
+export type JenisPakaian = 'kaos' | 'sweater_hoodie';
+export const JENIS_PAKAIAN_OPTIONS: { value: JenisPakaian; label: string }[] = [
+  { value: 'kaos', label: 'T-Shirt' },
+  { value: 'sweater_hoodie', label: 'Sweater / Hoodie' },
+];
 
 // Pilihan jenis aplikasi untuk dropdown (ubah di sini bila ada jenis baru)
 export const JENIS_APLIKASI_OPTIONS = ['Platisol','Rubber','Plascharger','Discharge','Pollyflex','Plastidol HDC','Plastisol GID', 'DTF'];

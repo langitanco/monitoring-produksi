@@ -8,6 +8,8 @@ import {
   GesutEntry,
   JenisAplikasiArt,
   JENIS_APLIKASI_OPTIONS,
+  JenisPakaian,
+  JENIS_PAKAIAN_OPTIONS,
 } from "@/types";
 import { hasRole, getUserRoles } from "@/lib/roles";
 import MultiSelectDropdown from "./MultiSelectDropdown"; // ── TAMBAHAN ──
@@ -47,6 +49,7 @@ export default function EditOrder({
     ukuran_desain_belakang: order.ukuran_desain_belakang || "", // ── TAMBAHAN ──
     catatan_pesanan: order.catatan_pesanan || "", // ── TAMBAHAN ──
     jenis_aplikasi_art: (order.jenis_aplikasi_art ?? {}) as JenisAplikasiArt, // ── TAMBAHAN ──
+    jenis_pakaian: (order.jenis_pakaian || "kaos") as JenisPakaian, // ── TAMBAHAN ──
   });
 
   // ── KOREKSI ── sama seperti CreateOrder: gesut & PIC hanya untuk Manual;
@@ -72,6 +75,19 @@ export default function EditOrder({
   const handleHpBlur = () => {
     if (!form.hp) return;
     setForm((f) => ({ ...f, hp: normalizePhone(f.hp) }));
+  };
+
+  // ── TAMBAHAN ── ganti jenis pakaian. Ke Sweater/Hoodie → semua varian
+  // yang sudah diinput otomatis jadi lengan panjang.
+  const handlePakaianChange = (value: JenisPakaian) => {
+    setForm((f) => ({
+      ...f,
+      jenis_pakaian: value,
+      detail_ukuran:
+        value === "sweater_hoodie" && f.detail_ukuran
+          ? f.detail_ukuran.map((e) => ({ ...e, lengan: "panjang" as const }))
+          : f.detail_ukuran,
+    }));
   };
 
   const handleSizeSave = (detail: SizeEntry[], totalJumlah: number) => {
@@ -110,6 +126,7 @@ export default function EditOrder({
     return (
       <SizeInputForm
         initialData={form.detail_ukuran ?? undefined}
+        jenisPakaian={form.jenis_pakaian}
         onSave={handleSizeSave}
         onCancel={() => setShowSizeForm(false)}
       />
@@ -367,6 +384,33 @@ export default function EditOrder({
                       className="dark:bg-zinc-800"
                     >
                       {pt.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* ── TAMBAHAN ── Jenis pakaian: pengaruh ke tabel ukuran & form approval */}
+              <div>
+                <label className="block text-[10px] md:text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase mb-1 md:mb-2">
+                  Jenis Pakaian{" "}
+                  <span className="normal-case font-normal text-zinc-400">
+                    (Sweater/Hoodie: lengan otomatis panjang)
+                  </span>
+                </label>
+                <select
+                  className="w-full border border-zinc-200 dark:border-zinc-700 p-2 md:p-3 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none font-medium bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm"
+                  value={form.jenis_pakaian}
+                  onChange={(e) =>
+                    handlePakaianChange(e.target.value as JenisPakaian)
+                  }
+                >
+                  {JENIS_PAKAIAN_OPTIONS.map((o) => (
+                    <option
+                      key={o.value}
+                      value={o.value}
+                      className="dark:bg-zinc-800"
+                    >
+                      {o.label}
                     </option>
                   ))}
                 </select>
