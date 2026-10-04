@@ -256,7 +256,7 @@ export default function POProductList({ poId }: POProductListProps) {
 
   if (showForm) {
     return (
-      <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 md:p-6 lg:p-8 max-w-4xl mx-auto">
+      <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 md:p-6 lg:p-8 w-full">
         <div className="flex items-start gap-4 mb-8">
           <button
             onClick={() => {

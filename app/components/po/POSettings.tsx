@@ -320,7 +320,7 @@ export default function POSettings({ poId }: POSettingsProps) {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-5 md:space-y-6">
+    <div className="w-full space-y-5 md:space-y-6">
       {/* ── Status Toggle ─────────────────────────────────────────── */}
       <div
         className={`flex items-center justify-between gap-4 rounded-xl border p-5 transition-colors duration-150 ${form.is_active ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-950/20" : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900"}`}

@@ -1,8 +1,16 @@
 // app/components/orders/EditOrder.tsx
 
 import React, { useState } from "react";
-import { Order, ProductionTypeData, UserData, GesutEntry } from "@/types";
+import {
+  Order,
+  ProductionTypeData,
+  UserData,
+  GesutEntry,
+  JenisAplikasiArt,
+  JENIS_APLIKASI_OPTIONS,
+} from "@/types";
 import { hasRole, getUserRoles } from "@/lib/roles";
+import MultiSelectDropdown from "./MultiSelectDropdown"; // ── TAMBAHAN ──
 import SizeInputForm, { SizeEntry } from "./SizeInputForm";
 import GesutInputForm from "./GesutInputForm"; // ── TAMBAHAN ──
 
@@ -35,6 +43,10 @@ export default function EditOrder({
     type: order.jenis_produksi,
     assigned_to: order.assigned_to || "",
     helper_id: order.helper_id || "",
+    ukuran_desain_depan: order.ukuran_desain_depan || "", // ── TAMBAHAN ──
+    ukuran_desain_belakang: order.ukuran_desain_belakang || "", // ── TAMBAHAN ──
+    catatan_pesanan: order.catatan_pesanan || "", // ── TAMBAHAN ──
+    jenis_aplikasi_art: (order.jenis_aplikasi_art ?? {}) as JenisAplikasiArt, // ── TAMBAHAN ──
   });
 
   // ── KOREKSI ── sama seperti CreateOrder: gesut & PIC hanya untuk Manual;
@@ -297,6 +309,43 @@ export default function EditOrder({
                   }
                 />
               </div>
+
+              {/* ── TAMBAHAN ── Jenis aplikasi per art (pilihan ganda) → Form Approval */}
+              <div>
+                <label className="block text-[10px] md:text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase mb-1 md:mb-2">
+                  Jenis Aplikasi per Art{" "}
+                  <span className="normal-case font-normal text-zinc-400">
+                    (Opsional, boleh pilih lebih dari satu)
+                  </span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {(
+                    [
+                      ["depan", "Art Depan"],
+                      ["belakang", "Art Belakang"],
+                      ["kanan", "Art Kanan"],
+                      ["kiri", "Art Kiri"],
+                    ] as const
+                  ).map(([key, lbl]) => (
+                    <MultiSelectDropdown
+                      key={key}
+                      label={lbl}
+                      options={JENIS_APLIKASI_OPTIONS}
+                      value={form.jenis_aplikasi_art[key] ?? []}
+                      onChange={(next) =>
+                        setForm({
+                          ...form,
+                          jenis_aplikasi_art: {
+                            ...form.jenis_aplikasi_art,
+                            [key]: next,
+                          },
+                        })
+                      }
+                      ringClass="focus:ring-indigo-500"
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* ── KOLOM KANAN ── */}
@@ -391,6 +440,63 @@ export default function EditOrder({
                   value={form.deadline}
                   onChange={(e) =>
                     setForm({ ...form, deadline: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* ── TAMBAHAN ── Ukuran desain (opsional) → tampil di Form Approval */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] md:text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase mb-1 md:mb-2">
+                    Ukuran Desain Depan{" "}
+                    <span className="normal-case font-normal text-zinc-400">
+                      (Opsional)
+                    </span>
+                  </label>
+                  <input
+                    className="w-full border border-zinc-200 dark:border-zinc-700 p-2 md:p-3 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none font-medium bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm placeholder-zinc-400 dark:placeholder-zinc-500"
+                    placeholder="mis. 28 x 35 cm"
+                    value={form.ukuran_desain_depan}
+                    onChange={(e) =>
+                      setForm({ ...form, ukuran_desain_depan: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] md:text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase mb-1 md:mb-2">
+                    Ukuran Desain Belakang{" "}
+                    <span className="normal-case font-normal text-zinc-400">
+                      (Opsional)
+                    </span>
+                  </label>
+                  <input
+                    className="w-full border border-zinc-200 dark:border-zinc-700 p-2 md:p-3 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none font-medium bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm placeholder-zinc-400 dark:placeholder-zinc-500"
+                    placeholder="mis. 28 x 35 cm"
+                    value={form.ukuran_desain_belakang}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        ukuran_desain_belakang: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* ── TAMBAHAN ── Catatan pesanan (opsional) → tampil di Form Approval */}
+              <div>
+                <label className="block text-[10px] md:text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase mb-1 md:mb-2">
+                  Catatan Pesanan{" "}
+                  <span className="normal-case font-normal text-zinc-400">
+                    (Opsional, mis. bahan sablon)
+                  </span>
+                </label>
+                <textarea
+                  className="w-full border border-zinc-200 dark:border-zinc-700 p-2 md:p-3 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none font-medium bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 resize-none h-16 md:h-20"
+                  placeholder="mis. Bahan: plastisol, kaos cotton combed 30s..."
+                  value={form.catatan_pesanan}
+                  onChange={(e) =>
+                    setForm({ ...form, catatan_pesanan: e.target.value })
                   }
                 />
               </div>

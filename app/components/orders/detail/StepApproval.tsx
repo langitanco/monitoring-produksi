@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Order } from "@/types";
-import { Eye, Trash2, Upload } from "lucide-react";
+import { Eye, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 
 interface StepApprovalProps {
   order: Order;
@@ -33,26 +33,37 @@ export default function StepApproval({
           {order.link_approval?.link ? (
             <>
               <div className="font-semibold text-sm md:text-base text-zinc-900 dark:text-zinc-200">
-                File Desain Terupload
+                Mockup Terupload — Form Approval Siap
               </div>
               <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
                 Oleh: {order.link_approval.by} | {order.link_approval.timestamp}
               </div>
-              <a
-                href={order.link_approval.link}
-                target="_blank"
-                className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 mt-1 hover:underline"
-              >
-                <Eye className="w-3.5 h-3.5" /> Lihat File
-              </a>
+              <div className="flex items-center gap-4 mt-1">
+                <a
+                  href={`/approval/${order.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 hover:underline"
+                >
+                  <Eye className="w-3.5 h-3.5" /> Lihat Form Approval
+                </a>
+                <a
+                  href={order.link_approval.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold flex items-center gap-1 hover:underline"
+                >
+                  <ImageIcon className="w-3.5 h-3.5" /> Lihat Mockup
+                </a>
+              </div>
             </>
           ) : (
             <>
               <div className="font-semibold text-sm md:text-base text-zinc-400 dark:text-zinc-600">
-                File Desain
+                Mockup Desain
               </div>
               <div className="text-[10px] text-zinc-400 dark:text-zinc-600 italic">
-                Belum ada file yang diupload...
+                Upload mockup, form approval akan dibuat otomatis...
               </div>
             </>
           )}
@@ -81,7 +92,7 @@ export default function StepApproval({
                 onClick={() => onTriggerUpload("approval")}
                 className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-4 py-2 rounded-md text-xs font-semibold text-zinc-600 dark:text-zinc-300 flex items-center justify-center gap-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-150 w-full sm:w-auto"
               >
-                <Upload className="w-4 h-4" /> Upload File
+                <Upload className="w-4 h-4" /> Upload Mockup
               </button>
             )
           )}

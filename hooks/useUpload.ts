@@ -69,14 +69,24 @@ export function useUpload({
   const order = orders.find((o: Order) => o.id === selectedOrderId);
   if (!order) return;
 
+  // ── UBAH ── Approval = upload MOCKUP (gambar). Form approval dibentuk
+  // otomatis dari gambar ini, jadi PDF tidak diterima.
+  const isApproval = uploadContext.type === 'approval';
+  if (isApproval && !file.type.startsWith('image/')) {
+    showAlert('Format Tidak Didukung', 'Mockup harus berupa gambar (JPG/PNG).', 'error');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    return;
+  }
+
   setIsUploading(true);
   let processedFile = file;
 
   if (file.type.startsWith('image/')) {
     try {
+      // Mockup memuat size chart bertulisan kecil → resolusi lebih tinggi.
       processedFile = await imageCompression(file, {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1920,
+        maxSizeMB: isApproval ? 2 : 1,
+        maxWidthOrHeight: isApproval ? 2560 : 1920,
         useWebWorker: true,
       });
     } catch (error) {

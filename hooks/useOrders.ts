@@ -13,6 +13,16 @@ interface UseOrdersProps {
   setView: (view: 'list' | 'detail' | 'create' | 'edit') => void;
 }
 
+// ── TAMBAHAN ── rapikan jenis_aplikasi_art: buang array kosong; semua kosong → null
+function cleanArt(v: any) {
+  if (!v) return null;
+  const out: Record<string, string[]> = {};
+  (['depan', 'belakang', 'kanan', 'kiri'] as const).forEach((k) => {
+    if (Array.isArray(v[k]) && v[k].length) out[k] = v[k];
+  });
+  return Object.keys(out).length ? out : null;
+}
+
 export function useOrders({
   supabase,
   currentUser,
@@ -170,6 +180,11 @@ export function useOrders({
       jenis_produksi: formData.type,
       assigned_to: formData.assigned_to || null,
       helper_id: formData.helper_id || null,
+      // ── TAMBAHAN ── field opsional untuk Form Approval
+      ukuran_desain_depan: formData.ukuran_desain_depan?.trim() || null,
+      ukuran_desain_belakang: formData.ukuran_desain_belakang?.trim() || null,
+      catatan_pesanan: formData.catatan_pesanan?.trim() || null,
+      jenis_aplikasi_art: cleanArt(formData.jenis_aplikasi_art),
       status: 'Pesanan Masuk',
       steps_manual: [
         { id: 'm1', name: 'Pecah Gambar (PDF)', type: 'upload_pdf', isCompleted: false },
@@ -226,6 +241,11 @@ export function useOrders({
       jenis_produksi: d.type,
       assigned_to: d.assigned_to || null,
       helper_id: d.helper_id || null,
+      // ── TAMBAHAN ── field opsional untuk Form Approval
+      ukuran_desain_depan: d.ukuran_desain_depan?.trim() || null,
+      ukuran_desain_belakang: d.ukuran_desain_belakang?.trim() || null,
+      catatan_pesanan: d.catatan_pesanan?.trim() || null,
+      jenis_aplikasi_art: cleanArt(d.jenis_aplikasi_art),
     };
     const { error } = await supabase.from('orders').update(updates).eq('id', selectedOrderId);
     if (!error) {

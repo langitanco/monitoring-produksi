@@ -167,6 +167,23 @@ export interface Order {
   // Independen dari detail_ukuran/jumlah (boleh beda total — gesut dihitung
   // per potongan kain, bukan per baju jadi). null/undefined = belum diisi.
   detail_gesut?: GesutEntry | null;
+
+  // ── TAMBAHAN ── opsional, tampil di Form Approval otomatis
+  ukuran_desain_depan?: string | null;
+  ukuran_desain_belakang?: string | null;
+  catatan_pesanan?: string | null;
+  // ── TAMBAHAN ── jenis aplikasi per posisi art, boleh lebih dari satu
+  jenis_aplikasi_art?: JenisAplikasiArt | null;
+}
+
+// Pilihan jenis aplikasi untuk dropdown (ubah di sini bila ada jenis baru)
+export const JENIS_APLIKASI_OPTIONS = ['Platisol','Rubber','Plascharger','Discharge','Pollyflex','Plastidol HDC','Plastisol GID', 'DTF'];
+
+export interface JenisAplikasiArt {
+  depan?: string[];
+  belakang?: string[];
+  kanan?: string[];
+  kiri?: string[];
 }
 
 // ── TAMBAHAN ── Komposisi gesut untuk order Manual. Basis hitung gaji tukang

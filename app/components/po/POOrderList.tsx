@@ -902,7 +902,7 @@ export default function POOrderList({ poId }: POOrderListProps) {
 
   /* ── List View ─────────────────────────────────────────────── */
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4">
+    <div className="w-full space-y-4">
       {/* Filter & Search */}
       <div className="flex flex-col lg:flex-row gap-3">
         {/* Search Bar */}
