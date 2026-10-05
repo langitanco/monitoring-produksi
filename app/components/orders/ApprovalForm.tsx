@@ -12,6 +12,10 @@ import { Order, SizeEntry } from "@/types";
 export const SHEET_W = 1123;
 export const SHEET_H = 794;
 
+// Lebar kolom kiri (banner + mockup). Naikkan untuk banner & mockup yang lebih
+// lebar, turunkan (mis. 468) untuk tabel yang lebih lega; kolom kanan menyesuaikan.
+const LEFT_W = 520;
+
 const TEAL = "#6bbdb0";
 const GRAY = "#bdbdbd";
 const RED = "#e8392b";
@@ -95,7 +99,7 @@ const sum = (m: SizeMap) => Object.values(m).reduce((a, b) => a + b, 0);
 const ROW_MAX = 19;
 const ROW_MIN = 11;
 // Ruang (px) untuk tabel (header + baris + total) agar blok TTD tidak terdorong
-const TABLE_SPACE = 242;
+const TABLE_SPACE = 316;
 const SIGN_H = 112;
 const SIGN_H_MIN = 56;
 
@@ -154,18 +158,27 @@ function Field({
   label,
   value,
   bold,
+  boldLabel,
   labelWidth = 120,
 }: {
   label: string;
   value?: React.ReactNode;
   bold?: boolean;
+  boldLabel?: boolean;
   labelWidth?: number;
 }) {
   return (
     <div
-      style={{ display: "flex", fontSize: 12, height: 17, lineHeight: "17px" }}
+      style={{
+        display: "flex",
+        fontSize: 12,
+        minHeight: 17,
+        lineHeight: "17px",
+      }}
     >
-      <div style={{ width: labelWidth }}>{label}</div>
+      <div style={{ width: labelWidth, fontWeight: boldLabel ? 700 : 400 }}>
+        {label}
+      </div>
       <div style={{ width: 10 }}>:</div>
       <div style={{ fontWeight: bold ? 700 : 400 }}>{value}</div>
     </div>
@@ -178,16 +191,17 @@ function ArtBlock({ title, jenis }: { title: string; jenis?: string }) {
       <div
         style={{
           background: TEAL,
-          width: 230,
+          width: "100%",
           height: 17,
           lineHeight: "17px",
           fontSize: 12,
           paddingLeft: 3,
+          boxSizing: "border-box",
         }}
       >
         {title}
       </div>
-      <Field label="Jenis Aplikasi" labelWidth={230} value={jenis} />
+      <Field label="Jenis Aplikasi" labelWidth={90} value={jenis} />
     </>
   );
 }
@@ -312,69 +326,74 @@ export default function ApprovalForm({ order }: { order: Order }) {
         {/* ───────── KIRI: header + mockup + keterangan desain ───────── */}
         <div
           style={{
-            width: 468,
+            width: LEFT_W,
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
           }}
         >
-          <div style={{ borderBottom: "2px solid #000", paddingBottom: 6 }}>
-            <div style={{ display: "flex", alignItems: "center", height: 48 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo.png"
-                alt="Langitan.co"
-                style={{
-                  width: 48,
-                  height: 48,
-                  objectFit: "cover",
-                  borderRadius: 4,
-                }}
+          {/* Banner header: menempel di pojok kiri-atas bingkai (menutup padding 12px),
+              lebarnya hanya selebar kolom kiri. File: public/header-nota.png */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/header-approval.png"
+            alt="Langitan Company"
+            style={{
+              display: "block",
+              width: "calc(100% + 12px)",
+              // Tailwind preflight memberi max-width:100% ke semua <img> → tanpa ini
+              // lebar banner terpotong 12px dan tidak sejajar dengan garis di bawahnya.
+              maxWidth: "none",
+              height: "auto",
+              margin: "-12px 0 0 -12px",
+            }}
+          />
+
+          {/* Info order (kiri) + Deadline (kanan, sejajar baris paling bawah) */}
+          <div
+            style={{
+              borderBottom: "2px solid #000",
+              padding: "8px 0 6px",
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              gap: 10,
+            }}
+          >
+            <div>
+              <Field
+                label="Code produksi"
+                value={`#${order.kode_produksi}`}
+                bold
+                boldLabel
               />
-              <div
-                style={{
-                  marginLeft: 8,
-                  fontWeight: 800,
-                  fontSize: 19,
-                  lineHeight: "17px",
-                  letterSpacing: -0.5,
-                  textTransform: "uppercase",
-                }}
-              >
-                Form Approval
-                <br />
-                Langitan.co
-              </div>
-              <div style={{ marginLeft: "auto", textAlign: "center" }}>
-                <div
-                  style={{
-                    background: RED,
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: 11,
-                    padding: "2px 10px",
-                    marginBottom: 2,
-                  }}
-                >
-                  DEADLINE
-                </div>
-                <div
-                  style={{
-                    border: `2px solid ${RED}`,
-                    color: RED,
-                    fontWeight: 700,
-                    fontSize: 13,
-                    padding: "1px 10px",
-                  }}
-                >
-                  {fmtDate(order.deadline)}
-                </div>
-              </div>
-            </div>
-            <div style={{ marginTop: 6 }}>
-              <Field label="Code produksi" value={`#${order.kode_produksi}`} />
               <Field label="PJ Produksi" value={pj} />
               {helper && <Field label="Helper" value={helper} />}
+            </div>
+            <div style={{ textAlign: "center", flexShrink: 0 }}>
+              <div
+                style={{
+                  background: RED,
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: 11,
+                  padding: "2px 10px",
+                  marginBottom: 2,
+                }}
+              >
+                DEADLINE
+              </div>
+              <div
+                style={{
+                  border: `2px solid ${RED}`,
+                  color: RED,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  padding: "1px 10px",
+                }}
+              >
+                {fmtDate(order.deadline)}
+              </div>
             </div>
           </div>
 
@@ -421,7 +440,7 @@ export default function ApprovalForm({ order }: { order: Order }) {
           <div
             style={{ borderTop: "2px solid #000", paddingTop: 6, fontSize: 12 }}
           >
-            <div style={{ height: 17 }}>KET DESAIN:</div>
+            <div style={{ height: 17, fontWeight: 700 }}>KET DESAIN:</div>
             <Field label="UKURAN DESAIN DEPAN" labelWidth={200} value={depan} />
             <Field
               label="UKURAN DESAIN BELAKANG"
@@ -467,7 +486,12 @@ export default function ApprovalForm({ order }: { order: Order }) {
         >
           <SectionTitle n={1}>DETAIL CUSTOMER</SectionTitle>
           <div style={{ marginBottom: 8 }}>
-            <Field label="Nama Customers" value={order.nama_pemesan} bold />
+            <Field
+              label="Nama Customers"
+              value={order.nama_pemesan}
+              bold
+              boldLabel
+            />
             <Field label="Tanggal Masuk" value={fmtDate(order.tanggal_masuk)} />
             <Field label="Wa Customer" value={order.no_hp} />
           </div>
@@ -591,16 +615,28 @@ export default function ApprovalForm({ order }: { order: Order }) {
           </table>
 
           <SectionTitle n={3}>DIV OPERATOR AFDRUK</SectionTitle>
-          <div style={{ marginBottom: 6 }}>
-            <Field label="Jumlah Screen" value={jumlahScreen} />
-            <Field label="Area Besar" value={areaBesar} />
-            <Field label="Area Sedang" value={areaSedang} />
-            <Field label="Area Kecil" value={areaKecil} />
+          <div style={{ display: "flex", gap: 16 }}>
+            {/* Kiri: posisi ART + jenis aplikasinya (mengisi sisa lebar, nilai panjang aman) */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <ArtBlock title="ART DEPAN" jenis={jenisDepan} />
+              <ArtBlock title="ART BELAKANG" jenis={jenisBelakang} />
+              <ArtBlock title="ART KANAN" jenis={jenisKanan} />
+              <ArtBlock title="ART KIRI" jenis={jenisKiri} />
+            </div>
+            {/* Kanan: jumlah screen & area (komposisi gesut) — cukup untuk 3 digit */}
+            <div style={{ width: 132, flexShrink: 0 }}>
+              <Field
+                label="Jumlah Screen"
+                labelWidth={92}
+                value={jumlahScreen}
+                bold
+                boldLabel
+              />
+              <Field label="Area Besar" labelWidth={92} value={areaBesar} />
+              <Field label="Area Sedang" labelWidth={92} value={areaSedang} />
+              <Field label="Area Kecil" labelWidth={92} value={areaKecil} />
+            </div>
           </div>
-          <ArtBlock title="ART DEPAN" jenis={jenisDepan} />
-          <ArtBlock title="ART BELAKANG" jenis={jenisBelakang} />
-          <ArtBlock title="ART KANAN" jenis={jenisKanan} />
-          <ArtBlock title="ART KIRI" jenis={jenisKiri} />
 
           {/* marginTop:auto → blok TTD selalu menempel di bawah */}
           <div style={{ marginTop: "auto" }}>
